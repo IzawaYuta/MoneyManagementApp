@@ -4,7 +4,7 @@ import SwiftData
 
 struct HomeView: View {
     
-    @FocusState private var isFocused: Bool
+    @FocusState private var focusedField: Field?
     
     @State private var selectedTransactionType: TransactionType = .income
     @State private var selectedCategory = "未選択"
@@ -95,18 +95,18 @@ struct HomeView: View {
                         HStack(spacing: 4) {
                             Text("￥")
                                 .font(.system(size: 42, weight: .semibold))
-                        Text(Decimal(string: priceTextField) ?? 0, format: .number)
-                            .font(.system(size: 42, weight: .semibold))
+                            Text(Decimal(string: priceTextField) ?? 0, format: .number)
+                                .font(.system(size: 42, weight: .semibold))
                         }
-//                                .background(Color.red.opacity(0.5)) //確認用
+                        //                                .background(Color.red.opacity(0.5)) //確認用
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            isFocused = true
+                            focusedField = .price
                         }
-                        
+
                         TextField("", text: $priceTextField)
                             .keyboardType(.numberPad)
-                            .focused($isFocused)
+                            .focused($focusedField, equals: .price)
                             .foregroundColor(.clear)
                             .tint(.clear)
                             .opacity(0.01)
@@ -152,6 +152,7 @@ struct HomeView: View {
                             TextField("入力...", text: $memo)
                                 .foregroundStyle(.black)
                                 .multilineTextAlignment(.trailing)
+                                .focused($focusedField, equals: .memo)
                         }
                         
                         // 支払方法
@@ -175,29 +176,30 @@ struct HomeView: View {
                     }
                     
                     // いつもの
-//                    Section {
-//                        Button {
-//                            isShowingTemplates = true
-//                        } label: {
-//                            HStack {
-//                                Text("いつもの")
-//                                    .foregroundStyle(.black)
-//                                
-//                                Spacer()
-//                                
-//                                Image(systemName: "chevron.right")
-//                                    .font(.system(size: 13, weight: .medium))
-//                                    .foregroundStyle(.secondary)
-//                            }
-//                        }
-//                        .buttonStyle(.plain)
-//                        .sheet(isPresented: $isShowingTemplates) {
-//                            TemplateListView()
-//                        }
-//                    }
+                    //                    Section {
+                    //                        Button {
+                    //                            isShowingTemplates = true
+                    //                        } label: {
+                    //                            HStack {
+                    //                                Text("いつもの")
+                    //                                    .foregroundStyle(.black)
+                    //
+                    //                                Spacer()
+                    //
+                    //                                Image(systemName: "chevron.right")
+                    //                                    .font(.system(size: 13, weight: .medium))
+                    //                                    .foregroundStyle(.secondary)
+                    //                            }
+                    //                        }
+                    //                        .buttonStyle(.plain)
+                    //                        .sheet(isPresented: $isShowingTemplates) {
+                    //                            TemplateListView()
+                    //                        }
+                    //                    }
                     
                 }
                 .offset(y: -30)
+                .scrollDisabled(true)
                 
                 HStack(spacing: 12) {
                     Button {
@@ -234,7 +236,7 @@ struct HomeView: View {
                         }
                         
                         Button("クリア", role: .destructive) {
-                            // クリア処理
+                            selectedDate = Date()
                         }
                     } message: {
                         Text("入力した内容がすべてクリアされます。")
@@ -246,17 +248,22 @@ struct HomeView: View {
             .scrollContentBackground(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(uiColor: .systemGray6).opacity(0.5))
+            .ignoresSafeArea(.keyboard, edges: .bottom)
+            .contentShape(Rectangle())
+            .onTapGesture {
+                focusedField = nil
+            }
             .navigationTitle("記録")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 
                 ToolbarItem(placement: .principal) {
-//                    Button {
-//                        // 将来的な機能
-//                    } label: {
-//                        Image(systemName: "ellipsis")
-//                            .foregroundStyle(.black)
-//                    }
+                    //                    Button {
+                    //                        // 将来的な機能
+                    //                    } label: {
+                    //                        Image(systemName: "ellipsis")
+                    //                            .foregroundStyle(.black)
+                    //                    }
                     // 収入 / 支出
                     Picker("", selection: $selectedTransactionType) {
                         ForEach(TransactionType.allCases, id: \.self) { type in
@@ -269,18 +276,27 @@ struct HomeView: View {
                     .padding(.vertical, 5)
                 }
                 
-                    ToolbarItemGroup(placement: .keyboard) {
-                        
-                        Button("完了") {
-                            isFocused = false
-                        }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Button(action: {
+                        focusedField = nil
+                    }) {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .semibold))
+//                            .foregroundStyle(.white)
+                            .frame(width: 32, height: 32)
+//                            .background(Color.black)
+//                            .clipShape(Circle())
                     }
+                    .buttonStyle(.plain)
+                    
+                    Spacer()
+                }
             }
-//            .toolbarBackground(
-//                Color(.gray.opacity(0.1)),
-//                for: .navigationBar
-//            )
-//            .toolbarBackground(.visible, for: .navigationBar)
+            //            .toolbarBackground(
+            //                Color(.gray.opacity(0.1)),
+            //                for: .navigationBar
+            //            )
+            //            .toolbarBackground(.visible, for: .navigationBar)
         }
     }
 }

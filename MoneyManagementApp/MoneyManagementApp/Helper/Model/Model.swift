@@ -2,6 +2,12 @@
 import Foundation
 import SwiftData
 
+//MARK: キーボードフォーカス
+enum Field: Hashable {
+    case price
+    case memo
+}
+
 enum TransactionType: String, Codable, CaseIterable {
     case income = "収入"
     case expense = "支出"
