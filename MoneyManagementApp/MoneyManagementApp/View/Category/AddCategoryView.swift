@@ -1,8 +1,14 @@
+
 import SwiftUI
+import SwiftData
 
 struct AddCategoryView: View {
     
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    
+    @Query(sort: \Category.sortIndex)
+    private var categories: [Category]
     
     @State private var categoryName = ""
     @State private var selectedIcon: String? = nil
@@ -136,6 +142,18 @@ struct AddCategoryView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("追加") {
+                        let iconName = selectedIcon ?? "ellipsis.circle"
+                        
+                        let newSortIndex = (categories.map(\.sortIndex).max() ?? -1) + 1
+                        
+                        let newCategory = Category(
+                            name: categoryName,
+                            imageName: iconName,
+                            sortIndex: newSortIndex
+                        )
+                        
+                        modelContext.insert(newCategory)
+                        
                         dismiss()
                     }
                     .disabled(categoryName.isEmpty)
