@@ -1,10 +1,6 @@
 
 import SwiftUI
-
-//enum TransactionType: String, CaseIterable {
-//    case income = "収入"
-//    case expense = "支出"
-//}
+import SwiftData
 
 struct HomeView: View {
     

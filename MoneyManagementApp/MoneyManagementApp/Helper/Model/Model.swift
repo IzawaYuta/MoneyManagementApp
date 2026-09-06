@@ -2,12 +2,12 @@
 import Foundation
 import SwiftData
 
-enum TransactionType: String, Codable {
+enum TransactionType: String, Codable, CaseIterable {
     case income = "収入"
     case expense = "支出"
 }
 
-enum PaymentType: String, Codable {
+enum PaymentType: String, Codable, CaseIterable {
     case cash
     case creditCard
     case debitCard

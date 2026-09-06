@@ -59,8 +59,8 @@ struct AddPaymentMethodView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("追加") {
                         let paymentMethod = PaymentMethod(
-                            type: selectedType,
                             name: name,
+                            type: selectedType,
                             memo: memo
                         )
                         
