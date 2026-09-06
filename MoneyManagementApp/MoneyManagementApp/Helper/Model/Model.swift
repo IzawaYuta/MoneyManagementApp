@@ -18,6 +18,7 @@ enum PaymentMethodType: String, Codable {
     case other = "その他"
 }
 
+//MARK: カテゴリー
 @Model
 final class Category {
     var id: UUID = UUID()
@@ -28,6 +29,7 @@ final class Category {
     }
 }
 
+//MARK: 支払方法
 @Model
 final class PaymentMethod {
     var id: UUID = UUID()
@@ -46,8 +48,10 @@ final class PaymentMethod {
     }
 }
 
+//MARK: 収支
 @Model
 final class Transaction {
+    var id: UUID = UUID()
     var date: Date
     var amount: Int
     var type: TransactionType
