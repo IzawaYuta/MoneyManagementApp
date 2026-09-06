@@ -5,9 +5,11 @@ import SwiftData
 struct HomeView: View {
     
     @FocusState private var focusedField: Field?
+    @Environment(\.modelContext) private var modelContext
+    @Query private var categories: [Category]
     
     @State private var selectedTransactionType: TransactionType = .income
-    @State private var selectedCategory = "未選択"
+    @State private var selectedCategory: Category?
     @State private var selectedPaymentMethod = "未選択"
     @State private var memo = ""
     @State private var selectedDate = Date()
@@ -18,6 +20,9 @@ struct HomeView: View {
     @State private var showPaymentMethodView = false
     
     @State private var priceTextField: String = ""
+    
+    @AppStorage("didAddInitialCategories")
+    private var didAddInitialCategories = false
     
     var body: some View {
         NavigationStack {
@@ -131,7 +136,7 @@ struct HomeView: View {
                             Button {
                                 showCategorySelectionView.toggle()
                             } label: {
-                                Text(selectedCategory)
+                                Text(selectedCategory?.name ?? "未選択")
                                     .foregroundStyle(.black.opacity(0.7))
                             }
                             .buttonStyle(.plain)
@@ -245,6 +250,9 @@ struct HomeView: View {
                 .padding(.horizontal)
                 .padding(.bottom)
             }
+            .onAppear {
+                addInitialCategories()
+            }
             .scrollContentBackground(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(uiColor: .systemGray6).opacity(0.5))
@@ -298,6 +306,23 @@ struct HomeView: View {
             //            )
             //            .toolbarBackground(.visible, for: .navigationBar)
         }
+    }
+    
+    private func addInitialCategories() {
+        guard categories.isEmpty else { return }
+        
+        let initialCategories = [
+            Category(name: "家賃", imageName: "house", sortIndex: 0),
+            Category(name: "食費", imageName: "fork.knife", sortIndex: 1),
+            Category(name: "日用品", imageName: "basket", sortIndex: 2),
+            Category(name: "交通費", imageName: "car", sortIndex: 3),
+            Category(name: "医療費", imageName: "cross.case", sortIndex: 4)
+        ]
+        
+        for category in initialCategories {
+            modelContext.insert(category)
+        }
+        didAddInitialCategories = true
     }
 }
 

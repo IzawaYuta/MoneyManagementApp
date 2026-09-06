@@ -53,9 +53,17 @@ enum PaymentType: String, Codable, CaseIterable {
 final class Category {
     var id: UUID = UUID()
     var name: String
-    
-    init(name: String) {
+    var imageName: String
+    var sortIndex: Int = 0
+
+    init(
+        name: String,
+        imageName: String,
+        sortIndex: Int = 0
+    ) {
         self.name = name
+        self.imageName = imageName
+        self.sortIndex = sortIndex
     }
 }
 

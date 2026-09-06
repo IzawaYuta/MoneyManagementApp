@@ -1,28 +1,22 @@
+
 import SwiftUI
+import SwiftData
 
 struct CategorySelectionView: View {
     
+    @Environment(\.modelContext) private var modelContext
     
     @State private var isShowingAddCategory = false
-    @Binding var selectedCategory: String
-    @State private var selectDeleteCategory: Array = []
+    @State private var isDeleteMode = false
+    @State private var showDeleteCategoryAlert: Bool = false
+    @State private var selectedDeleteCategories: Set<Category> = []
     @Environment(\.dismiss) private var dismiss
     
-    private let categories = [
-        "食費",
-        "日用品",
-        "交通費",
-        "光熱費",
-        "家賃",
-        "通信費",
-        "医療費",
-        "娯楽",
-        "衣服",
-        "交際費",
-        "教育費",
-        "その他"
-    ]
+    @Query(sort: \Category.sortIndex)
+    private var categories: [Category]
     
+    @Binding var selectedCategory: Category?
+        
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -36,24 +30,50 @@ struct CategorySelectionView: View {
                 ) {
                     ForEach(categories, id: \.self) { category in
                         Button {
-                            selectedCategory = category
-                            dismiss()
+                            if isDeleteMode {
+                                if selectedDeleteCategories.contains(category) {
+                                    selectedDeleteCategories.remove(category)
+                                } else {
+                                    selectedDeleteCategories.insert(category)
+                                }
+                            } else {
+                                selectedCategory = category
+                                dismiss()
+                            }
                         } label: {
                             VStack(spacing: 10) {
-                                Image(systemName: iconName(for: category))
+                                Image(systemName: category.imageName)
                                     .font(.system(size: 24))
-                                    .foregroundStyle(.black)
+                                    .foregroundStyle(
+                                        isDeleteMode
+                                        ? (selectedDeleteCategories.contains(category)
+                                           ? Color.black : Color.gray)
+                                        : Color.black
+                                    )
                                 
-                                Text(category)
+                                Text(category.name)
                                     .font(.system(size: 14))
-                                    .foregroundStyle(.black)
+                                    .foregroundStyle(
+                                        isDeleteMode
+                                        ? (selectedDeleteCategories.contains(category)
+                                           ? Color.black : Color.gray)
+                                        : Color.black
+                                    )
                             }
                             .frame(maxWidth: .infinity)
                             .frame(height: 100)
-                            .background(Color.white)
+                            .background(
+                                isDeleteMode
+                                ? (selectedDeleteCategories.contains(category)
+                                   ? Color.red.opacity(0.05)
+                                   : Color.white)
+                                : Color.white
+                            )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.black, lineWidth: 1)
+                                    .stroke(
+                                        isDeleteMode ? (selectedDeleteCategories.contains(category) ? Color.red : Color.gray) : Color.black, lineWidth: 1.5
+                                    )
                             )
                         }
                         .buttonStyle(.plain)
@@ -71,24 +91,50 @@ struct CategorySelectionView: View {
             .background(Color(uiColor: .systemGray6).opacity(0.5))
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Button(action: {
-                            isShowingAddCategory = true
-                        }) {
-                            Text("追加")
+                    if isDeleteMode {
+                        Button("削除", role: .destructive) {
+                            showDeleteCategoryAlert.toggle()
                         }
-                        Button(action: {
-                        }) {
-                            Text("削除")
+                        .disabled(selectedDeleteCategories.isEmpty)
+                        .alert("削除確認", isPresented: $showDeleteCategoryAlert) {
+                            Button("削除", role: .destructive) {
+                                deleteSelectedCategories()
+                            }
+                            
+                            Button("キャンセル", role: .cancel) {
+                            }
+                        } message: {
+                            Text("選択したカテゴリーを削除しますか？")
                         }
-                    } label: {
-                        Image(systemName: "ellipsis")
+                    } else {
+                        Menu {
+                            Button {
+                                isShowingAddCategory = true
+                            } label: {
+                                Text("追加")
+                            }
+                            
+                            Button {
+                                isDeleteMode = true
+                                selectedDeleteCategories.removeAll()
+                            } label: {
+                                Text("削除")
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis")
+                        }
                     }
                 }
                 
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("閉じる") {
-                        dismiss()
+                    if !isDeleteMode {
+                        Button("閉じる") {
+                            dismiss()
+                        }
+                    } else {
+                        Button("キャンセル") {
+                            isDeleteMode = false
+                        }
                     }
                 }
             }
@@ -98,38 +144,66 @@ struct CategorySelectionView: View {
         }
     }
     
-    private func iconName(for category: String) -> String {
-        switch category {
-        case "食費":
-            return "fork.knife"
-        case "日用品":
-            return "basket"
-        case "交通費":
-            return "car"
-        case "光熱費":
-            return "bolt"
-        case "家賃":
-            return "house"
-        case "通信費":
-            return "iphone"
-        case "医療費":
-            return "cross.case"
-        case "娯楽":
-            return "gamecontroller"
-        case "衣服":
-            return "tshirt"
-        case "交際費":
-            return "person.2"
-        case "教育費":
-            return "book"
-        case "その他":
-            return "ellipsis"
-        default:
-            return "square.grid.2x2"
+    private func deleteSelectedCategories() {
+        for category in selectedDeleteCategories {
+            modelContext.delete(category)
         }
+        
+        selectedDeleteCategories.removeAll()
+        isDeleteMode = false
     }
 }
 
 #Preview {
-    CategorySelectionView(selectedCategory: .constant("食費"))
+    let container = try! ModelContainer(
+        for: Category.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    
+    let context = container.mainContext
+    
+    context.insert(
+        Category(
+            name: "家賃",
+            imageName: "house",
+            sortIndex: 0
+        )
+    )
+    
+    context.insert(
+        Category(
+            name: "食費",
+            imageName: "fork.knife",
+            sortIndex: 1
+        )
+    )
+    
+    context.insert(
+        Category(
+            name: "日用品",
+            imageName: "basket",
+            sortIndex: 2
+        )
+    )
+    
+    context.insert(
+        Category(
+            name: "交通費",
+            imageName: "car",
+            sortIndex: 3
+        )
+    )
+    
+    context.insert(
+        Category(
+            name: "医療費",
+            imageName: "cross.case",
+            sortIndex: 4
+        )
+    )
+    
+    return CategorySelectionView(
+        selectedCategory: .constant(nil)
+    )
+    .modelContainer(container)
 }
