@@ -1,12 +1,12 @@
 
 import SwiftUI
 
-struct PaymentMethod: Identifiable {
-    let id = UUID()
-    let type: PaymentType
-    let name: String
-    let memo: String
-}
+//struct PaymentMethod: Identifiable {
+//    let id = UUID()
+//    let type: PaymentType
+//    let name: String
+//    let memo: String
+//}
 enum PaymentType {
     case cash
     case creditCard
@@ -47,12 +47,12 @@ struct PaymentMethodView: View {
     @Environment(\.dismiss) private var dismiss
     
     let paymentMethods: [PaymentMethod] = [
-        PaymentMethod(type: .cash, name: "現金", memo: ""),
-        PaymentMethod(type: .creditCard, name: "楽天カード", memo: "楽天市場用"),
-        PaymentMethod(type: .creditCard, name: "三井住友カード", memo: "メインカード"),
-        PaymentMethod(type: .bankAccount, name: "福岡銀行", memo: "生活費用"),
-        PaymentMethod(type: .electronicMoney, name: "Suica", memo: "交通費"),
-        PaymentMethod(type: .QRPayment, name: "PayPay", memo: "コンビニなど")
+        PaymentMethod(name: "現金", type: .cash, memo: ""),
+        PaymentMethod(name: "楽天カード", type: .creditCard, memo: "楽天市場用"),
+        PaymentMethod(name: "三井住友カード", type: .creditCard, memo: "メインカード"),
+        PaymentMethod(name: "福岡銀行", type: .bankAccount, memo: "生活費用"),
+        PaymentMethod(name: "Suica", type: .electronicMoney, memo: "交通費"),
+        PaymentMethod(name: "PayPay", type: .qRPayment, memo: "コンビニなど")
     ]
     
     var body: some View {
