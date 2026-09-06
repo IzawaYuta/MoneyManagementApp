@@ -7,15 +7,39 @@ enum TransactionType: String, Codable {
     case expense = "支出"
 }
 
-enum PaymentMethodType: String, Codable {
-    case cash = "現金"
-    case creditCard = "クレジットカード"
-    case debitCard = "デビットカード"
-    case bankTransfer = "銀行振込"
-    case bankAccount = "銀行"
-    case electronicMoney = "電子マネー"
-    case qRPayment = "QR決済"
-    case other = "その他"
+enum PaymentType: String, Codable {
+    case cash
+    case creditCard
+    case debitCard
+    case bankAccount
+    case electronicMoney
+    case QRPayment
+    case prepaid
+    case points
+    case other
+    
+    var title: String {
+        switch self {
+        case .cash:
+            return "現金"
+        case .creditCard:
+            return "クレジットカード"
+        case .debitCard:
+            return "デビットカード"
+        case .bankAccount:
+            return "銀行口座"
+        case .electronicMoney:
+            return "電子マネー"
+        case .QRPayment:
+            return "QR決済"
+        case .prepaid:
+            return "プリペイド"
+        case .points:
+            return "ポイント"
+        case .other:
+            return "その他"
+        }
+    }
 }
 
 //MARK: カテゴリー
@@ -34,12 +58,12 @@ final class Category {
 final class PaymentMethod {
     var id: UUID = UUID()
     var name: String
-    var type: PaymentMethodType
+    var type: PaymentType
     var memo: String
     
     init(
         name: String,
-        type: PaymentMethodType,
+        type: PaymentType,
         memo: String = ""
     ) {
         self.name = name
