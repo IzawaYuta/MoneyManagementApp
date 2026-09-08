@@ -130,24 +130,25 @@ struct HomeView: View {
                     
                     Section {
                         // カテゴリー
-                        HStack {
-                            Text("カテゴリー")
-                                .foregroundStyle(.secondary)
-                            
-                            Spacer()
-                            
-                            Button {
-                                showCategorySelectionView.toggle()
-                            } label: {
+                        Button {
+                            showCategorySelectionView.toggle()
+                        } label: {
+                            HStack {
+                                Text("カテゴリー")
+                                    .foregroundStyle(.secondary)
+                                
+                                Spacer()
+                                
                                 Text(selectedCategory?.name ?? "未選択")
                                     .foregroundStyle(.black.opacity(0.7))
                             }
-                            .buttonStyle(.plain)
-                            .sheet(isPresented: $showCategorySelectionView) {
-                                CategorySelectionView(
-                                    selectedCategory: $selectedCategory
-                                )
-                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .sheet(isPresented: $showCategorySelectionView) {
+                            CategorySelectionView(
+                                selectedCategory: $selectedCategory
+                            )
                         }
                         
                         // メモ
@@ -164,22 +165,23 @@ struct HomeView: View {
                         }
                         
                         // 支払方法
-                        HStack {
-                            Text("支払方法")
-                                .foregroundStyle(.secondary)
-                            
-                            Spacer()
-                            
-                            Button {
-                                showPaymentMethodView.toggle()
-                            } label: {
+                        Button {
+                            showPaymentMethodView.toggle()
+                        } label: {
+                            HStack {
+                                Text("支払方法")
+                                    .foregroundStyle(.secondary)
+                                
+                                Spacer()
+                                
                                 Text(selectedPaymentMethod)
                                     .foregroundStyle(.black.opacity(0.7))
                             }
-                            .buttonStyle(.plain)
-                            .sheet(isPresented: $showPaymentMethodView) {
-                                PaymentMethodView()
-                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .sheet(isPresented: $showPaymentMethodView) {
+                            PaymentMethodView()
                         }
                     }
                     
