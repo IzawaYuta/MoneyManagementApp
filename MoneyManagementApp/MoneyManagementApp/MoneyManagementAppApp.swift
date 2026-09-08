@@ -13,6 +13,7 @@ struct MoneyManagementAppApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Category.self,
+            PaymentMethod.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

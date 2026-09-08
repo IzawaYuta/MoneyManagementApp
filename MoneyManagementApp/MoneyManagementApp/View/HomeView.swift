@@ -24,6 +24,9 @@ struct HomeView: View {
     @AppStorage("didAddInitialCategories")
     private var didAddInitialCategories = false
     
+//    @AppStorage("didAddInitialPaymentMethods")
+//    private var didAddInitialPaymentMethods = false
+    
     var body: some View {
         NavigationStack {
             VStack {
@@ -252,6 +255,7 @@ struct HomeView: View {
             }
             .onAppear {
                 addInitialCategories()
+//                addInitialPaymentMethods()
             }
             .scrollContentBackground(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -324,6 +328,25 @@ struct HomeView: View {
         }
         didAddInitialCategories = true
     }
+    
+//    private func addInitialPaymentMethods() {
+//        guard !didAddInitialPaymentMethods else { return }
+//        
+//        let paymentTypesName = [
+//            PaymentType(name: "現金", sortIndex: 0),
+//            PaymentType(name: "クレジットカード", sortIndex: 1),
+//            PaymentType(name: "デビッドカード", sortIndex: 2),
+//            PaymentType(name: "電子マネー", sortIndex: 3),
+//            PaymentType(name: "口座振替", sortIndex: 4),
+//            PaymentType(name: "その他", sortIndex: 5)
+//        ]
+//        
+//        for paymentType in paymentTypesName {
+//            modelContext.insert(paymentType)
+//        }
+//        
+//        didAddInitialPaymentMethods = true
+//    }
 }
 
 #Preview {

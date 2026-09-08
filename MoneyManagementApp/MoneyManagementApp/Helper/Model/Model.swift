@@ -17,11 +17,12 @@ enum PaymentType: String, Codable, CaseIterable {
     case cash
     case creditCard
     case debitCard
-    case bankAccount
     case electronicMoney
-    case QRPayment
-    case prepaid
-    case points
+    case qrCode
+    case pointCard
+    case prepaidCard
+    case bankTransfer
+    case bankDebit
     case other
     
     var title: String {
@@ -32,22 +33,23 @@ enum PaymentType: String, Codable, CaseIterable {
             return "クレジットカード"
         case .debitCard:
             return "デビットカード"
-        case .bankAccount:
-            return "銀行口座"
         case .electronicMoney:
             return "電子マネー"
-        case .QRPayment:
-            return "QR決済"
-        case .prepaid:
-            return "プリペイド"
-        case .points:
-            return "ポイント"
+        case .qrCode:
+            return "QRコード"
+        case .pointCard:
+            return "ポイントカード"
+        case .prepaidCard:
+            return "プリペイドカード"
+        case .bankTransfer:
+            return "銀行振込"
+        case .bankDebit:
+            return "口座振替"
         case .other:
             return "その他"
         }
     }
 }
-
 //MARK: カテゴリー
 @Model
 final class Category {
@@ -74,17 +76,35 @@ final class PaymentMethod {
     var name: String
     var type: PaymentType
     var memo: String
+    var sortIndex: Int = 0
     
     init(
         name: String,
         type: PaymentType,
-        memo: String = ""
+        memo: String = "",
+        sortIndex: Int = 0
     ) {
         self.name = name
         self.type = type
         self.memo = memo
+        self.sortIndex = sortIndex
     }
 }
+
+//@Model
+//final class PaymentType {
+//    var id: UUID = UUID()
+//    var name: String
+//    var sortIndex: Int = 0
+//    
+//    init(
+//        name: String,
+//        sortIndex: Int = 0
+//    ) {
+//        self.name = name
+//        self.sortIndex = sortIndex
+//    }
+//}
 
 //MARK: 収支
 @Model
