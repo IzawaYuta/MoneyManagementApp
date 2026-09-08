@@ -6,7 +6,8 @@ struct PaymentMethodView: View {
     
     @Environment(\.dismiss) private var dismiss
     
-    @Query private var paymentMethods: [PaymentMethod]
+    @Query(sort: \PaymentMethod.sortIndex)
+    private var paymentMethods: [PaymentMethod]
     
     @State private var showAddPaymentMethodView: Bool = false
     
@@ -18,22 +19,34 @@ struct PaymentMethodView: View {
                 } else {
                     List {
                         ForEach(paymentMethods, id: \.id) { paymentMethod in
-                            Button {
-                                // 選択処理
-                            } label: {
-                                HStack {
-                                    Text(paymentMethod.name)
-                                        .foregroundStyle(.black)
-                                    
-                                    Spacer()
-                                    
-                                    Text(paymentMethod.type.title)
-                                        .foregroundStyle(.secondary)
-                                        .font(.subheadline)
+                            Section {
+                                Button {
+                                    // 選択処理
+                                } label: {
+                                    VStack(alignment: .leading, spacing: 5) {
+                                        HStack {
+                                            Text(paymentMethod.name)
+                                                .foregroundStyle(.black)
+                                            
+                                            Spacer()
+                                            
+                                            Text(paymentMethod.type.title)
+                                                .foregroundColor(.gray)
+                                                .font(.subheadline)
+                                        }
+                                        if !paymentMethod.memo.isEmpty {
+                                            Text(paymentMethod.memo)
+                                                .foregroundColor(.gray)
+                                                .font(.subheadline)
+                                        }
+                                    }
                                 }
+                                .buttonStyle(.plain)
+                                .padding(.horizontal, 3)
                             }
                         }
                     }
+                    .listSectionSpacing(13)
                 }
             }
             .navigationTitle("支払方法")
@@ -56,6 +69,40 @@ struct PaymentMethodView: View {
         }
     }
 }
+
 #Preview {
-    PaymentMethodView()
+    let container = try! ModelContainer(
+        for: PaymentMethod.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    
+    let context = container.mainContext
+    
+    context.insert(
+        PaymentMethod(
+            name: "三井住友カード",
+            type: .creditCard,
+            memo: "メインカード",
+            sortIndex: 0
+        )
+    )
+    
+    context.insert(
+        PaymentMethod(
+            name: "PayPay",
+            type: .qrCode,
+            sortIndex: 1
+        )
+    )
+    
+    context.insert(
+        PaymentMethod(
+            name: "現金",
+            type: .cash,
+            sortIndex: 2
+        )
+    )
+    
+    return PaymentMethodView()
+        .modelContainer(container)
 }

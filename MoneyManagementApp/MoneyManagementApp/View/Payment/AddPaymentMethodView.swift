@@ -19,7 +19,7 @@ struct AddPaymentMethodView: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("名前", text: $name)
+                    TextField("登録名", text: $name)
                     
                     TextField("メモ", text: $memo)
                 }
