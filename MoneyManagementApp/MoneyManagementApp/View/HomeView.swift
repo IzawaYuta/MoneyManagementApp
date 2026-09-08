@@ -10,7 +10,7 @@ struct HomeView: View {
     
     @State private var selectedTransactionType: TransactionType = .income
     @State private var selectedCategory: Category?
-    @State private var selectedPaymentMethod = "未選択"
+    @State private var selectedPaymentMethod: PaymentMethod?
     @State private var memo = ""
     @State private var selectedDate = Date()
     @State private var isShowingTemplates = false
@@ -174,7 +174,7 @@ struct HomeView: View {
                                 
                                 Spacer()
                                 
-                                Text(selectedPaymentMethod)
+                                Text(selectedPaymentMethod?.name ?? "-")
                                     .foregroundStyle(.black.opacity(0.7))
                             }
                             .contentShape(Rectangle())
@@ -312,6 +312,26 @@ struct HomeView: View {
             //            )
             //            .toolbarBackground(.visible, for: .navigationBar)
         }
+    }
+    
+    private func saveTransaction() {
+        let transaction = Transaction(
+            date: selectedDate,
+            amount: Int(priceTextField) ?? 0,
+            type: selectedTransactionType,
+            category: selectedCategory,
+            memo: memo,
+            paymentMethod: selectedPaymentMethod
+        )
+        
+        modelContext.insert(transaction)
+        print("🔥新規保存情報🔥")
+        print("⭕️type: \(selectedTransactionType)⭕️")
+        print("⭕️date: \(selectedDate)⭕️")
+        print("⭕️amount: \(priceTextField)⭕️")
+        print("⭕️category: \(String(describing: selectedCategory))⭕️")
+        print("⭕️memo: \(memo)⭕️")
+        print("⭕️paymentMethod: \(String(describing: selectedPaymentMethod))⭕️")
     }
     
     private func addInitialCategories() {
