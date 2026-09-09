@@ -9,7 +9,7 @@ struct HomeView: View {
     @Query private var categories: [Category]
     
     @State private var selectedTransactionType: TransactionType = .income
-    @State private var selectedCategory: Category?
+    @State /*private*/ var selectedCategory: Category?
     @State private var selectedPaymentMethod: PaymentMethod?
     @State private var memo = ""
     @State private var selectedDate = Date()
@@ -139,7 +139,7 @@ struct HomeView: View {
                                 
                                 Spacer()
                                 
-                                Text(selectedCategory?.name ?? "未選択")
+                                Text(selectedCategory?.name ?? categories.last?.name ?? "-")
                                     .foregroundStyle(.black.opacity(0.7))
                             }
                             .contentShape(Rectangle())
@@ -257,7 +257,11 @@ struct HomeView: View {
             }
             .onAppear {
                 addInitialCategories()
-//                addInitialPaymentMethods()
+            }
+            .onChange(of: categories) {
+                if selectedCategory == nil {
+                    selectedCategory = categories.first(where: { $0.sortIndex == 0 })
+                }
             }
             .scrollContentBackground(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -315,11 +319,16 @@ struct HomeView: View {
     }
     
     private func saveTransaction() {
+        
+        guard let category = selectedCategory ?? categories.last else {
+            return
+        }
+        
         let transaction = Transaction(
             date: selectedDate,
             amount: Int(priceTextField) ?? 0,
             type: selectedTransactionType,
-            category: selectedCategory,
+            category: category,
             memo: memo,
             paymentMethod: selectedPaymentMethod
         )
@@ -335,7 +344,12 @@ struct HomeView: View {
     }
     
     private func addInitialCategories() {
-        guard categories.isEmpty else { return }
+        guard categories.isEmpty else {
+            if selectedCategory == nil {
+                selectedCategory = categories.first(where: { $0.sortIndex == 0 })
+            }
+            return
+        }
         
         let initialCategories = [
             Category(name: "家賃", imageName: "house", sortIndex: 0),
@@ -348,6 +362,7 @@ struct HomeView: View {
         for category in initialCategories {
             modelContext.insert(category)
         }
+        
         didAddInitialCategories = true
     }
     
@@ -372,5 +387,11 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView()
+    HomeView(
+        selectedCategory: Category(
+            name: "家賃",
+            imageName: "house",
+            sortIndex: 0
+        )
+    )
 }

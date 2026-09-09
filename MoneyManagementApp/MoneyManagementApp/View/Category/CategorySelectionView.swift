@@ -203,7 +203,13 @@ struct CategorySelectionView: View {
     )
     
     return CategorySelectionView(
-        selectedCategory: .constant(nil)
+        selectedCategory: .constant(
+            Category(
+                name: "家賃",
+                imageName: "house",
+                sortIndex: 0
+            )
+        )
     )
     .modelContainer(container)
 }

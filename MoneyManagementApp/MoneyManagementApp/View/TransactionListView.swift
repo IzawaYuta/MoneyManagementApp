@@ -112,7 +112,7 @@ struct TransactionListView: View {
                 
                 
                 //カテゴリー
-                Text(transaction.category?.name ?? "カテゴリーなし")
+                Text(transaction.category.name)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
@@ -123,10 +123,17 @@ struct TransactionListView: View {
 }
 
 #Preview {
+    makePreview()
+}
+
+@MainActor
+private func makePreview() -> some View {
     let container = try! ModelContainer(
-        for: Transaction.self,
-        Category.self,
-        PaymentMethod.self,
+        for: Schema([
+            Transaction.self,
+            Category.self,
+            PaymentMethod.self
+        ]),
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
     )
     
@@ -145,58 +152,10 @@ struct TransactionListView: View {
     context.insert(food)
     context.insert(cash)
     
-    // 今日
     context.insert(
         Transaction(
             date: Date(),
             amount: 1200,
-            type: .expense,
-            category: food,
-            memo: "",
-            paymentMethod: cash
-        )
-    )
-    
-    context.insert(
-        Transaction(
-            date: Date(),
-            amount: 300000,
-            type: .income,
-            category: nil,
-            memo: "給料",
-            paymentMethod: nil
-        )
-    )
-    
-    // 昨日
-    let yesterday = Calendar.current.date(
-        byAdding: .day,
-        value: -1,
-        to: Date()
-    )!
-    
-    context.insert(
-        Transaction(
-            date: yesterday,
-            amount: 2500,
-            type: .expense,
-            category: food,
-            memo: "夕食",
-            paymentMethod: cash
-        )
-    )
-    
-    // 2日前
-    let twoDaysAgo = Calendar.current.date(
-        byAdding: .day,
-        value: -2,
-        to: Date()
-    )!
-    
-    context.insert(
-        Transaction(
-            date: twoDaysAgo,
-            amount: 5000,
             type: .expense,
             category: food,
             memo: "",

@@ -113,7 +113,7 @@ final class Transaction {
     var date: Date
     var amount: Int
     var type: TransactionType
-    var category: Category?
+    var category: Category
     var memo: String?
     var paymentMethod: PaymentMethod?
     var sortIndex: Int = 0
@@ -122,7 +122,7 @@ final class Transaction {
         date: Date = Date(),
         amount: Int = 0,
         type: TransactionType = .expense,
-        category: Category? = nil,
+        category: Category,
         memo: String? = nil,
         paymentMethod: PaymentMethod? = nil,
         sortIndex: Int = 0
