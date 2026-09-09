@@ -113,6 +113,15 @@ struct CategorySelectionView: View {
                 Color(uiColor: .systemGray6)
                     .opacity(0.5)
             )
+            .onAppear {
+                print("===== Category一覧 =====")
+                for category in categories {
+                    print(
+                        "id: \(category.id), name: \(category.name), imageName: \(category.imageName), sortIndex: \(category.sortIndex)"
+                    )
+                }
+                print("========================")
+            }
             .navigationTitle("カテゴリー")
             .navigationBarTitleDisplayMode(.inline)
             .background(Color(uiColor: .systemGray6).opacity(0.5))

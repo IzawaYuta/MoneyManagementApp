@@ -257,18 +257,67 @@ struct HomeView: View {
             }
             .onAppear {
                 addInitialCategories()
-                print("===== Category一覧 =====")
-                for category in categories {
-                    print(
-                        "id: \(category.id), name: \(category.name), imageName: \(category.imageName), sortIndex: \(category.sortIndex)"
-                    )
-                }
-                print("========================")
             }
+//            .onChange(of: categories) {
+//                print("===== 全Category =====")
+//                for category in categories {
+//                    print("\(category.name) : sortIndex = \(category.sortIndex)")
+//                }
+//                print("====================")
+//                
+//                let sortedCategories = categories.sorted {
+//                    $0.sortIndex < $1.sortIndex
+//                }
+//                
+//                let sortZeroCategory = sortedCategories.first
+//                
+//                print("【onChange開始】")
+//                print("sortIndex 0: \(sortZeroCategory?.name ?? "見つからない")")
+//                
+//                if selectedCategory == nil {
+//                    if let category = sortZeroCategory {
+//                        selectedCategory = category
+//                        print("カテゴリー選択成功: \(category.name)")
+//                    } else {
+//                        print("カテゴリー選択失敗: sortIndex 0 が見つからない")
+//                    }
+//                } else {
+//                    print("カテゴリーは既に選択済み: \(selectedCategory?.name ?? "不明")")
+//                }
+//                
+//                print("【onChange終了】")
+//            }
             .onChange(of: categories) {
-                if selectedCategory == nil {
-                    selectedCategory = categories.first(where: { $0.sortIndex == 0 })
+                
+                print("===== 全Category =====")
+                
+                for category in categories {
+                    print("\(category.name) : sortIndex = \(category.sortIndex)")
                 }
+                
+                print("====================")
+                
+                let sortOneCategory = categories.first {
+                    $0.sortIndex == 1
+                }
+                
+                print("【onChange開始】")
+                print("sortIndex 1: \(sortOneCategory?.name ?? "見つからない")")
+                
+                if selectedCategory == nil {
+                    
+                    if let category = sortOneCategory {
+                        selectedCategory = category
+                        print("カテゴリー選択成功: \(category.name)")
+                    } else {
+                        print("カテゴリー選択失敗: sortIndex 1 が見つからない")
+                    }
+                    
+                } else {
+                    print("カテゴリーは既に選択済み: \(selectedCategory?.name ?? "不明")")
+                }
+                
+                print("【onChange終了】")
             }
             .scrollContentBackground(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -369,6 +418,7 @@ struct HomeView: View {
         
         for category in initialCategories {
             modelContext.insert(category)
+            print("追加: \(category.name), sortIndex: \(category.sortIndex)")
         }
         
         didAddInitialCategories = true
