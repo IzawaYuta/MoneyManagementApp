@@ -122,47 +122,47 @@ struct TransactionListView: View {
     }
 }
 
-#Preview {
-    makePreview()
-}
-
-@MainActor
-private func makePreview() -> some View {
-    let container = try! ModelContainer(
-        for: Schema([
-            Transaction.self,
-            Category.self,
-            PaymentMethod.self
-        ]),
-        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-    )
-    
-    let context = container.mainContext
-    
-    let food = Category(
-        name: "食費",
-        imageName: "fork.knife"
-    )
-    
-    let cash = PaymentMethod(
-        name: "現金",
-        type: .cash
-    )
-    
-    context.insert(food)
-    context.insert(cash)
-    
-    context.insert(
-        Transaction(
-            date: Date(),
-            amount: 1200,
-            type: .expense,
-            category: food,
-            memo: "",
-            paymentMethod: cash
-        )
-    )
-    
-    return TransactionListView()
-        .modelContainer(container)
-}
+//#Preview {
+//    makePreview()
+//}
+//
+//@MainActor
+//private func makePreview() -> some View {
+//    let container = try! ModelContainer(
+//        for: Schema([
+//            Transaction.self,
+//            Category.self,
+//            PaymentMethod.self
+//        ]),
+//        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+//    )
+//    
+//    let context = container.mainContext
+//    
+//    let food = Category(
+//        name: "食費",
+//        imageName: "fork.knife"
+//    )
+//    
+//    let cash = PaymentMethod(
+//        name: "現金",
+//        type: .cash
+//    )
+//    
+//    context.insert(food)
+//    context.insert(cash)
+//    
+//    context.insert(
+//        Transaction(
+//            date: Date(),
+//            amount: 1200,
+//            type: .expense,
+//            category: food,
+//            memo: "",
+//            paymentMethod: cash
+//        )
+//    )
+//    
+//    return TransactionListView()
+//        .modelContainer(container)
+//}

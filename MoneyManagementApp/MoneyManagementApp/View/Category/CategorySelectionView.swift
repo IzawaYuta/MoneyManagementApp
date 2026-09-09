@@ -16,71 +16,98 @@ struct CategorySelectionView: View {
     private var categories: [Category]
     
     @Binding var selectedCategory: Category?
-        
+    
+    @State private var showNoCategoryAlert = false
+    
     var body: some View {
         NavigationStack {
-            ScrollView {
-                LazyVGrid(
-                    columns: [
-                        GridItem(.flexible()),
-                        GridItem(.flexible()),
-                        GridItem(.flexible())
-                    ],
-                    spacing: 12
-                ) {
-                    ForEach(categories, id: \.self) { category in
-                        Button {
-                            if isDeleteMode {
-                                if selectedDeleteCategories.contains(category) {
-                                    selectedDeleteCategories.remove(category)
-                                } else {
-                                    selectedDeleteCategories.insert(category)
+            Group {
+                if categories.isEmpty {
+                    VStack(spacing: 12) {
+                        Spacer()
+                        Image(systemName: "tray")
+                            .font(.system(size: 32))
+                            .foregroundStyle(.gray)
+                        
+                        Text("カテゴリーがありません")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.black)
+                        
+                        Text("右上のメニューから\nカテゴリーを追加してください")
+                            .font(.system(size: 13))
+                            .foregroundStyle(.gray)
+                            .multilineTextAlignment(.center)
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    
+                } else {
+                    
+                    ScrollView {
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.flexible()),
+                                GridItem(.flexible()),
+                                GridItem(.flexible())
+                            ],
+                            spacing: 12
+                        ) {
+                            ForEach(categories, id: \.self) { category in
+                                Button {
+                                    if isDeleteMode {
+                                        if selectedDeleteCategories.contains(category) {
+                                            selectedDeleteCategories.remove(category)
+                                        } else {
+                                            selectedDeleteCategories.insert(category)
+                                        }
+                                    } else {
+                                        selectedCategory = category
+                                        dismiss()
+                                    }
+                                } label: {
+                                    VStack(spacing: 10) {
+                                        Image(systemName: category.imageName)
+                                            .font(.system(size: 24))
+                                            .foregroundStyle(
+                                                isDeleteMode
+                                                ? (selectedDeleteCategories.contains(category)
+                                                   ? Color.black : Color.gray)
+                                                : Color.black
+                                            )
+                                        
+                                        Text(category.name)
+                                            .font(.system(size: 14))
+                                            .foregroundStyle(
+                                                isDeleteMode
+                                                ? (selectedDeleteCategories.contains(category)
+                                                   ? Color.black : Color.gray)
+                                                : Color.black
+                                            )
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 100)
+                                    .background(
+                                        isDeleteMode
+                                        ? (selectedDeleteCategories.contains(category)
+                                           ? Color.red.opacity(0.05)
+                                           : Color.white)
+                                        : Color.white
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(
+                                                isDeleteMode ? (selectedDeleteCategories.contains(category) ? Color.red : Color.gray) : Color.black, lineWidth: 1.5
+                                            )
+                                    )
                                 }
-                            } else {
-                                selectedCategory = category
-                                dismiss()
+                                .buttonStyle(.plain)
                             }
-                        } label: {
-                            VStack(spacing: 10) {
-                                Image(systemName: category.imageName)
-                                    .font(.system(size: 24))
-                                    .foregroundStyle(
-                                        isDeleteMode
-                                        ? (selectedDeleteCategories.contains(category)
-                                           ? Color.black : Color.gray)
-                                        : Color.black
-                                    )
-                                
-                                Text(category.name)
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(
-                                        isDeleteMode
-                                        ? (selectedDeleteCategories.contains(category)
-                                           ? Color.black : Color.gray)
-                                        : Color.black
-                                    )
-                            }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 100)
-                            .background(
-                                isDeleteMode
-                                ? (selectedDeleteCategories.contains(category)
-                                   ? Color.red.opacity(0.05)
-                                   : Color.white)
-                                : Color.white
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(
-                                        isDeleteMode ? (selectedDeleteCategories.contains(category) ? Color.red : Color.gray) : Color.black, lineWidth: 1.5
-                                    )
-                            )
                         }
-                        .buttonStyle(.plain)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 16)
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
             }
             .background(
                 Color(uiColor: .systemGray6)
@@ -96,16 +123,6 @@ struct CategorySelectionView: View {
                             showDeleteCategoryAlert.toggle()
                         }
                         .disabled(selectedDeleteCategories.isEmpty)
-                        .alert("削除確認", isPresented: $showDeleteCategoryAlert) {
-                            Button("削除", role: .destructive) {
-                                deleteSelectedCategories()
-                            }
-                            
-                            Button("キャンセル", role: .cancel) {
-                            }
-                        } message: {
-                            Text("選択したカテゴリーを削除しますか？")
-                        }
                     } else {
                         Menu {
                             Button {
@@ -129,7 +146,11 @@ struct CategorySelectionView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     if !isDeleteMode {
                         Button("閉じる") {
-                            dismiss()
+                            if categories.isEmpty {
+                                showNoCategoryAlert = true
+                            } else {
+                                dismiss()
+                            }
                         }
                     } else {
                         Button("キャンセル") {
@@ -140,6 +161,25 @@ struct CategorySelectionView: View {
             }
             .sheet(isPresented: $isShowingAddCategory) {
                 AddCategoryView()
+            }
+            .alert("削除確認", isPresented: $showDeleteCategoryAlert) {
+                Button("削除", role: .destructive) {
+                    deleteSelectedCategories()
+                }
+                
+                Button("キャンセル", role: .cancel) {
+                }
+            } message: {
+                Text("選択したカテゴリーを削除しますか？")
+            }
+            .alert("カテゴリーが必要です", isPresented: $showNoCategoryAlert) {
+                Button {
+                    isShowingAddCategory = true
+                } label: {
+                    Text("追加")
+                }
+            } message: {
+                Text("カテゴリーを1つ以上追加してください。")
             }
         }
     }

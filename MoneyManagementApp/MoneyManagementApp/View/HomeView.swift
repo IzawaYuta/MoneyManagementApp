@@ -139,7 +139,7 @@ struct HomeView: View {
                                 
                                 Spacer()
                                 
-                                Text(selectedCategory?.name ?? categories.last?.name ?? "-")
+                                Text(selectedCategory?.name ?? categories.first?.name ?? "-")
                                     .foregroundStyle(.black.opacity(0.7))
                             }
                             .contentShape(Rectangle())
@@ -257,6 +257,13 @@ struct HomeView: View {
             }
             .onAppear {
                 addInitialCategories()
+                print("===== Category一覧 =====")
+                for category in categories {
+                    print(
+                        "id: \(category.id), name: \(category.name), imageName: \(category.imageName), sortIndex: \(category.sortIndex)"
+                    )
+                }
+                print("========================")
             }
             .onChange(of: categories) {
                 if selectedCategory == nil {
@@ -320,7 +327,7 @@ struct HomeView: View {
     
     private func saveTransaction() {
         
-        guard let category = selectedCategory ?? categories.last else {
+        guard let category = selectedCategory ?? categories.first else {
             return
         }
         
@@ -356,7 +363,8 @@ struct HomeView: View {
             Category(name: "食費", imageName: "fork.knife", sortIndex: 1),
             Category(name: "日用品", imageName: "basket", sortIndex: 2),
             Category(name: "交通費", imageName: "car", sortIndex: 3),
-            Category(name: "医療費", imageName: "cross.case", sortIndex: 4)
+            Category(name: "医療費", imageName: "cross.case", sortIndex: 4),
+            Category(name: "その他", imageName: "ellipsis.circle", sortIndex: 5)
         ]
         
         for category in initialCategories {
