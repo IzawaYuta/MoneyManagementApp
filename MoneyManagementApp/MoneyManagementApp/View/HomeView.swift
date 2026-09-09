@@ -149,6 +149,7 @@ struct HomeView: View {
                             CategorySelectionView(
                                 selectedCategory: $selectedCategory
                             )
+                            .interactiveDismissDisabled(true)
                         }
                         
                         // メモ
@@ -255,8 +256,24 @@ struct HomeView: View {
                 .padding(.horizontal)
                 .padding(.bottom)
             }
+//            .onAppear {
+//                addInitialCategories()
+//            }
             .onAppear {
                 addInitialCategories()
+                if let selectedCategory {
+                    // 選択中のカテゴリーがまだ存在するか確認
+                    if !categories.contains(where: { $0.id == selectedCategory.id }) {
+                        self.selectedCategory = categories
+                            .sorted { $0.sortIndex < $1.sortIndex }
+                            .last
+                    }
+                } else {
+                    // 選択されていなければデフォルトを選択
+                    self.selectedCategory = categories
+                        .sorted { $0.sortIndex < $1.sortIndex }
+                        .last
+                }
             }
 //            .onChange(of: categories) {
 //                print("===== 全Category =====")

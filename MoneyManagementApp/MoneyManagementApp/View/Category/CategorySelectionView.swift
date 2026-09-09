@@ -194,9 +194,63 @@ struct CategorySelectionView: View {
     }
     
     private func deleteSelectedCategories() {
+        // 選択中のカテゴリーが削除対象に含まれていたら、参照が消える前にリセットする
+        if let currentSelected = selectedCategory,
+           selectedDeleteCategories.contains(currentSelected) {
+            selectedCategory = nil
+        }
+        
+        // 📋 削除前の一覧
+        print("========== 📋 削除前のカテゴリー一覧 ==========")
+        for category in categories.sorted(by: { $0.sortIndex < $1.sortIndex }) {
+            print("📌 \(category.name) | sortIndex: \(category.sortIndex)")
+        }
+        
+        // 🗑️ 削除しようとしているもの
+        print("========== 🗑️ 削除対象 ==========")
         for category in selectedDeleteCategories {
+            print("""
+        🗑️ カテゴリー名: \(category.name)
+        🆔 ID: \(category.id)
+        🖼️ アイコン: \(category.imageName)
+        🔢 sortIndex: \(category.sortIndex)
+        """)
+        }
+        
+        // 💥 削除
+        for category in selectedDeleteCategories {
+            print("💥 削除実行: \(category.name)")
             modelContext.delete(category)
         }
+        
+        // 📋 削除後に残るカテゴリー
+        let remainingCategories = categories
+            .filter { !selectedDeleteCategories.contains($0) }
+            .sorted { $0.sortIndex < $1.sortIndex }
+        
+        // 🔢 sortIndexを詰め直す
+        for (index, category) in remainingCategories.enumerated() {
+            category.sortIndex = index
+        }
+        
+        // ✅ 削除したものの詳細
+        print("========== ✅ 削除したカテゴリー ==========")
+        for category in selectedDeleteCategories {
+            print("""
+        ✅ カテゴリー名: \(category.name)
+        🆔 ID: \(category.id)
+        🖼️ アイコン: \(category.imageName)
+        🔢 削除前sortIndex: \(category.sortIndex)
+        """)
+        }
+        
+        // 📋 削除後の一覧
+        print("========== 📋 削除後のカテゴリー一覧 ==========")
+        for category in remainingCategories {
+            print("📌 \(category.name) | sortIndex: \(category.sortIndex)")
+        }
+        
+        print("==============================================")
         
         selectedDeleteCategories.removeAll()
         isDeleteMode = false
