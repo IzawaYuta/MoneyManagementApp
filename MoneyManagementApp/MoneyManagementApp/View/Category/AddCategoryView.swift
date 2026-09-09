@@ -97,7 +97,7 @@ struct AddCategoryView: View {
         NavigationStack {
             Form {
                 Section("カテゴリー名") {
-                    TextField("カテゴリー名を入力", text: $categoryName)
+                    TextField("食費、日用品、教育費...", text: $categoryName)
                 }
                 
                 Section("アイコン") {
@@ -142,24 +142,59 @@ struct AddCategoryView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("追加") {
-                        let iconName = selectedIcon ?? "ellipsis.circle"
-                        
-                        let newSortIndex = (categories.map(\.sortIndex).max() ?? -1) + 1
-                        
-                        let newCategory = Category(
-                            name: categoryName,
-                            imageName: iconName,
-                            sortIndex: newSortIndex
-                        )
-                        
-                        modelContext.insert(newCategory)
-                        
-                        dismiss()
+                        addCategory()
                     }
                     .disabled(categoryName.isEmpty)
                 }
             }
         }
+    }
+    
+    private func addCategory() {
+        
+        // 📋 追加前の一覧
+        print("========== 📋 追加前のカテゴリー一覧 ==========")
+        
+        for category in categories.sorted(by: { $0.sortIndex < $1.sortIndex }) {
+            print("📌 \(category.name) | sortIndex: \(category.sortIndex)")
+        }
+        
+        // ➕ 追加するカテゴリーの情報
+        let iconName = selectedIcon ?? "ellipsis.circle"
+        let newSortIndex = (categories.map(\.sortIndex).max() ?? -1) + 1
+        
+        print("========== ➕ 追加するカテゴリー ==========")
+        print("📌 カテゴリー名: \(categoryName)")
+        print("🖼️ アイコン: \(iconName)")
+        print("🔢 sortIndex: \(newSortIndex)")
+        
+        // ➕ Categoryを作成
+        let newCategory = Category(
+            name: categoryName,
+            imageName: iconName,
+            sortIndex: newSortIndex
+        )
+        
+        // 💾 SwiftDataに追加
+        modelContext.insert(newCategory)
+        
+        // 📋 追加後の一覧
+        print("========== 📋 追加後のカテゴリー一覧 ==========")
+        
+        let updatedCategories = categories
+            .sorted { $0.sortIndex < $1.sortIndex }
+        
+        for category in updatedCategories {
+            print("""
+        📌 カテゴリー名: \(category.name)
+        🖼️ アイコン: \(category.imageName)
+        🔢 sortIndex: \(category.sortIndex)
+        """)
+        }
+        
+        print("==============================================")
+        
+        dismiss()
     }
 }
 
