@@ -75,13 +75,13 @@ final class PaymentMethod {
     var id: UUID = UUID()
     var name: String
     var type: PaymentType
-    var memo: String
+    var memo: String?
     var sortIndex: Int = 0
     
     init(
         name: String,
         type: PaymentType,
-        memo: String = "",
+        memo: String? = nil,
         sortIndex: Int = 0
     ) {
         self.name = name
@@ -114,16 +114,18 @@ final class Transaction {
     var amount: Int
     var type: TransactionType
     var category: Category?
-    var memo: String
+    var memo: String?
     var paymentMethod: PaymentMethod?
+    var sortIndex: Int = 0
     
     init(
         date: Date = Date(),
         amount: Int = 0,
         type: TransactionType = .expense,
         category: Category? = nil,
-        memo: String = "",
-        paymentMethod: PaymentMethod? = nil
+        memo: String? = nil,
+        paymentMethod: PaymentMethod? = nil,
+        sortIndex: Int = 0
     ) {
         self.date = date
         self.amount = amount
@@ -131,5 +133,6 @@ final class Transaction {
         self.category = category
         self.memo = memo
         self.paymentMethod = paymentMethod
+        self.sortIndex = sortIndex
     }
 }

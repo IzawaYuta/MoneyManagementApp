@@ -174,14 +174,14 @@ struct HomeView: View {
                                 
                                 Spacer()
                                 
-                                Text(selectedPaymentMethod?.name ?? "-")
+                                Text(selectedPaymentMethod?.name ?? "未選択")
                                     .foregroundStyle(.black.opacity(0.7))
                             }
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .sheet(isPresented: $showPaymentMethodView) {
-                            PaymentMethodView()
+                            PaymentMethodView(selectedPaymentMethod: $selectedPaymentMethod)
                         }
                     }
                     
@@ -213,7 +213,7 @@ struct HomeView: View {
                 
                 HStack(spacing: 12) {
                     Button {
-                        // 確定処理
+                        saveTransaction()
                     } label: {
                         Text("確定")
                             .font(.system(size: 16, weight: .semibold))
@@ -326,12 +326,12 @@ struct HomeView: View {
         
         modelContext.insert(transaction)
         print("🔥新規保存情報🔥")
-        print("⭕️type: \(selectedTransactionType)⭕️")
-        print("⭕️date: \(selectedDate)⭕️")
-        print("⭕️amount: \(priceTextField)⭕️")
-        print("⭕️category: \(String(describing: selectedCategory))⭕️")
-        print("⭕️memo: \(memo)⭕️")
-        print("⭕️paymentMethod: \(String(describing: selectedPaymentMethod))⭕️")
+        print("✅type: \(selectedTransactionType)")
+        print("✅date: \(selectedDate)")
+        print("✅amount: \(priceTextField)")
+        print("✅category: \(String(describing: selectedCategory))")
+        print("✅memo: \(memo)")
+        print("✅paymentMethod: \(String(describing: selectedPaymentMethod))")
     }
     
     private func addInitialCategories() {

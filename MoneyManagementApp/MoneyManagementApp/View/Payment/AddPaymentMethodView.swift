@@ -5,6 +5,7 @@ import SwiftData
 struct AddPaymentMethodView: View {
     
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     
 //    @Query(sort: \PaymentType.sortIndex)
 //    private var paymentTypes: [PaymentType]
@@ -55,21 +56,20 @@ struct AddPaymentMethodView: View {
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    HStack {
                         Button("追加") {
                             let paymentMethod = PaymentMethod(
                                 name: name,
                                 type: paymentType,
-                                memo: memo
+                                memo: memo.isEmpty ? nil : memo
                             )
                             
                             print(paymentMethod)
                             
+                            modelContext.insert(paymentMethod)
+                            
                             dismiss()
                         }
                         .disabled(name.isEmpty)
-                        
-                    }
                 }
             }
         }

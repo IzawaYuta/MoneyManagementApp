@@ -11,6 +11,8 @@ struct PaymentMethodView: View {
     
     @State private var showAddPaymentMethodView: Bool = false
     
+    @Binding var selectedPaymentMethod: PaymentMethod?
+    
     var body: some View {
         NavigationStack {
             Group {
@@ -21,7 +23,7 @@ struct PaymentMethodView: View {
                         ForEach(paymentMethods, id: \.id) { paymentMethod in
                             Section {
                                 Button {
-                                    // 選択処理
+                                    selectedPaymentMethod = paymentMethod
                                 } label: {
                                     VStack(alignment: .leading, spacing: 5) {
                                         HStack {
@@ -34,8 +36,8 @@ struct PaymentMethodView: View {
                                                 .foregroundColor(.gray)
                                                 .font(.subheadline)
                                         }
-                                        if !paymentMethod.memo.isEmpty {
-                                            Text(paymentMethod.memo)
+                                        if let memo = paymentMethod.memo, !memo.isEmpty {
+                                            Text(memo)
                                                 .foregroundColor(.gray)
                                                 .font(.subheadline)
                                         }
@@ -103,6 +105,8 @@ struct PaymentMethodView: View {
         )
     )
     
-    return PaymentMethodView()
-        .modelContainer(container)
+    return PaymentMethodView(
+        selectedPaymentMethod: .constant(nil)
+    )
+    .modelContainer(container)
 }
