@@ -30,33 +30,53 @@ struct TransactionListView: View {
     
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(groupedTransactions, id: \.date) { group in
+            Group {
+                if transactions.isEmpty {
+                    VStack(alignment: .center, spacing: 5) {
+                        Image(systemName: "list.bullet.rectangle.portrait")
+                            .font(.system(size: 32))
+                            .foregroundStyle(.gray)
+                        
+                        Text("収支の履歴はありません")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.black)
+                    }
                     
-                    Section {
-                        ForEach(group.transactions) { transaction in
-                            transactionRow(transaction)
-                                .listRowSeparatorTint(.black.opacity(0.5))
-//                                .listRowSeparator(.visible, edges: .bottom)
-//                                .listRowInsets(
-//                                    EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
-//                                )
+                } else {
+                    List {
+                        ForEach(groupedTransactions, id: \.date) { group in
+                            
+                            Section {
+                                ForEach(group.transactions) { transaction in
+                                    transactionRow(transaction)
+                                        .listRowSeparatorTint(.black.opacity(0.5))
+                                    //                                .listRowSeparator(.visible, edges: .bottom)
+                                    //                                .listRowInsets(
+                                    //                                    EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
+                                    //                                )
+//                                        .alignmentGuide(.listRowSeparatorLeading) {
+//                                            $0[.leading]
+//                                        }
+                                }
+                            } header: {
+                                Text(
+                                    group.date.formatted(
+                                        .dateTime
+                                            .month()
+                                            .day()
+                                            .weekday(.wide)
+                                            .locale(Locale(identifier: "ja_JP"))
+                                    )
+                                )
+                                .font(.subheadline)
+                                .foregroundStyle(.primary)
+                            }
                         }
-                    } header: {
-                        Text(
-                            group.date.formatted(
-                                .dateTime
-                                    .month()
-                                    .day()
-                                    .weekday(.wide)
-                                    .locale(Locale(identifier: "ja_JP"))
-                            )
-                        )
-                        .font(.subheadline)
-                        .foregroundStyle(.primary)
                     }
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color(uiColor: .systemGray6).opacity(0.5))
             .navigationTitle("履歴")
             .navigationBarTitleDisplayMode(.inline)
         }
@@ -82,9 +102,11 @@ struct TransactionListView: View {
             VStack(alignment: .leading, spacing: 4) {
                 
                 HStack {
-                    //メモ
-                    Text(transaction.memo?.isEmpty == false ? transaction.memo! : "-")
+                    //カテゴリー
+                    Text(transaction.category.name)
                         .font(.body)
+                        .foregroundStyle(.secondary)
+
                     
                     Spacer()
                     
@@ -110,59 +132,102 @@ struct TransactionListView: View {
                         .foregroundStyle(.secondary)
                 }
                 
-                
-                //カテゴリー
-                Text(transaction.category.name)
+                //メモ
+                Text(transaction.memo?.isEmpty == false ? transaction.memo! : "-")
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
-
+                
             }
         }
         .padding(.vertical, 5)
     }
 }
 
-//#Preview {
-//    makePreview()
-//}
-//
-//@MainActor
-//private func makePreview() -> some View {
-//    let container = try! ModelContainer(
-//        for: Schema([
-//            Transaction.self,
-//            Category.self,
-//            PaymentMethod.self
-//        ]),
-//        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-//    )
-//    
-//    let context = container.mainContext
-//    
-//    let food = Category(
-//        name: "食費",
-//        imageName: "fork.knife"
-//    )
-//    
-//    let cash = PaymentMethod(
-//        name: "現金",
-//        type: .cash
-//    )
-//    
-//    context.insert(food)
-//    context.insert(cash)
-//    
-//    context.insert(
-//        Transaction(
-//            date: Date(),
-//            amount: 1200,
-//            type: .expense,
-//            category: food,
-//            memo: "",
-//            paymentMethod: cash
-//        )
-//    )
-//    
-//    return TransactionListView()
-//        .modelContainer(container)
-//}
+#Preview("空の場合") {
+    let container = try! ModelContainer(
+        for: Category.self,
+        PaymentMethod.self,
+        Transaction.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    
+    return TransactionListView()
+        .modelContainer(container)
+}
+
+#Preview("ダミー") {
+    let container = try! ModelContainer(
+        for: Category.self,
+        PaymentMethod.self,
+        Transaction.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    
+    let context = container.mainContext
+    
+    let food = Category(
+        name: "食費",
+        imageName: "fork.knife",
+        sortIndex: 0
+    )
+    
+    let transportation = Category(
+        name: "交通費",
+        imageName: "car",
+        sortIndex: 1
+    )
+    
+    let cash = PaymentMethod(
+        name: "現金",
+        type: .cash,
+        memo: nil,
+        sortIndex: 0
+    )
+    
+    let payPay = PaymentMethod(
+        name: "PayPay",
+        type: .qrCode,
+        memo: "普段使い",
+        sortIndex: 1
+    )
+    
+    context.insert(food)
+    context.insert(transportation)
+    context.insert(cash)
+    context.insert(payPay)
+    
+    context.insert(
+        Transaction(
+            date: Date(),
+            amount: 1200,
+            type: .expense,
+            category: food,
+            memo: "昼ごはん",
+            paymentMethod: cash
+        )
+    )
+    
+    context.insert(
+        Transaction(
+            date: Date(),
+            amount: 3000,
+            type: .expense,
+            category: transportation,
+            memo: nil,
+            paymentMethod: payPay
+        )
+    )
+    
+    context.insert(
+        Transaction(
+            date: Date().addingTimeInterval(-86400),
+            amount: 250000,
+            type: .income,
+            category: food,
+            memo: "給料",
+            paymentMethod: nil
+        )
+    )
+    
+    return TransactionListView()
+        .modelContainer(container)
+}
