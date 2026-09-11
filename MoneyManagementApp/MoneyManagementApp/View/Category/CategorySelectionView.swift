@@ -181,14 +181,14 @@ struct CategorySelectionView: View {
             } message: {
                 Text("選択したカテゴリーを削除しますか？")
             }
-            .alert("カテゴリーが必要です", isPresented: $showNoCategoryAlert) {
+            .alert("カテゴリーが1つ以上必要です", isPresented: $showNoCategoryAlert) {
                 Button {
                     isShowingAddCategory = true
                 } label: {
-                    Text("追加")
+                    Text("追加する")
                 }
             } message: {
-                Text("カテゴリーを1つ以上追加してください。")
+                Text("追加画面が表示されます。")
             }
         }
     }

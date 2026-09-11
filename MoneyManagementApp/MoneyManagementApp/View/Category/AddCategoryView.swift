@@ -14,6 +14,12 @@ struct AddCategoryView: View {
     @State private var selectedIcon: String? = nil
     @State private var searchText = ""
     
+    // オンボーディング用: 追加後にdismiss()の代わりにこちらを呼ぶ
+    var onSave: (() -> Void)? = nil
+    // オンボーディング用: キャンセルボタンを非表示にする
+    var hideCancelButton: Bool = false
+
+    
     // 家計簿カテゴリー向けによく使うSF Symbolを厳選
     // (CategoryIconPickerView と同じ一覧を共有)
     private let allIcons: [(symbol: String, keywords: [String])] = [

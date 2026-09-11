@@ -16,6 +16,12 @@ struct AddPaymentMethodView: View {
 //    @State private var shoeAddPaymentTypeAlert: Bool = false
 //    @State private var newPaymentTypeTextField: String = ""
     
+    // オンボーディング用: 追加後にdismiss()の代わりにこちらを呼ぶ
+    var onSave: (() -> Void)? = nil
+    // オンボーディング用: キャンセルボタンを非表示にする
+    var hideCancelButton: Bool = false
+
+    
     var body: some View {
         NavigationStack {
             Form {

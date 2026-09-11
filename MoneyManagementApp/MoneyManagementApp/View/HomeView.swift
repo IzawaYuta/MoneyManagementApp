@@ -175,7 +175,7 @@ struct HomeView: View {
                                 
                                 Spacer()
                                 
-                                Text(selectedPaymentMethod?.name ?? "未選択")
+                                Text(selectedPaymentMethod?.name ?? "-")
                                     .foregroundStyle(.black.opacity(0.7))
                             }
                             .contentShape(Rectangle())
