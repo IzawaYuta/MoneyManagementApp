@@ -6,6 +6,7 @@ struct OnboardingView: View {
     private enum Step {
         case category
         case paymentMethod
+        case doneCheckAnimation
     }
     
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
@@ -25,12 +26,22 @@ struct OnboardingView: View {
                 
             case .paymentMethod:
                 OnboardingPaymentMethodView(onFinish: {
-                    hasCompletedOnboarding = true
+                    step = .doneCheckAnimation
                 })
                 .transition(.asymmetric(
                     insertion: .move(edge: .trailing),
                     removal: .move(edge: .leading)
                 ))
+                
+            case .doneCheckAnimation:
+                ZStack {
+                    Color.white.ignoresSafeArea()   // ← 背景真っ白
+                    
+                    AnimatedCheckmarkView(onComplete: {
+                        hasCompletedOnboarding = true   // ← アニメーション完了後にHomeViewへ
+                    })
+                }
+                .transition(.opacity)
             }
         }
         .animation(.easeInOut(duration: 0.3), value: step)

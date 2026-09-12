@@ -47,7 +47,7 @@ struct OnboardingPaymentMethodView: View {
             
             // MARK: - 説明
             VStack(spacing: 16) {
-                Image(systemName: "creditcard")
+                Image(systemName: "wallet.bifold")
                     .font(.system(size: 40))
                     .foregroundStyle(.black)
                 //                    .frame(width: 52, height: 52)
