@@ -35,10 +35,10 @@ struct OnboardingView: View {
                 
             case .doneCheckAnimation:
                 ZStack {
-                    Color.white.ignoresSafeArea()   // ← 背景真っ白
+                    Color.white.ignoresSafeArea()
                     
-                    AnimatedCheckmarkView(onComplete: {
-                        hasCompletedOnboarding = true   // ← アニメーション完了後にHomeViewへ
+                    OnboardingDoneAnimationView(onFinished: {
+                        hasCompletedOnboarding = true
                     })
                 }
                 .transition(.opacity)
