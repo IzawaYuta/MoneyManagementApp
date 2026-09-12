@@ -11,8 +11,6 @@ import SwiftData
 @main
 struct MoneyManagementAppApp: App {
     
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
-    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Transaction.self,
@@ -30,11 +28,7 @@ struct MoneyManagementAppApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if hasCompletedOnboarding {
-                HomeView()
-            } else {
-//                OnboardingView()
-            }
+            RootView()
         }
         .modelContainer(sharedModelContainer)
     }
