@@ -70,11 +70,11 @@ struct OnboardingPaymentMethodView: View {
             
             // MARK: - 入力
             VStack(alignment: .leading, spacing: 6) {
-                Text("支払い方法名")
+                Text("支払い方法")
                     .font(.system(size: 12))
                     .foregroundStyle(.gray)
                 
-                TextField("例: 楽天カード、PayPay...", text: $paymentMethodName)
+                TextField("例: 現金、クレジットカード...", text: $paymentMethodName)
                     .font(.system(size: 15))
                     .padding(.horizontal, 14)
                     .padding(.vertical, 12)

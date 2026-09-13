@@ -8,7 +8,7 @@ struct RootView: View {
     var body: some View {
         ZStack {
             if hasCompletedOnboarding {
-                HomeView()
+                MainTabView()
             } else {
                 OnboardingView()
                     .transition(.move(edge: .top))

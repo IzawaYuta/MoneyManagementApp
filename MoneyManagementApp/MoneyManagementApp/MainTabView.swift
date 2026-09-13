@@ -17,6 +17,16 @@ struct MainTabView: View {
                     Image(systemName: "list.bullet")
                 }
                 .tag(1)
+            OnboardingView()
+                .tabItem {
+                    Image(systemName: "list.bullet")
+                }
+                .tag(2)
+            OnboardingDoneAnimationTestView()
+                .tabItem {
+                    Image(systemName: "list.bullet")
+                }
+                .tag(3)
         }
     }
 }
