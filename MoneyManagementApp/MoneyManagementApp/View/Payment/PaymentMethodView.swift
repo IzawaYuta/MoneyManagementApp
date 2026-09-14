@@ -11,7 +11,7 @@ struct PaymentMethodView: View {
     
     @State private var showAddPaymentMethodView: Bool = false
     
-    @Binding var selectedPaymentMethod: PaymentMethod?
+    @Binding var selectedPaymentMethodID: UUID?
     
     var body: some View {
         NavigationStack {
@@ -23,7 +23,8 @@ struct PaymentMethodView: View {
                         ForEach(paymentMethods, id: \.id) { paymentMethod in
                             Section {
                                 Button {
-                                    selectedPaymentMethod = paymentMethod
+                                    selectedPaymentMethodID = paymentMethod.id
+                                    dismiss()
                                 } label: {
                                     VStack(alignment: .leading, spacing: 5) {
                                         HStack {
@@ -106,7 +107,7 @@ struct PaymentMethodView: View {
     )
     
     return PaymentMethodView(
-        selectedPaymentMethod: .constant(nil)
+        selectedPaymentMethodID: .constant(nil)
     )
     .modelContainer(container)
 }

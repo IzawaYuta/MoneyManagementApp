@@ -12,7 +12,7 @@ struct HomeView: View {
     
     @State private var selectedTransactionType: TransactionType = .expense
     @State var selectedCategoryID: UUID?
-    @State private var selectedPaymentMethod: PaymentMethod?
+    @State private var selectedPaymentMethodID: UUID?
     @State private var memo = ""
     @State private var selectedDate = Date()
     @State private var isShowingTemplates = false
@@ -141,7 +141,7 @@ struct HomeView: View {
                                 
                                 Spacer()
                                 
-                                Text(resolvedCategory()?.name ?? "-")
+                                Text(selectedCategory?.name ?? "-")
                                     .foregroundStyle(.black.opacity(0.7))
                             }
                             .contentShape(Rectangle())
@@ -184,7 +184,7 @@ struct HomeView: View {
                         }
                         .buttonStyle(.plain)
                         .sheet(isPresented: $showPaymentMethodView) {
-                            PaymentMethodView(selectedPaymentMethod: $selectedPaymentMethod)
+                            PaymentMethodView(selectedPaymentMethodID: $selectedPaymentMethodID)
                         }
                     }
                     
@@ -259,36 +259,14 @@ struct HomeView: View {
                 .padding(.bottom)
             }
             .onAppear {
-                //                addInitialCategories()
-                //                if let selectedCategory {
-                //                    // 選択中のカテゴリーがまだ存在するか確認
-                //                    if !categories.contains(where: { $0.id == selectedCategory.id }) {
-                //                        self.selectedCategory = categories
-                //                            .sorted { $0.sortIndex < $1.sortIndex }
-                //                            .first
-                //                    }
-                //                } else {
-                //                    // 選択されていなければデフォルトを選択
-                //                    self.selectedCategory = categories
-                //                        .sorted { $0.sortIndex < $1.sortIndex }
-                //                        .first
-                //                }
-                
-                if let selectedPaymentMethod {
-                    // 選択中の支払いがまだ存在するか確認
-                    if !paymentMethod.contains(where: { $0.id == selectedPaymentMethod.id }) { //idで存在確認
-                        //存在しなければsortの先頭を選択
-                        self.selectedPaymentMethod = paymentMethod
-                            .sorted { $0.sortIndex < $1.sortIndex }
-                            .first
-                    }
-                } else {
-                    // 選択されていなければデフォルトを選択
-                    self.selectedPaymentMethod = paymentMethod
-                        .sorted { $0.sortIndex < $1.sortIndex }
-                        .first
-                }
-                
+                syncSelectedCategoryIfNeeded()
+                syncSelectedPaymentMethodIfNeeded()
+            }
+            .onChange(of: categories) {
+                syncSelectedCategoryIfNeeded()
+            }
+            .onChange(of: paymentMethod) {
+                syncSelectedPaymentMethodIfNeeded()
             }
             .scrollContentBackground(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -347,7 +325,7 @@ struct HomeView: View {
     
     private func saveTransaction() {
         
-        guard let category = resolvedCategory() else {
+        guard let category = selectedCategory else {
             return
         }
         
@@ -367,7 +345,7 @@ struct HomeView: View {
         print("✅amount: \(priceTextField)")
         print("✅category: \(String(describing: selectedCategoryID))")
         print("✅memo: \(memo)")
-        print("✅paymentMethod: \(String(describing: selectedPaymentMethod))")
+        print("✅paymentMethod: \(String(describing: selectedPaymentMethodID))")
     }
     
     //    private func addInitialCategories() {
@@ -395,16 +373,25 @@ struct HomeView: View {
     //        didAddInitialCategories = true
     //    }
     
-    private func resolvedCategory() -> Category? {
-        if let selectedCategoryID,
-           let match = categories.first(where: { $0.id == selectedCategoryID }) {
-            return match
+    private var selectedCategory: Category? {
+        categories.first(where: { $0.id == selectedCategoryID })
+    }
+    
+    private var selectedPaymentMethod: PaymentMethod? {
+        paymentMethod.first(where: { $0.id == selectedPaymentMethodID })
+    }
+    private func syncSelectedCategoryIfNeeded() {
+        let isValid = categories.contains { $0.id == selectedCategoryID }
+        if !isValid {
+            selectedCategoryID = categories.sorted { $0.sortIndex < $1.sortIndex }.first?.id
         }
-        
-        // selectedCategoryIDがnil、または該当するCategoryが見つからない場合
-        let fallback = categories.sorted { $0.sortIndex < $1.sortIndex }.first
-        selectedCategoryID = fallback?.id   // ← ここで実際にselectedCategoryIDへ代入
-        return fallback
+    }
+    
+    private func syncSelectedPaymentMethodIfNeeded() {
+        let isValid = paymentMethod.contains { $0.id == selectedPaymentMethodID }
+        if !isValid {
+            selectedPaymentMethodID = paymentMethod.sorted { $0.sortIndex < $1.sortIndex }.first?.id
+        }
     }
 }
 
