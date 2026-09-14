@@ -9,13 +9,14 @@ struct CategorySelectionView: View {
     @State private var isShowingAddCategory = false
     @State private var isDeleteMode = false
     @State private var showDeleteCategoryAlert: Bool = false
-    @State private var selectedDeleteCategories: Set<Category> = []
+    @State private var selectedDeleteCategories: Set<UUID> = []
     @Environment(\.dismiss) private var dismiss
     
     @Query(sort: \Category.sortIndex)
     private var categories: [Category]
     
-    @Binding var selectedCategory: Category?
+    // CategorySelectionView側
+    @Binding var selectedCategoryID: UUID?
     
     @State private var showNoCategoryAlert = false
     
@@ -56,13 +57,13 @@ struct CategorySelectionView: View {
                             ForEach(categories, id: \.self) { category in
                                 Button {
                                     if isDeleteMode {
-                                        if selectedDeleteCategories.contains(category) {
-                                            selectedDeleteCategories.remove(category)
+                                        if selectedDeleteCategories.contains(category.id) {
+                                            selectedDeleteCategories.remove(category.id)
                                         } else {
-                                            selectedDeleteCategories.insert(category)
+                                            selectedDeleteCategories.insert(category.id)
                                         }
                                     } else {
-                                        selectedCategory = category
+                                        selectedCategoryID = category.id
                                         dismiss()
                                     }
                                 } label: {
@@ -71,7 +72,7 @@ struct CategorySelectionView: View {
                                             .font(.system(size: 24))
                                             .foregroundStyle(
                                                 isDeleteMode
-                                                ? (selectedDeleteCategories.contains(category)
+                                                ? (selectedDeleteCategories.contains(category.id)
                                                    ? Color.black : Color.gray)
                                                 : Color.black
                                             )
@@ -80,7 +81,7 @@ struct CategorySelectionView: View {
                                             .font(.system(size: 14))
                                             .foregroundStyle(
                                                 isDeleteMode
-                                                ? (selectedDeleteCategories.contains(category)
+                                                ? (selectedDeleteCategories.contains(category.id)
                                                    ? Color.black : Color.gray)
                                                 : Color.black
                                             )
@@ -89,7 +90,7 @@ struct CategorySelectionView: View {
                                     .frame(height: 100)
                                     .background(
                                         isDeleteMode
-                                        ? (selectedDeleteCategories.contains(category)
+                                        ? (selectedDeleteCategories.contains(category.id)
                                            ? Color.red.opacity(0.05)
                                            : Color.white)
                                         : Color.white
@@ -97,7 +98,7 @@ struct CategorySelectionView: View {
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 8)
                                             .stroke(
-                                                isDeleteMode ? (selectedDeleteCategories.contains(category) ? Color.red : Color.gray) : Color.black, lineWidth: 1.5
+                                                isDeleteMode ? (selectedDeleteCategories.contains(category.id) ? Color.red : Color.gray) : Color.black, lineWidth: 1.5
                                             )
                                     )
                                 }
@@ -195,62 +196,28 @@ struct CategorySelectionView: View {
     
     private func deleteSelectedCategories() {
         // 選択中のカテゴリーが削除対象に含まれていたら、参照が消える前にリセットする
-        if let currentSelected = selectedCategory,
-           selectedDeleteCategories.contains(currentSelected) {
-            selectedCategory = nil
+        if let currentSelectedID = selectedCategoryID,
+           selectedDeleteCategories.contains(currentSelectedID) {
+            selectedCategoryID = nil
         }
         
-        // 📋 削除前の一覧
-        print("========== 📋 削除前のカテゴリー一覧 ==========")
-        for category in categories.sorted(by: { $0.sortIndex < $1.sortIndex }) {
-            print("📌 \(category.name) | sortIndex: \(category.sortIndex)")
-        }
-        
-        // 🗑️ 削除しようとしているもの
-        print("========== 🗑️ 削除対象 ==========")
-        for category in selectedDeleteCategories {
-            print("""
-        🗑️ カテゴリー名: \(category.name)
-        🆔 ID: \(category.id)
-        🖼️ アイコン: \(category.imageName)
-        🔢 sortIndex: \(category.sortIndex)
-        """)
-        }
+        // IDの集合から、実際に削除するCategoryオブジェクトを取得
+        let categoriesToDelete = categories.filter { selectedDeleteCategories.contains($0.id) }
         
         // 💥 削除
-        for category in selectedDeleteCategories {
-            print("💥 削除実行: \(category.name)")
+        for category in categoriesToDelete {
             modelContext.delete(category)
         }
         
         // 📋 削除後に残るカテゴリー
         let remainingCategories = categories
-            .filter { !selectedDeleteCategories.contains($0) }
+            .filter { !selectedDeleteCategories.contains($0.id) }
             .sorted { $0.sortIndex < $1.sortIndex }
         
         // 🔢 sortIndexを詰め直す
         for (index, category) in remainingCategories.enumerated() {
             category.sortIndex = index
         }
-        
-        // ✅ 削除したものの詳細
-        print("========== ✅ 削除したカテゴリー ==========")
-        for category in selectedDeleteCategories {
-            print("""
-        ✅ カテゴリー名: \(category.name)
-        🆔 ID: \(category.id)
-        🖼️ アイコン: \(category.imageName)
-        🔢 削除前sortIndex: \(category.sortIndex)
-        """)
-        }
-        
-        // 📋 削除後の一覧
-        print("========== 📋 削除後のカテゴリー一覧 ==========")
-        for category in remainingCategories {
-            print("📌 \(category.name) | sortIndex: \(category.sortIndex)")
-        }
-        
-        print("==============================================")
         
         selectedDeleteCategories.removeAll()
         isDeleteMode = false
@@ -306,13 +273,7 @@ struct CategorySelectionView: View {
     )
     
     return CategorySelectionView(
-        selectedCategory: .constant(
-            Category(
-                name: "家賃",
-                imageName: "house",
-                sortIndex: 0
-            )
-        )
+        selectedCategoryID: .constant(nil)
     )
     .modelContainer(container)
 }

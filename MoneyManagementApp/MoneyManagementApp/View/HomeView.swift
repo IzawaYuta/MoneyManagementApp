@@ -6,10 +6,12 @@ struct HomeView: View {
     
     @FocusState private var focusedField: Field?
     @Environment(\.modelContext) private var modelContext
+    
     @Query private var categories: [Category]
+    @Query private var paymentMethod: [PaymentMethod]
     
     @State private var selectedTransactionType: TransactionType = .expense
-    @State /*private*/ var selectedCategory: Category?
+    @State var selectedCategoryID: UUID?
     @State private var selectedPaymentMethod: PaymentMethod?
     @State private var memo = ""
     @State private var selectedDate = Date()
@@ -139,7 +141,7 @@ struct HomeView: View {
                                 
                                 Spacer()
                                 
-                                Text(selectedCategory?.name ?? categories.first?.name ?? "-")
+                                Text(resolvedCategory()?.name ?? "-")
                                     .foregroundStyle(.black.opacity(0.7))
                             }
                             .contentShape(Rectangle())
@@ -147,7 +149,7 @@ struct HomeView: View {
                         .buttonStyle(.plain)
                         .sheet(isPresented: $showCategorySelectionView) {
                             CategorySelectionView(
-                                selectedCategory: $selectedCategory
+                                selectedCategoryID: $selectedCategoryID
                             )
                             .interactiveDismissDisabled(true)
                         }
@@ -170,7 +172,7 @@ struct HomeView: View {
                             showPaymentMethodView.toggle()
                         } label: {
                             HStack {
-                                Text("支払方法")
+                                Text("支払い方法")
                                     .foregroundStyle(.secondary)
                                 
                                 Spacer()
@@ -256,56 +258,37 @@ struct HomeView: View {
                 .padding(.horizontal)
                 .padding(.bottom)
             }
-            //            .onAppear {
-            //                addInitialCategories()
-            //            }
             .onAppear {
-                addInitialCategories()
-                if let selectedCategory {
-                    // 選択中のカテゴリーがまだ存在するか確認
-                    if !categories.contains(where: { $0.id == selectedCategory.id }) {
-                        self.selectedCategory = categories
+                //                addInitialCategories()
+                //                if let selectedCategory {
+                //                    // 選択中のカテゴリーがまだ存在するか確認
+                //                    if !categories.contains(where: { $0.id == selectedCategory.id }) {
+                //                        self.selectedCategory = categories
+                //                            .sorted { $0.sortIndex < $1.sortIndex }
+                //                            .first
+                //                    }
+                //                } else {
+                //                    // 選択されていなければデフォルトを選択
+                //                    self.selectedCategory = categories
+                //                        .sorted { $0.sortIndex < $1.sortIndex }
+                //                        .first
+                //                }
+                
+                if let selectedPaymentMethod {
+                    // 選択中の支払いがまだ存在するか確認
+                    if !paymentMethod.contains(where: { $0.id == selectedPaymentMethod.id }) { //idで存在確認
+                        //存在しなければsortの先頭を選択
+                        self.selectedPaymentMethod = paymentMethod
                             .sorted { $0.sortIndex < $1.sortIndex }
-                            .last
+                            .first
                     }
                 } else {
                     // 選択されていなければデフォルトを選択
-                    self.selectedCategory = categories
+                    self.selectedPaymentMethod = paymentMethod
                         .sorted { $0.sortIndex < $1.sortIndex }
-                        .last
-                }
-            }
-            .onChange(of: categories) {
-                
-                print("===== 全Category =====")
-                
-                for category in categories {
-                    print("\(category.name) : sortIndex = \(category.sortIndex)")
+                        .first
                 }
                 
-                print("====================")
-                
-                let sortOneCategory = categories.first {
-                    $0.sortIndex == 1
-                }
-                
-                print("【onChange開始】")
-                print("sortIndex 1: \(sortOneCategory?.name ?? "見つからない")")
-                
-                if selectedCategory == nil {
-                    
-                    if let category = sortOneCategory {
-                        selectedCategory = category
-                        print("カテゴリー選択成功: \(category.name)")
-                    } else {
-                        print("カテゴリー選択失敗: sortIndex 1 が見つからない")
-                    }
-                    
-                } else {
-                    print("カテゴリーは既に選択済み: \(selectedCategory?.name ?? "不明")")
-                }
-                
-                print("【onChange終了】")
             }
             .scrollContentBackground(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -364,7 +347,7 @@ struct HomeView: View {
     
     private func saveTransaction() {
         
-        guard let category = selectedCategory ?? categories.first else {
+        guard let category = resolvedCategory() else {
             return
         }
         
@@ -382,43 +365,55 @@ struct HomeView: View {
         print("✅type: \(selectedTransactionType)")
         print("✅date: \(selectedDate)")
         print("✅amount: \(priceTextField)")
-        print("✅category: \(String(describing: selectedCategory))")
+        print("✅category: \(String(describing: selectedCategoryID))")
         print("✅memo: \(memo)")
         print("✅paymentMethod: \(String(describing: selectedPaymentMethod))")
     }
     
-    private func addInitialCategories() {
-        guard categories.isEmpty else {
-            if selectedCategory == nil {
-                selectedCategory = categories.first(where: { $0.sortIndex == 0 })
-            }
-            return
+    //    private func addInitialCategories() {
+    //        guard categories.isEmpty else {
+    //            if selectedCategory == nil {
+    //                selectedCategory = categories.first(where: { $0.sortIndex == 0 })
+    //            }
+    //            return
+    //        }
+    //
+    //        let initialCategories = [
+    //            Category(name: "家賃", imageName: "house", sortIndex: 0),
+    //            Category(name: "食費", imageName: "fork.knife", sortIndex: 1),
+    //            Category(name: "日用品", imageName: "basket", sortIndex: 2),
+    //            Category(name: "交通費", imageName: "car", sortIndex: 3),
+    //            Category(name: "医療費", imageName: "cross.case", sortIndex: 4),
+    //            Category(name: "その他", imageName: "ellipsis.circle", sortIndex: 5)
+    //        ]
+    //
+    //        for category in initialCategories {
+    //            modelContext.insert(category)
+    //            print("追加: \(category.name), sortIndex: \(category.sortIndex)")
+    //        }
+    //
+    //        didAddInitialCategories = true
+    //    }
+    
+    private func resolvedCategory() -> Category? {
+        if let selectedCategoryID,
+           let match = categories.first(where: { $0.id == selectedCategoryID }) {
+            return match
         }
         
-        let initialCategories = [
-            Category(name: "家賃", imageName: "house", sortIndex: 0),
-            Category(name: "食費", imageName: "fork.knife", sortIndex: 1),
-            Category(name: "日用品", imageName: "basket", sortIndex: 2),
-            Category(name: "交通費", imageName: "car", sortIndex: 3),
-            Category(name: "医療費", imageName: "cross.case", sortIndex: 4),
-            Category(name: "その他", imageName: "ellipsis.circle", sortIndex: 5)
-        ]
-        
-        for category in initialCategories {
-            modelContext.insert(category)
-            print("追加: \(category.name), sortIndex: \(category.sortIndex)")
-        }
-        
-        didAddInitialCategories = true
+        // selectedCategoryIDがnil、または該当するCategoryが見つからない場合
+        let fallback = categories.sorted { $0.sortIndex < $1.sortIndex }.first
+        selectedCategoryID = fallback?.id   // ← ここで実際にselectedCategoryIDへ代入
+        return fallback
     }
 }
 
 #Preview {
-    HomeView(
-        selectedCategory: Category(
-            name: "家賃",
-            imageName: "house",
-            sortIndex: 0
-        )
+    let category = Category(
+        name: "家賃",
+        imageName: "house",
+        sortIndex: 0
     )
+    
+    HomeView(selectedCategoryID: category.id)
 }

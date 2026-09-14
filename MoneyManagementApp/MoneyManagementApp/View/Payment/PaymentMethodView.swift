@@ -17,7 +17,7 @@ struct PaymentMethodView: View {
         NavigationStack {
             Group {
                 if paymentMethods.isEmpty {
-                    Text("支払方法を追加してください")
+                    Text("支払い方法を追加してください")
                 } else {
                     List {
                         ForEach(paymentMethods, id: \.id) { paymentMethod in
