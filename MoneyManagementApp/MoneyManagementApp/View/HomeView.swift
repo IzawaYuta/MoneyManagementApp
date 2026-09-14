@@ -373,6 +373,7 @@ struct HomeView: View {
     //        didAddInitialCategories = true
     //    }
     
+    /// 読み取り専用
     private var selectedCategory: Category? {
         categories.first(where: { $0.id == selectedCategoryID })
     }
@@ -380,6 +381,7 @@ struct HomeView: View {
     private var selectedPaymentMethod: PaymentMethod? {
         paymentMethod.first(where: { $0.id == selectedPaymentMethodID })
     }
+    
     private func syncSelectedCategoryIfNeeded() {
         let isValid = categories.contains { $0.id == selectedCategoryID }
         if !isValid {

@@ -5,11 +5,13 @@ import SwiftData
 struct PaymentMethodView: View {
     
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
     
     @Query(sort: \PaymentMethod.sortIndex)
     private var paymentMethods: [PaymentMethod]
     
     @State private var showAddPaymentMethodView: Bool = false
+    @State private var isEditing: Bool = false
     
     @Binding var selectedPaymentMethodID: UUID?
     
@@ -23,6 +25,7 @@ struct PaymentMethodView: View {
                         ForEach(paymentMethods, id: \.id) { paymentMethod in
                             Section {
                                 Button {
+                                    guard !isEditing else { return }
                                     selectedPaymentMethodID = paymentMethod.id
                                     dismiss()
                                 } label: {
@@ -48,7 +51,10 @@ struct PaymentMethodView: View {
                                 .padding(.horizontal, 3)
                             }
                         }
+                        .onMove(perform: movePaymentMethod)
+                        .onDelete(perform: deletePaymentMethods)
                     }
+                    .environment(\.editMode, .constant(isEditing ? .active : .inactive))
                     .listSectionSpacing(13)
                 }
             }
@@ -56,19 +62,62 @@ struct PaymentMethodView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("キャンセル") {
-                        dismiss()
+                    if isEditing {
+                        Button("完了") {
+                            isEditing = false
+                        }
+                    } else {
+                        Button("キャンセル") {
+                            dismiss()
+                        }
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("追加") {
-                        showAddPaymentMethodView.toggle()
-                    }
-                    .sheet(isPresented: $showAddPaymentMethodView) {
-                        AddPaymentMethodView()
+                    Menu {
+                        Button(action: {
+                            isEditing.toggle()
+                        }) {
+                            Text("編集")
+                        }
+                        Button("追加") {
+                            showAddPaymentMethodView.toggle()
+                        }
+                        .sheet(isPresented: $showAddPaymentMethodView) {
+                            AddPaymentMethodView()
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis")
                     }
                 }
             }
+        }
+    }
+    
+    private func deletePaymentMethods(at offsets: IndexSet) {
+        let targets = offsets.map { paymentMethods[$0] }
+        
+        for paymentMethod in targets {
+            if selectedPaymentMethodID == paymentMethod.id {
+                selectedPaymentMethodID = nil
+            }
+            modelContext.delete(paymentMethod)
+        }
+        
+        let remaining = paymentMethods
+            .filter { item in !targets.contains(where: { $0.id == item.id }) }
+            .sorted { $0.sortIndex < $1.sortIndex }
+        
+        for (index, item) in remaining.enumerated() {
+            item.sortIndex = index
+        }
+    }
+    
+    private func movePaymentMethod(from source: IndexSet, to destination: Int) {
+        var reordered = paymentMethods
+        reordered.move(fromOffsets: source, toOffset: destination)
+        
+        for (index, item) in reordered.enumerated() {
+            item.sortIndex = index
         }
     }
 }
