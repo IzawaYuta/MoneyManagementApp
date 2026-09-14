@@ -8,7 +8,7 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var categories: [Category]
     
-    @State private var selectedTransactionType: TransactionType = .income
+    @State private var selectedTransactionType: TransactionType = .expense
     @State /*private*/ var selectedCategory: Category?
     @State private var selectedPaymentMethod: PaymentMethod?
     @State private var memo = ""
@@ -24,8 +24,8 @@ struct HomeView: View {
     @AppStorage("didAddInitialCategories")
     private var didAddInitialCategories = false
     
-//    @AppStorage("didAddInitialPaymentMethods")
-//    private var didAddInitialPaymentMethods = false
+    //    @AppStorage("didAddInitialPaymentMethods")
+    //    private var didAddInitialPaymentMethods = false
     
     var body: some View {
         NavigationStack {
@@ -94,24 +94,24 @@ struct HomeView: View {
                 .padding(.top, 12)
                 
                 
-                VStack(spacing: 0) {
+                VStack(spacing: -5) {
                     Text("金額")
                         .font(.system(size: 13))
                         .foregroundStyle(.gray)
                     
                     ZStack {
-                        HStack(spacing: 4) {
-                            Text("￥")
-                                .font(.system(size: 42, weight: .semibold))
+                        HStack(alignment: .center, spacing: 4) {
+                            Text(selectedTransactionType == .income ? "+" : "-")
+                                .font(.system(size: 35, weight: .medium))
+                                .foregroundStyle(selectedTransactionType == .income ? Color.green.opacity(0.7) : Color.red.opacity(0.7))
                             Text(Decimal(string: priceTextField) ?? 0, format: .number)
                                 .font(.system(size: 42, weight: .semibold))
                         }
-                        //                                .background(Color.red.opacity(0.5)) //確認用
                         .contentShape(Rectangle())
                         .onTapGesture {
                             focusedField = .price
                         }
-
+                        
                         TextField("", text: $priceTextField)
                             .keyboardType(.numberPad)
                             .focused($focusedField, equals: .price)
@@ -256,9 +256,9 @@ struct HomeView: View {
                 .padding(.horizontal)
                 .padding(.bottom)
             }
-//            .onAppear {
-//                addInitialCategories()
-//            }
+            //            .onAppear {
+            //                addInitialCategories()
+            //            }
             .onAppear {
                 addInitialCategories()
                 if let selectedCategory {
@@ -275,35 +275,6 @@ struct HomeView: View {
                         .last
                 }
             }
-//            .onChange(of: categories) {
-//                print("===== 全Category =====")
-//                for category in categories {
-//                    print("\(category.name) : sortIndex = \(category.sortIndex)")
-//                }
-//                print("====================")
-//                
-//                let sortedCategories = categories.sorted {
-//                    $0.sortIndex < $1.sortIndex
-//                }
-//                
-//                let sortZeroCategory = sortedCategories.first
-//                
-//                print("【onChange開始】")
-//                print("sortIndex 0: \(sortZeroCategory?.name ?? "見つからない")")
-//                
-//                if selectedCategory == nil {
-//                    if let category = sortZeroCategory {
-//                        selectedCategory = category
-//                        print("カテゴリー選択成功: \(category.name)")
-//                    } else {
-//                        print("カテゴリー選択失敗: sortIndex 0 が見つからない")
-//                    }
-//                } else {
-//                    print("カテゴリーは既に選択済み: \(selectedCategory?.name ?? "不明")")
-//                }
-//                
-//                print("【onChange終了】")
-//            }
             .onChange(of: categories) {
                 
                 print("===== 全Category =====")
@@ -373,10 +344,10 @@ struct HomeView: View {
                     }) {
                         Image(systemName: "checkmark")
                             .font(.system(size: 14, weight: .semibold))
-//                            .foregroundStyle(.white)
+                        //                            .foregroundStyle(.white)
                             .frame(width: 32, height: 32)
-//                            .background(Color.black)
-//                            .clipShape(Circle())
+                        //                            .background(Color.black)
+                        //                            .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
                     
@@ -440,25 +411,6 @@ struct HomeView: View {
         
         didAddInitialCategories = true
     }
-    
-//    private func addInitialPaymentMethods() {
-//        guard !didAddInitialPaymentMethods else { return }
-//        
-//        let paymentTypesName = [
-//            PaymentType(name: "現金", sortIndex: 0),
-//            PaymentType(name: "クレジットカード", sortIndex: 1),
-//            PaymentType(name: "デビッドカード", sortIndex: 2),
-//            PaymentType(name: "電子マネー", sortIndex: 3),
-//            PaymentType(name: "口座振替", sortIndex: 4),
-//            PaymentType(name: "その他", sortIndex: 5)
-//        ]
-//        
-//        for paymentType in paymentTypesName {
-//            modelContext.insert(paymentType)
-//        }
-//        
-//        didAddInitialPaymentMethods = true
-//    }
 }
 
 #Preview {
