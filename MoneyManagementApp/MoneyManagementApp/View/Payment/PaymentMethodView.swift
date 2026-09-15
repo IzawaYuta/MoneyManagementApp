@@ -58,7 +58,7 @@ struct PaymentMethodView: View {
                     .listSectionSpacing(13)
                 }
             }
-            .navigationTitle("支払方法")
+            .navigationTitle("支払い方法")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -67,7 +67,7 @@ struct PaymentMethodView: View {
                             isEditing = false
                         }
                     } else {
-                        Button("キャンセル") {
+                        Button("閉じる") {
                             dismiss()
                         }
                     }

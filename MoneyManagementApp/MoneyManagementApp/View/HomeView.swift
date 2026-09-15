@@ -68,14 +68,47 @@ struct HomeView: View {
                     }
                     .buttonStyle(.plain)
                     .sheet(isPresented: $isShowingDatePicker) {
-                        DatePicker(
-                            "日付を選択",
-                            selection: $selectedDate,
-                            displayedComponents: .date
-                        )
-                        .datePickerStyle(.graphical)
-                        .padding()
+                        VStack(spacing: 0) {
+                            
+                            // ヘッダー: タイトル + 今日ボタン
+                            HStack {
+                                Text("日付を選択")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundStyle(.black)
+                                
+                                Spacer()
+                                
+                                Button {
+                                    selectedDate = Date()
+                                } label: {
+                                    Text("今日")
+                                        .font(.system(size: 20, weight: .medium))
+                                        .foregroundStyle(.black)
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 7)
+                                        .background(Color(uiColor: .systemGray6))
+                                        .clipShape(Capsule())
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 20)
+                            .padding(.bottom, 8)
+                            
+                            DatePicker(
+                                "日付を選択",
+                                selection: $selectedDate,
+                                displayedComponents: .date
+                            )
+                            .datePickerStyle(.graphical)
+                            .labelsHidden()
+                            .environment(\.locale, Locale(identifier: "ja_JP"))
+                            .padding(.horizontal, 12)
+                            .padding(.bottom, 12)
+                            
+                            Spacer(minLength: 0)
+                        }
                         .presentationDetents([.medium])
+                        .presentationDragIndicator(.visible)
                     }
                     
                     Button {
@@ -311,6 +344,7 @@ struct HomeView: View {
                         //                            .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
+                    .padding(10)
                     
                     Spacer()
                 }

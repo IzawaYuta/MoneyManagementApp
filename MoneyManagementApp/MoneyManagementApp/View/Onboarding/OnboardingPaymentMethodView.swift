@@ -29,17 +29,17 @@ struct OnboardingPaymentMethodView: View {
             // MARK: - 進捗表示
             VStack(spacing: 8) {
                 Text("2 / 2")
-                    .font(.system(size: 17, weight: .medium))
+                    .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(.gray)
                 
                 HStack(spacing: 10) {
                     Circle()
                         .fill(Color.black)
-                        .frame(width: 11, height: 11)
+                        .frame(width: 8, height: 8)
                     
                     Circle()
                         .fill(Color.black)
-                        .frame(width: 11, height: 11)
+                        .frame(width: 8, height: 8)
                 }
             }
             .padding(.top, 18)
@@ -65,7 +65,7 @@ struct OnboardingPaymentMethodView: View {
                         .multilineTextAlignment(.center)
                 }
             }
-            .padding(.top, 35)
+            .padding(.top, 50)
             .padding(.horizontal, 10)
             
             // MARK: - 入力
