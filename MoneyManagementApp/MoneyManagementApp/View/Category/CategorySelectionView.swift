@@ -10,6 +10,8 @@ struct CategorySelectionView: View {
     @State private var isDeleteMode = false
     @State private var showDeleteCategoryAlert: Bool = false
     @State private var selectedDeleteCategories: Set<UUID> = []
+    @State private var showCannotDeleteAllAlert = false
+    
     @Environment(\.dismiss) private var dismiss
     
     @Query(sort: \Category.sortIndex)
@@ -123,6 +125,11 @@ struct CategorySelectionView: View {
                 }
                 print("========================")
             }
+            .alert("すべてのカテゴリーは削除できません", isPresented: $showCannotDeleteAllAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("カテゴリーは1つ必要です。")
+            }
             .navigationTitle("カテゴリー")
             .navigationBarTitleDisplayMode(.inline)
             .background(Color(uiColor: .systemGray6).opacity(0.5))
@@ -195,6 +202,14 @@ struct CategorySelectionView: View {
     }
     
     private func deleteSelectedCategories() {
+        // 削除後の残数を先に計算
+        let remainingCount = categories.count - selectedDeleteCategories.count
+        
+        guard remainingCount > 0 else {
+            showCannotDeleteAllAlert = true
+            return
+        }
+        
         // 選択中のカテゴリーが削除対象に含まれていたら、参照が消える前にリセットする
         if let currentSelectedID = selectedCategoryID,
            selectedDeleteCategories.contains(currentSelectedID) {

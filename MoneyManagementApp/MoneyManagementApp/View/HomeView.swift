@@ -20,6 +20,7 @@ struct HomeView: View {
     @State private var showCategorySelectionView: Bool = false
     @State private var showClearAlert = false
     @State private var showPaymentMethodView = false
+    @State private var showNoCategoryAlert = false
     
     @State private var priceTextField: String = ""
     
@@ -262,6 +263,11 @@ struct HomeView: View {
                             )
                     }
                     .frame(width: 220)
+                    .alert("カテゴリーが選択されていません", isPresented: $showNoCategoryAlert) {
+                        Button("OK", role: .cancel) { }
+                    } message: {
+                        Text("カテゴリーを選択してから保存してください。")
+                    }
                     
                     Button {
                         showClearAlert = true
@@ -360,6 +366,7 @@ struct HomeView: View {
     private func saveTransaction() {
         
         guard let category = selectedCategory else {
+            showNoCategoryAlert = true
             return
         }
         
