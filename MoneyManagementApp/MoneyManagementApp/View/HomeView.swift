@@ -137,8 +137,8 @@ struct HomeView: View {
                     
                     ZStack {
                         HStack(alignment: .center, spacing: 4) {
-                            Text(selectedTransactionType == .income ? "+" : "-")
-                                .font(.system(size: 35, weight: .medium))
+                            Image(systemName: selectedTransactionType == .income ? "arrow.down.circle.fill" : "arrow.up.circle.fill")
+                                .font(.system(size: 18, weight: .medium))
                                 .foregroundStyle(selectedTransactionType == .income ? Color.green.opacity(0.7) : Color.red.opacity(0.7))
                             Text(Decimal(string: priceTextField) ?? 0, format: .number)
                                 .font(.system(size: 42, weight: .semibold))
