@@ -81,6 +81,7 @@ struct HomeView: View {
                                 
                                 Button {
                                     selectedDate = Date()
+                                    isShowingDatePicker = false
                                 } label: {
                                     Text("今日")
                                         .font(.system(size: 20, weight: .medium))
@@ -105,6 +106,9 @@ struct HomeView: View {
                             .environment(\.locale, Locale(identifier: "ja_JP"))
                             .padding(.horizontal, 12)
                             .padding(.bottom, 12)
+                            .onChange(of: selectedDate) {
+                                isShowingDatePicker = false
+                            }
                             
                             Spacer(minLength: 0)
                         }
@@ -139,7 +143,7 @@ struct HomeView: View {
                         HStack(alignment: .center, spacing: 4) {
                             Image(systemName: selectedTransactionType == .income ? "arrow.down.circle.fill" : "arrow.up.circle.fill")
                                 .font(.system(size: 18, weight: .medium))
-                                .foregroundStyle(selectedTransactionType == .income ? Color.green.opacity(0.7) : Color.red.opacity(0.7))
+                                .foregroundStyle(selectedTransactionType == .income ? Color.green.opacity(0.85) : Color.red.opacity(0.85))
                             Text(Decimal(string: priceTextField) ?? 0, format: .number)
                                 .font(.system(size: 42, weight: .semibold))
                         }
@@ -289,6 +293,10 @@ struct HomeView: View {
                         
                         Button("クリア", role: .destructive) {
                             selectedDate = Date()
+                            priceTextField = ""
+                            selectedCategoryID = categories.sorted { $0.sortIndex < $1.sortIndex }.first?.id
+                            memo = ""
+                            selectedPaymentMethodID = paymentMethod.sorted { $0.sortIndex < $1.sortIndex }.first?.id
                         }
                     } message: {
                         Text("入力した内容がすべてクリアされます。")
@@ -380,6 +388,9 @@ struct HomeView: View {
         )
         
         modelContext.insert(transaction)
+        
+        priceTextField = ""
+        memo = ""
         print("🔥新規保存情報🔥")
         print("✅type: \(selectedTransactionType)")
         print("✅date: \(selectedDate)")
