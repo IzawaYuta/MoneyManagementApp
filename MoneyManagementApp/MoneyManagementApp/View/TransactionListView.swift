@@ -49,7 +49,7 @@ struct TransactionListView: View {
                             Section {
                                 ForEach(group.transactions) { transaction in
                                     transactionRow(transaction)
-                                        .listRowSeparatorTint(.black.opacity(0.5))
+                                        .listRowSeparatorTint(.gray.opacity(0.5))
                                     //                                .listRowSeparator(.visible, edges: .bottom)
                                     //                                .listRowInsets(
                                     //                                    EdgeInsets(top: 0, leading: 20, bottom: 0, trailing: 20)
@@ -105,7 +105,7 @@ struct TransactionListView: View {
                     //カテゴリー
                     Text(transaction.category.name)
                         .font(.body)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.black)
 
                     
                     Spacer()
@@ -128,14 +128,14 @@ struct TransactionListView: View {
                 //支払方法
                 if let paymentMethod = transaction.paymentMethod {
                     Text(paymentMethod.name)
-                        .font(.subheadline)
+                        .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
                 
                 //メモ
                 Text(transaction.memo?.isEmpty == false ? transaction.memo! : "-")
-                    .font(.subheadline)
-                
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(.vertical, 5)
