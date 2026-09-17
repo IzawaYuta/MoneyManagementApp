@@ -126,11 +126,11 @@ struct TransactionListView: View {
                 }
                 
                 //支払方法
-                if let paymentMethod = transaction.paymentMethod {
-                    Text(paymentMethod.name)
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
+//                if let paymentMethod = transaction.paymentMethod {
+                Text(transaction.paymentMethod?.name ?? "-")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+//                }
                 
                 //メモ
                 Text(transaction.memo?.isEmpty == false ? transaction.memo! : "-")
