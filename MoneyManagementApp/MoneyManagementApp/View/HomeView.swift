@@ -9,6 +9,7 @@ struct HomeView: View {
     
     @Query private var categories: [Category]
     @Query private var paymentMethod: [PaymentMethod]
+    @Query private var transactions: [Transaction]
     
     @State private var selectedTransactionType: TransactionType = .expense
     @State var selectedCategoryID: UUID?
@@ -358,7 +359,8 @@ struct HomeView: View {
                         //                            .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
-                    .padding(10)
+//                    .padding(.bottom, 20)
+//                    .padding(.horizontal, 10)
                     
                     Spacer()
                 }
@@ -378,13 +380,16 @@ struct HomeView: View {
             return
         }
         
+        let nextSortIndex = (transactions.map(\.sortIndex).max() ?? -1) + 1
+        
         let transaction = Transaction(
             date: selectedDate,
             amount: Int(priceTextField) ?? 0,
             type: selectedTransactionType,
             category: category,
             memo: memo,
-            paymentMethod: selectedPaymentMethod
+            paymentMethod: selectedPaymentMethod,
+            sortIndex: nextSortIndex
         )
         
         modelContext.insert(transaction)
@@ -392,12 +397,31 @@ struct HomeView: View {
         priceTextField = ""
         memo = ""
         print("🔥新規保存情報🔥")
-        print("✅type: \(selectedTransactionType)")
-        print("✅date: \(selectedDate)")
-        print("✅amount: \(priceTextField)")
-        print("✅category: \(String(describing: selectedCategoryID))")
-        print("✅memo: \(memo)")
-        print("✅paymentMethod: \(String(describing: selectedPaymentMethodID))")
+        print("✅type: \(transaction.type.rawValue)")
+        
+        let japanDate = transaction.date.formatted(
+            .dateTime
+                .year()
+                .month()
+                .day()
+                .hour()
+                .minute()
+                .second()
+                .locale(Locale(identifier: "ja_JP"))
+        )
+        print("✅date: \(japanDate)")
+        
+        print("✅amount: \(transaction.amount)")
+        print("✅category: \(transaction.category.name)")
+        
+        if let memo = transaction.memo {
+            print("✅memo: \"\(memo)\"")
+        } else {
+            print("✅memo: nil")
+        }
+        
+        print("✅paymentMethod: \(transaction.paymentMethod?.name ?? "nil")")
+        print("✅sortIndex: \(transaction.sortIndex)")
     }
     
     //    private func addInitialCategories() {

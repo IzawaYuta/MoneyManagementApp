@@ -106,21 +106,54 @@ struct PaymentMethodView: View {
     }
     
     private func deletePaymentMethods(at offsets: IndexSet) {
+        
+        // 削除前
+        print("========== 📋 削除前の支払方法一覧 ==========")
+        for paymentMethod in paymentMethods.sorted(by: { $0.sortIndex < $1.sortIndex }) {
+            print("📌 \(paymentMethod.name)")
+            print("💳 種類: \(paymentMethod.type.title)")
+            print("📝 メモ: \(paymentMethod.memo ?? "nil")")
+            print("🔢 sortIndex: \(paymentMethod.sortIndex)")
+        }
+        
         let targets = offsets.map { paymentMethods[$0] }
         
+        // 削除するもの
+        print("========== ➖ 削除する支払方法 ==========")
+        for paymentMethod in targets {
+            print("📌 名前: \(paymentMethod.name)")
+            print("💳 種類: \(paymentMethod.type.title)")
+            print("📝 メモ: \(paymentMethod.memo ?? "nil")")
+            print("🔢 sortIndex: \(paymentMethod.sortIndex)")
+        }
+        
+        // 削除
         for paymentMethod in targets {
             if selectedPaymentMethodID == paymentMethod.id {
                 selectedPaymentMethodID = nil
             }
+            
             modelContext.delete(paymentMethod)
         }
         
         let remaining = paymentMethods
-            .filter { item in !targets.contains(where: { $0.id == item.id }) }
+            .filter { item in
+                !targets.contains(where: { $0.id == item.id })
+            }
             .sorted { $0.sortIndex < $1.sortIndex }
         
+        // sortIndexを振り直す
         for (index, item) in remaining.enumerated() {
             item.sortIndex = index
+        }
+        
+        // 削除後
+        print("========== 📋 削除後の支払方法一覧 ==========")
+        for paymentMethod in remaining {
+            print("📌 名前: \(paymentMethod.name)")
+            print("💳 種類: \(paymentMethod.type.title)")
+            print("📝 メモ: \(paymentMethod.memo ?? "nil")")
+            print("🔢 sortIndex: \(paymentMethod.sortIndex)")
         }
     }
     

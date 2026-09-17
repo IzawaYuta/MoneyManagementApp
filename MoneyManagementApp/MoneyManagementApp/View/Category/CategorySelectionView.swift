@@ -202,6 +202,16 @@ struct CategorySelectionView: View {
     }
     
     private func deleteSelectedCategories() {
+        
+        // 削除前
+        print("========== 📋 削除前のカテゴリー一覧 ==========")
+        
+        for category in categories.sorted(by: { $0.sortIndex < $1.sortIndex }) {
+            print("📌 \(category.name) | sortIndex: \(category.sortIndex)")
+        }
+        
+
+        
         // 削除後の残数を先に計算
         let remainingCount = categories.count - selectedDeleteCategories.count
         
@@ -213,27 +223,55 @@ struct CategorySelectionView: View {
         // 選択中のカテゴリーが削除対象に含まれていたら、参照が消える前にリセットする
         if let currentSelectedID = selectedCategoryID,
            selectedDeleteCategories.contains(currentSelectedID) {
+            
             selectedCategoryID = nil
         }
         
         // IDの集合から、実際に削除するCategoryオブジェクトを取得
-        let categoriesToDelete = categories.filter { selectedDeleteCategories.contains($0.id) }
+        let categoriesToDelete = categories.filter {
+            selectedDeleteCategories.contains($0.id)
+        }
         
-        // 💥 削除
+
+        // 削除するもの
+        print("========== ➖ 削除するカテゴリー ==========")
+        for category in categoriesToDelete {
+            print("📌 カテゴリー名: \(category.name)")
+            print("🖼️ アイコン: \(category.imageName)")
+            print("🔢 sortIndex: \(category.sortIndex)")
+        }
+        
+        // 削除
         for category in categoriesToDelete {
             modelContext.delete(category)
         }
         
-        // 📋 削除後に残るカテゴリー
+        // 削除後に残るカテゴリー
         let remainingCategories = categories
             .filter { !selectedDeleteCategories.contains($0.id) }
             .sorted { $0.sortIndex < $1.sortIndex }
         
-        // 🔢 sortIndexを詰め直す
+        // sortIndexを詰め直す
         for (index, category) in remainingCategories.enumerated() {
             category.sortIndex = index
         }
         
+        // 📋 追加後の一覧
+        print("========== 📋 削除後のカテゴリー一覧 ==========")
+        
+        let updatedCategories = categories
+            .sorted { $0.sortIndex < $1.sortIndex }
+        
+        for category in updatedCategories {
+            print("""
+        📌 カテゴリー名: \(category.name)
+        🖼️ アイコン: \(category.imageName)
+        🔢 sortIndex: \(category.sortIndex)
+        """)
+        }
+        
+        print("==============================================")
+
         selectedDeleteCategories.removeAll()
         isDeleteMode = false
     }
