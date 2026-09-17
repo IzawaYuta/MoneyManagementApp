@@ -7,6 +7,8 @@ struct AddPaymentMethodView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
+    @Query private var paymentMethods: [PaymentMethod]
+    
 //    @Query(sort: \PaymentType.sortIndex)
 //    private var paymentTypes: [PaymentType]
     
@@ -63,13 +65,16 @@ struct AddPaymentMethodView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                         Button("追加") {
+                            let nextSortIndex = (paymentMethods.map(\.sortIndex).max() ?? -1) + 1
+                            
                             let paymentMethod = PaymentMethod(
                                 name: name,
                                 type: paymentType,
-                                memo: memo.isEmpty ? nil : memo
+                                memo: memo.isEmpty ? nil : memo,
+                                sortIndex: nextSortIndex
                             )
                             
-                            print(paymentMethod)
+                            print("追加: name=\(paymentMethod.name), sortIndex=\(paymentMethod.sortIndex)")
                             
                             modelContext.insert(paymentMethod)
                             

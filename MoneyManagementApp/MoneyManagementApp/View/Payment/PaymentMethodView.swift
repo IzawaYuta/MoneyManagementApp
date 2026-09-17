@@ -17,47 +17,55 @@ struct PaymentMethodView: View {
     
     var body: some View {
         NavigationStack {
-            Group {
+            List {
                 if paymentMethods.isEmpty {
-                    Text("支払い方法を追加してください")
+                    VStack(alignment: .center, spacing: 20) {
+                        Image(systemName: "wallet.bifold")
+                            .font(.system(size: 30))
+                        Text("支払い方法を追加してください")
+                    }
+                    .foregroundStyle(.gray)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 250)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+                    
                 } else {
-                    List {
-                        ForEach(paymentMethods, id: \.id) { paymentMethod in
-                            Section {
-                                Button {
-                                    guard !isEditing else { return }
-                                    selectedPaymentMethodID = paymentMethod.id
-                                    dismiss()
-                                } label: {
-                                    VStack(alignment: .leading, spacing: 5) {
-                                        HStack {
-                                            Text(paymentMethod.name)
-                                                .foregroundStyle(.black)
-                                            
-                                            Spacer()
-                                            
-                                            Text(paymentMethod.type.title)
-                                                .foregroundColor(.gray)
-                                                .font(.subheadline)
-                                        }
-                                        if let memo = paymentMethod.memo, !memo.isEmpty {
-                                            Text(memo)
-                                                .foregroundColor(.gray)
-                                                .font(.subheadline)
-                                        }
+                    ForEach(paymentMethods, id: \.id) { paymentMethod in
+                        Section {
+                            Button {
+                                guard !isEditing else { return }
+                                selectedPaymentMethodID = paymentMethod.id
+                                dismiss()
+                            } label: {
+                                VStack(alignment: .leading, spacing: 5) {
+                                    HStack {
+                                        Text(paymentMethod.name)
+                                            .foregroundStyle(.black)
+                                        
+                                        Spacer()
+                                        
+                                        Text(paymentMethod.type.title)
+                                            .foregroundColor(.gray)
+                                            .font(.subheadline)
+                                    }
+                                    if let memo = paymentMethod.memo, !memo.isEmpty {
+                                        Text(memo)
+                                            .foregroundColor(.gray)
+                                            .font(.subheadline)
                                     }
                                 }
-                                .buttonStyle(.plain)
-                                .padding(.horizontal, 3)
                             }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal, 3)
                         }
-                        .onMove(perform: movePaymentMethod)
-                        .onDelete(perform: deletePaymentMethods)
                     }
-                    .environment(\.editMode, .constant(isEditing ? .active : .inactive))
-                    .listSectionSpacing(13)
+                    .onMove(perform: movePaymentMethod)
+                    .onDelete(perform: deletePaymentMethods)
                 }
             }
+            .environment(\.editMode, .constant(isEditing ? .active : .inactive))
+            .listSectionSpacing(13)
             .navigationTitle("支払い方法")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -72,23 +80,27 @@ struct PaymentMethodView: View {
                         }
                     }
                 }
+                
                 ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Button(action: {
-                            isEditing.toggle()
-                        }) {
-                            Text("編集")
-                        }
-                        Button("追加") {
-                            showAddPaymentMethodView.toggle()
-                        }
-                        .sheet(isPresented: $showAddPaymentMethodView) {
-                            AddPaymentMethodView()
-                        }
-                    } label: {
-                        Image(systemName: "ellipsis")
+                    Button(action: {
+                        showAddPaymentMethodView.toggle()
+                    }) {
+                        Image(systemName: "plus")
+                    }
+                    .sheet(isPresented: $showAddPaymentMethodView) {
+                        AddPaymentMethodView()
                     }
                 }
+                
+                //                ToolbarSpacer(.fixed, placement: .topBarTrailing)
+                //
+                //                ToolbarItem(placement: .topBarTrailing) {
+                //                    Button(action: {
+                //                        isEditing.toggle()
+                //                    }) {
+                //                        Image(systemName: "list.bullet")
+                //                    }
+                //                }
             }
         }
     }
@@ -120,6 +132,18 @@ struct PaymentMethodView: View {
             item.sortIndex = index
         }
     }
+}
+
+#Preview("データなし") {
+    let container = try! ModelContainer(
+        for: PaymentMethod.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    
+    return PaymentMethodView(
+        selectedPaymentMethodID: .constant(nil)
+    )
+    .modelContainer(container)
 }
 
 #Preview {
