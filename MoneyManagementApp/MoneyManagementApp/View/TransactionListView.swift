@@ -103,7 +103,7 @@ struct TransactionListView: View {
                 
                 HStack {
                     //カテゴリー
-                    Text(transaction.category.name)
+                    Text(transaction.categoryName)
                         .font(.body)
                         .foregroundStyle(.black)
 
