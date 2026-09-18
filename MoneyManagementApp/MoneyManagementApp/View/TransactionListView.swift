@@ -127,7 +127,7 @@ struct TransactionListView: View {
                 
                 //支払方法
 //                if let paymentMethod = transaction.paymentMethod {
-                Text(transaction.paymentMethod?.name ?? "-")
+                Text(transaction.paymentMethodName ?? "-")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
 //                }
