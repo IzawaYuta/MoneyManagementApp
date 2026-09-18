@@ -8,12 +8,22 @@ import Foundation
 struct TransactionSaveTests {
     
     @MainActor
-    /// インメモリのModelContainerとContextを毎回新しく作る
-    private func makeContext() throws -> ModelContext {
-        let schema = Schema([Transaction.self, Category.self, PaymentMethod.self])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: schema, configurations: [config])
-        return container.mainContext
+    private func makeContainer() throws -> ModelContainer {
+        let schema = Schema([
+            Transaction.self,
+            Category.self,
+            PaymentMethod.self
+        ])
+        
+        let config = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: true
+        )
+        
+        return try ModelContainer(
+            for: schema,
+            configurations: [config]
+        )
     }
     
     // MARK: - 正常系(16パターン)
@@ -45,7 +55,8 @@ struct TransactionSaveTests {
         hasMemo: Bool,
         hasPaymentMethod: Bool
     ) throws {
-        let context = try makeContext()
+        let container = try makeContainer()
+        let context = container.mainContext
         
         let category = MoneyManagementApp.Category(name: "テストカテゴリー", imageName: "tag", sortIndex: 0)
         context.insert(category)
@@ -62,22 +73,51 @@ struct TransactionSaveTests {
         let transaction = Transaction(
             amount: amount,
             type: type,
-            category: category,
             memo: memo,
-            paymentMethod: paymentMethod
+            categoryID: category.id,
+            categoryName: category.name,
+            categoryImageName: category.imageName,
+            paymentMethodID: paymentMethod?.id,
+            paymentMethodName: paymentMethod?.name,
+            paymentMethodType: paymentMethod?.type,
+            paymentMethodMemo: paymentMethod?.memo
         )
         context.insert(transaction)
         
         // 保存した値がそのまま反映されているか
         #expect(transaction.type == type)
         #expect(transaction.amount == amount)
-        #expect(transaction.category.name == "テストカテゴリー")
+        
+        #expect(transaction.categoryID == category.id)
+        #expect(transaction.categoryName == "テストカテゴリー")
+        #expect(transaction.categoryImageName == "tag")
+        
         #expect(transaction.memo == memo)
-        #expect(transaction.paymentMethod?.name == (hasPaymentMethod ? "現金" : nil))
+        
+        #expect(
+            transaction.paymentMethodID ==
+            (hasPaymentMethod ? paymentMethod?.id : nil)
+        )
+        
+        #expect(
+            transaction.paymentMethodName ==
+            (hasPaymentMethod ? "現金" : nil)
+        )
+        
+        #expect(
+            transaction.paymentMethodType ==
+            (hasPaymentMethod ? .cash : nil)
+        )
+        
+        #expect(
+            transaction.paymentMethodMemo ==
+            (hasPaymentMethod ? paymentMethod?.memo : nil)
+        )
         
         // 実際にストアへ登録された件数も確認
         let descriptor = FetchDescriptor<Transaction>()
         let saved = try context.fetch(descriptor)
+        
         #expect(saved.count == 1)
     }
     
@@ -97,7 +137,13 @@ struct TransactionSaveTests {
         guard let category = selectedCategory else {
             return false // 保存されなかった
         }
-        let transaction = Transaction(amount: 1000, type: type, category: category)
+        let transaction = Transaction(
+            amount: 1000,
+            type: type,
+            categoryID: category.id,
+            categoryName: category.name,
+            categoryImageName: category.imageName
+        )
         context.insert(transaction)
         return true // 保存された
     }
@@ -105,7 +151,8 @@ struct TransactionSaveTests {
     @Test
     @MainActor
     func 異常系_カテゴリー未選択で収入を保存しようとする() throws {
-        let context = try makeContext()
+        let container = try makeContainer()
+        let context = container.mainContext
         let didSave = trySave(selectedCategory: nil, context: context, type: .income)
         
         #expect(didSave == false)
@@ -117,7 +164,8 @@ struct TransactionSaveTests {
     @Test
     @MainActor
     func 異常系_カテゴリー未選択で支出を保存しようとする() throws {
-        let context = try makeContext()
+        let container = try makeContainer()
+        let context = container.mainContext
         let didSave = trySave(selectedCategory: nil, context: context, type: .expense)
         
         #expect(didSave == false)

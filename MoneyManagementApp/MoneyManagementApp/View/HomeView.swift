@@ -418,7 +418,7 @@ struct HomeView: View {
         print("✅date: \(japanDate)")
         
         print("✅amount: \(transaction.amount)")
-        print("✅category: \(transaction.category.name)")
+        print("✅category: \(transaction.categoryName)")
         
         if let memo = transaction.memo {
             print("✅memo: \"\(memo)\"")
