@@ -388,8 +388,11 @@ struct HomeView: View {
             type: selectedTransactionType,
             category: category,
             memo: memo,
-            paymentMethod: selectedPaymentMethod,
-            sortIndex: nextSortIndex
+            sortIndex: nextSortIndex,
+            paymentMethodID: selectedPaymentMethod?.id,
+            paymentMethodName: selectedPaymentMethod?.name,
+            paymentMethodType: selectedPaymentMethod?.type,
+            paymentMethodMemo: selectedPaymentMethod?.memo
         )
         
         modelContext.insert(transaction)
@@ -420,8 +423,11 @@ struct HomeView: View {
             print("✅memo: nil")
         }
         
-        print("✅paymentMethod: \(transaction.paymentMethod?.name ?? "nil")")
         print("✅sortIndex: \(transaction.sortIndex)")
+        print("✅paymentMethodID: \(transaction.paymentMethodID?.uuidString ?? "nil")")
+        print("✅paymentMethodName: \(transaction.paymentMethodName ?? "nil")")
+        print("✅paymentMethodType: \(transaction.paymentMethodType?.title ?? "nil")")
+        print("✅paymentMethodMemo: \(transaction.paymentMethodMemo ?? "nil")")
     }
     
     //    private func addInitialCategories() {
