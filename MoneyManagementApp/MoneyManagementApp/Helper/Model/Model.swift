@@ -113,9 +113,14 @@ final class Transaction {
     var date: Date
     var amount: Int
     var type: TransactionType
-    var category: Category
+//    var category: Category
     var memo: String?
     var sortIndex: Int = 0
+    
+    // カテゴリーのコピー保存
+    var categoryID: UUID
+    var categoryName: String
+    var categoryImageName: String
     
     // 支払方法のコピー保存
     var paymentMethodID: UUID?
@@ -127,9 +132,12 @@ final class Transaction {
         date: Date = Date(),
         amount: Int = 0,
         type: TransactionType = .expense,
-        category: Category,
+//        category: Category,
         memo: String? = nil,
         sortIndex: Int = 0,
+        categoryID: UUID,
+        categoryName: String,
+        categoryImageName: String,
         paymentMethodID: UUID? = nil,
         paymentMethodName: String? = nil,
         paymentMethodType: PaymentType? = nil,
@@ -138,9 +146,12 @@ final class Transaction {
         self.date = date
         self.amount = amount
         self.type = type
-        self.category = category
+//        self.category = category
         self.memo = memo
         self.sortIndex = sortIndex
+        self.categoryID = categoryID
+        self.categoryName = categoryName
+        self.categoryImageName = categoryImageName
         self.paymentMethodID = paymentMethodID
         self.paymentMethodName = paymentMethodName
         self.paymentMethodType = paymentMethodType

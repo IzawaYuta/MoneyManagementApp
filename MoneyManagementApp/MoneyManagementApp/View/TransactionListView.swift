@@ -154,80 +154,80 @@ struct TransactionListView: View {
         .modelContainer(container)
 }
 
-#Preview("ダミー") {
-    let container = try! ModelContainer(
-        for: Category.self,
-        PaymentMethod.self,
-        Transaction.self,
-        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-    )
-    
-    let context = container.mainContext
-    
-    let food = Category(
-        name: "食費",
-        imageName: "fork.knife",
-        sortIndex: 0
-    )
-    
-    let transportation = Category(
-        name: "交通費",
-        imageName: "car",
-        sortIndex: 1
-    )
-    
-    let cash = PaymentMethod(
-        name: "現金",
-        type: .cash,
-        memo: nil,
-        sortIndex: 0
-    )
-    
-    let payPay = PaymentMethod(
-        name: "PayPay",
-        type: .qrCode,
-        memo: "普段使い",
-        sortIndex: 1
-    )
-    
-    context.insert(food)
-    context.insert(transportation)
-    context.insert(cash)
-    context.insert(payPay)
-    
-    context.insert(
-        Transaction(
-            date: Date(),
-            amount: 1200,
-            type: .expense,
-            category: food,
-            memo: "昼ごはん",
-            paymentMethod: cash
-        )
-    )
-    
-    context.insert(
-        Transaction(
-            date: Date(),
-            amount: 3000,
-            type: .expense,
-            category: transportation,
-            memo: nil,
-            paymentMethod: payPay
-        )
-    )
-    
-    context.insert(
-        Transaction(
-            date: Date().addingTimeInterval(-86400),
-            amount: 250000,
-            type: .income,
-            category: food,
-            memo: "給料",
-            paymentMethod: nil
-        )
-    )
-    
-    return TransactionListView()
-        .modelContainer(container)
-}
+//#Preview("ダミー") {
+//    let container = try! ModelContainer(
+//        for: Category.self,
+//        PaymentMethod.self,
+//        Transaction.self,
+//        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+//    )
+//    
+//    let context = container.mainContext
+//    
+//    let food = Category(
+//        name: "食費",
+//        imageName: "fork.knife",
+//        sortIndex: 0
+//    )
+//    
+//    let transportation = Category(
+//        name: "交通費",
+//        imageName: "car",
+//        sortIndex: 1
+//    )
+//    
+//    let cash = PaymentMethod(
+//        name: "現金",
+//        type: .cash,
+//        memo: nil,
+//        sortIndex: 0
+//    )
+//    
+//    let payPay = PaymentMethod(
+//        name: "PayPay",
+//        type: .qrCode,
+//        memo: "普段使い",
+//        sortIndex: 1
+//    )
+//    
+//    context.insert(food)
+//    context.insert(transportation)
+//    context.insert(cash)
+//    context.insert(payPay)
+//    
+//    context.insert(
+//        Transaction(
+//            date: Date(),
+//            amount: 1200,
+//            type: .expense,
+//            category: food,
+//            memo: "昼ごはん",
+//            paymentMethod: cash
+//        )
+//    )
+//    
+//    context.insert(
+//        Transaction(
+//            date: Date(),
+//            amount: 3000,
+//            type: .expense,
+//            category: transportation,
+//            memo: nil,
+//            paymentMethod: payPay
+//        )
+//    )
+//    
+//    context.insert(
+//        Transaction(
+//            date: Date().addingTimeInterval(-86400),
+//            amount: 250000,
+//            type: .income,
+//            category: food,
+//            memo: "給料",
+//            paymentMethod: nil
+//        )
+//    )
+//    
+//    return TransactionListView()
+//        .modelContainer(container)
+//}
