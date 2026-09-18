@@ -115,8 +115,13 @@ final class Transaction {
     var type: TransactionType
     var category: Category
     var memo: String?
-    var paymentMethod: PaymentMethod?
     var sortIndex: Int = 0
+    
+    // 支払方法のコピー保存
+    var paymentMethodID: UUID?
+    var paymentMethodName: String?
+    var paymentMethodType: PaymentType?
+    var paymentMethodMemo: String?
     
     init(
         date: Date = Date(),
@@ -124,15 +129,21 @@ final class Transaction {
         type: TransactionType = .expense,
         category: Category,
         memo: String? = nil,
-        paymentMethod: PaymentMethod? = nil,
-        sortIndex: Int = 0
+        sortIndex: Int = 0,
+        paymentMethodID: UUID? = nil,
+        paymentMethodName: String? = nil,
+        paymentMethodType: PaymentType? = nil,
+        paymentMethodMemo: String? = nil
     ) {
         self.date = date
         self.amount = amount
         self.type = type
         self.category = category
         self.memo = memo
-        self.paymentMethod = paymentMethod
         self.sortIndex = sortIndex
+        self.paymentMethodID = paymentMethodID
+        self.paymentMethodName = paymentMethodName
+        self.paymentMethodType = paymentMethodType
+        self.paymentMethodMemo = paymentMethodMemo
     }
 }
