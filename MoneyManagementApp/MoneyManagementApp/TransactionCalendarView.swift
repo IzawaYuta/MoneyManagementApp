@@ -4,7 +4,7 @@ import SwiftUI
 struct TransactionCalendarView: View {
     
     @State private var currentMonth: Date = Date()
-    @State private var selectedDate: Date? = nil
+    @State private var selectedDate: Date = Date()
     
     private let calendar = Calendar.current
     
@@ -106,7 +106,7 @@ struct TransactionCalendarView: View {
     
     @ViewBuilder
     private func dayCell(for date: Date) -> some View {
-        let isSelected = selectedDate.map { calendar.isDate($0, inSameDayAs: date) } ?? false
+        let isSelected = calendar.isDate(selectedDate, inSameDayAs: date)
         let isToday = calendar.isDateInToday(date)
         let dayNumber = calendar.component(.day, from: date)
         let amount = dummyAmount(for: date)
@@ -118,16 +118,14 @@ struct TransactionCalendarView: View {
         } label: {
             VStack(spacing: 3) {
                 Text("\(dayNumber)")
-                    .font(.system(size: 13, weight: isToday ? .bold : .regular))
-                    .foregroundStyle(isSelected ? .white : .black)
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(isSelected ? .black : .black)
                 
                 if amount != 0 {
                     Text(amount > 0 ? "+\(amount / 1000)k" : "\(amount / 1000)k")
                         .font(.system(size: 9, weight: .medium))
                         .foregroundStyle(
-                            isSelected
-                            ? .white
-                            : (amount > 0 ? Color.green.opacity(0.8) : Color.red.opacity(0.8))
+                            amount > 0 ? Color.green.opacity(0.8) : Color.red.opacity(0.8)
                         )
                 } else {
                     Text(" ")
@@ -137,16 +135,14 @@ struct TransactionCalendarView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 56)
             .background(
-                isSelected
-                ? Color.black
-                : (isToday ? Color(uiColor: .systemGray6) : Color.clear)
+                isToday ? Color.gray.opacity(0.35) : Color.clear
             )
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
                     .strokeBorder(
-                        isSelected ? Color.clear : Color.black.opacity(0.08),
-                        lineWidth: 0.5
+                        isSelected ? Color.black : Color.black.opacity(0.08),
+                        lineWidth: isSelected ? 1.5 : 0.5
                     )
             )
         }
@@ -158,11 +154,11 @@ struct TransactionCalendarView: View {
     @ViewBuilder
     private var selectedDayDetail: some View {
         VStack(alignment: .leading, spacing: 10) {
-            if let selectedDate {
-                Text(selectedDateTitle(for: selectedDate))
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.black)
-                
+            Text(selectedDateTitle(for: selectedDate))
+                .font(.system(size: 13))
+                .foregroundStyle(.black)
+            
+            if hasData(for: selectedDate) {
                 VStack(spacing: 0) {
                     dummyTransactionRow(icon: "fork.knife", title: "食費", amount: -1280)
                     Divider().padding(.leading, 44)
@@ -177,13 +173,17 @@ struct TransactionCalendarView: View {
                         .strokeBorder(Color.black.opacity(0.08), lineWidth: 0.5)
                 )
             } else {
-                Text("日付をタップすると、その日の記録が表示されます")
+                Text("この日の記録はありません")
                     .font(.system(size: 13))
                     .foregroundStyle(.gray)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 24)
             }
         }
+    }
+    
+    private func hasData(for date: Date) -> Bool {
+        dummyAmount(for: date) != 0
     }
     
     @ViewBuilder
@@ -214,7 +214,6 @@ struct TransactionCalendarView: View {
         if let newMonth = calendar.date(byAdding: .month, value: value, to: currentMonth) {
             currentMonth = newMonth
         }
-        selectedDate = nil
     }
     
     // MARK: - 表示用の計算プロパティ
