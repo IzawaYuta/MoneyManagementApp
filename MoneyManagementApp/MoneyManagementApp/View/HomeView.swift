@@ -164,6 +164,83 @@ struct HomeView: View {
                     .frame(height: 90)
                     .padding(.top, -10)
                     .padding(.horizontal, 10)
+                    
+                    HStack(alignment: .center, spacing: 10) {
+                        Button("+100") {
+                            print("🟢 +100タップ")
+                            let currentPrice = Int(priceTextField) ?? 0
+                            let newPrice = currentPrice + 100
+                            priceTextField = String(newPrice)
+                            print("💰 priceTextField:", priceTextField)
+                        }
+                        .font(.system(size: 13))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.white)
+                        )
+                        .foregroundStyle(.black)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+                        )
+                        
+                        Button("+1,000") {
+                            let currentPrice = Int(priceTextField) ?? 0
+                            let newPrice = currentPrice + 1000
+                            priceTextField = String(newPrice)
+                        }
+                        .font(.system(size: 13))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.white)
+                        )
+                        .foregroundStyle(.black)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+                        )
+                        
+                        Button("+5,000") {
+                            let currentPrice = Int(priceTextField) ?? 0
+                            let newPrice = currentPrice + 5000
+                            priceTextField = String(newPrice)
+                        }
+                        .font(.system(size: 13))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.white)
+                        )
+                        .foregroundStyle(.black)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+                        )
+                        
+                        Button("+10,000") {
+                            let currentPrice = Int(priceTextField) ?? 0
+                            let newPrice = currentPrice + 10000
+                            priceTextField = String(newPrice)
+                        }
+                        .font(.system(size: 13))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.white)
+                        )
+                        .foregroundStyle(.black)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+                        )
+                    }
+                    .padding(.horizontal, 15)
                 }
                 .padding(.top, 10)
                 
@@ -262,7 +339,7 @@ struct HomeView: View {
                     //                    }
                     
                 }
-                .offset(y: -30)
+                .offset(y: -10)
                 .scrollDisabled(true)
                 
                 HStack(spacing: 12) {
