@@ -175,8 +175,12 @@ struct HomeView: View {
                             showCategorySelectionView.toggle()
                         } label: {
                             HStack {
+                                Image(systemName: "tray")
+                                    .font(.system(size: 15))
+                                    .foregroundStyle(.black.opacity(0.7))
+                                
                                 Text("カテゴリー")
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.black.opacity(0.7))
                                 
                                 Spacer()
                                 
@@ -195,8 +199,12 @@ struct HomeView: View {
                         
                         // メモ
                         HStack {
+                            Image(systemName: "long.text.page.and.pencil")
+                                .font(.system(size: 15))
+                                .foregroundStyle(.black.opacity(0.7))
+                            
                             Text("メモ")
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.black.opacity(0.7))
                             
                             Spacer()
                             
@@ -211,8 +219,12 @@ struct HomeView: View {
                             showPaymentMethodView.toggle()
                         } label: {
                             HStack {
+                                Image(systemName: "wallet.bifold")
+                                    .font(.system(size: 15))
+                                    .foregroundStyle(.black.opacity(0.7))
+                                
                                 Text("支払い方法")
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.black.opacity(0.7))
                                 
                                 Spacer()
                                 
