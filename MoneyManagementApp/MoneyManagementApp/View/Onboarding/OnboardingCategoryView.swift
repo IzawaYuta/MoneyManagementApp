@@ -51,9 +51,6 @@ struct OnboardingCategoryView: View {
             
             // MARK: - 説明
             VStack(spacing: 10) {
-                Button("Crash") {
-                    fatalError("Crash was triggered")
-                }
                 Image(systemName: "square.grid.2x2")
                     .font(.system(size: 40))
                     .foregroundStyle(.black)
