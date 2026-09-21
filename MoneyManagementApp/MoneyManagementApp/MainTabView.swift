@@ -9,24 +9,14 @@ struct MainTabView: View {
         TabView(selection: $selectedTab) {
             HomeView()
                 .tabItem {
-                    Image(systemName: "house")
+                    Image(systemName: "square.and.pencil")
                 }
                 .tag(0)
-            TransactionListView()
-                .tabItem {
-                    Image(systemName: "list.bullet")
-                }
-                .tag(1)
-            OnboardingView()
-                .tabItem {
-                    Image(systemName: "list.bullet")
-                }
-                .tag(2)
             TransactionCalendarView()
                 .tabItem {
-                    Image(systemName: "list.bullet")
+                    Image(systemName: "calendar")
                 }
-                .tag(3)
+                .tag(1)
         }
     }
 }
