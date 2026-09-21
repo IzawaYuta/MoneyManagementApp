@@ -2,6 +2,7 @@
 import SwiftUI
 import SwiftData
 import FirebaseCore
+import Firebase
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication,

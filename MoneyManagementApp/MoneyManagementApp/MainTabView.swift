@@ -22,7 +22,7 @@ struct MainTabView: View {
                     Image(systemName: "list.bullet")
                 }
                 .tag(2)
-            OnboardingDoneAnimationTestView()
+            TransactionCalendarView()
                 .tabItem {
                     Image(systemName: "list.bullet")
                 }
