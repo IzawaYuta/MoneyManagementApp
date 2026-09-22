@@ -31,8 +31,8 @@ struct SettingListView: View {
                         .foregroundColor(Color.black)
                         .sheet(isPresented: $showMailView) {
                             MailView(
-                                recipients: ["example@example.com"],
-                                subject: "お問い合わせ"
+                                recipients: ["wi17853m@gmail.com"],
+                                subject: "【マネログ】お問い合わせ"
                             )
                         }
                         
