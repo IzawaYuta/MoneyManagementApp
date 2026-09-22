@@ -1,7 +1,10 @@
 
 import SwiftUI
+import SwiftData
 
 struct TransactionCalendarView: View {
+    
+    @Query(sort: \Transaction.date) private var transactions: [Transaction]
     
     @State private var currentMonth: Date = Date()
     @State private var selectedDate: Date = Date()
@@ -81,19 +84,22 @@ struct TransactionCalendarView: View {
                         }
                 )
             }
-            .padding(16)
+            .padding(.vertical, 16)
+            .padding(.horizontal, 5)
             .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .strokeBorder(Color.black.opacity(0.08), lineWidth: 0.5)
             )
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 5)
             
-            // 選択日の詳細(ダミー)
-            selectedDayDetail
-                .padding(.horizontal, 20)
-                .padding(.top, 4)
+            // 選択日の詳細
+            ScrollView {
+                selectedDayDetail
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+            }
             
             Spacer(minLength: 0)
         }
@@ -109,7 +115,7 @@ struct TransactionCalendarView: View {
         let isSelected = calendar.isDate(selectedDate, inSameDayAs: date)
         let isToday = calendar.isDateInToday(date)
         let dayNumber = calendar.component(.day, from: date)
-        let amount = dummyAmount(for: date)
+        let summary = dailySummary(for: date)
         
         Button {
             withAnimation(.easeInOut(duration: 0.15)) {
@@ -119,18 +125,28 @@ struct TransactionCalendarView: View {
             VStack(spacing: 3) {
                 Text("\(dayNumber)")
                     .font(.system(size: 13, weight: .regular))
-                    .foregroundStyle(isSelected ? .black : .black)
+                    .foregroundStyle(.black)
+                    .frame(height: 16)
                 
-                if amount != 0 {
-                    Text(amount > 0 ? "+\(amount / 1000)k" : "\(amount / 1000)k")
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundStyle(
-                            amount > 0 ? Color.green.opacity(0.8) : Color.red.opacity(0.8)
-                        )
-                } else {
-                    Text(" ")
-                        .font(.system(size: 9))
+                // 収入・支出、両方あれば収入を上に
+                VStack(spacing: 1) {
+                    if summary.income > 0 {
+                        Text("\(summary.income)")
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(Color.green.opacity(0.8))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                    }
+                    if summary.expense > 0 {
+                        Text("\(summary.expense)")
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(Color.red.opacity(0.8))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+                    }
                 }
+                .frame(height: 22)
+                .padding(.horizontal, 3)
             }
             .frame(maxWidth: .infinity)
             .frame(height: 56)
@@ -141,7 +157,7 @@ struct TransactionCalendarView: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
                     .strokeBorder(
-                        isSelected ? Color.black : Color.black.opacity(0.08),
+                        isSelected ? Color.black : Color.black.opacity(0.1),
                         lineWidth: isSelected ? 1.5 : 0.5
                     )
             )
@@ -149,7 +165,7 @@ struct TransactionCalendarView: View {
         .buttonStyle(.plain)
     }
     
-    // MARK: - 選択日の詳細カード(ダミーデータ)
+    // MARK: - 選択日の詳細カード(実データ)
     
     @ViewBuilder
     private var selectedDayDetail: some View {
@@ -158,13 +174,23 @@ struct TransactionCalendarView: View {
                 .font(.system(size: 13))
                 .foregroundStyle(.black)
             
-            if hasData(for: selectedDate) {
+            let dayItems = transactions(for: selectedDate)
+            
+            if dayItems.isEmpty {
+                Text("この日の記録はありません")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.gray)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 24)
+            } else {
                 VStack(spacing: 0) {
-                    dummyTransactionRow(icon: "fork.knife", title: "食費", amount: -1280)
-                    Divider().padding(.leading, 44)
-                    dummyTransactionRow(icon: "car", title: "交通費", amount: -420)
-                    Divider().padding(.leading, 44)
-                    dummyTransactionRow(icon: "yensign.circle", title: "給与", amount: 250000)
+                    ForEach(Array(dayItems.enumerated()), id: \.element.id) { index, transaction in
+                        transactionRow(transaction)
+                        
+                        if index < dayItems.count - 1 {
+                            Divider().padding(.leading, 44)
+                        }
+                    }
                 }
                 .background(Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -172,37 +198,45 @@ struct TransactionCalendarView: View {
                     RoundedRectangle(cornerRadius: 12)
                         .strokeBorder(Color.black.opacity(0.08), lineWidth: 0.5)
                 )
-            } else {
-                Text("この日の記録はありません")
-                    .font(.system(size: 13))
-                    .foregroundStyle(.gray)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 24)
             }
         }
     }
     
-    private func hasData(for date: Date) -> Bool {
-        dummyAmount(for: date) != 0
-    }
-    
     @ViewBuilder
-    private func dummyTransactionRow(icon: String, title: String, amount: Int) -> some View {
+    private func transactionRow(_ transaction: Transaction) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: icon)
+            Image(systemName: transaction.categoryImageName)
                 .font(.system(size: 14))
                 .foregroundStyle(.black)
                 .frame(width: 24)
             
-            Text(title)
-                .font(.system(size: 14))
-                .foregroundStyle(.black)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(transaction.categoryName)
+                    .font(.system(size: 14))
+                    .foregroundStyle(.black)
+                
+                if let memo = transaction.memo {
+                    Text(memo)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.gray)
+                }
+                
+                if let paymentMethodName = transaction.paymentMethodName {
+                    Text(paymentMethodName)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.gray)
+                }
+            }
             
             Spacer()
             
-            Text(amount > 0 ? "+\(amount.formatted())円" : "\(amount.formatted())円")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(amount > 0 ? .green : .red)
+            Text(
+                transaction.type == .income
+                ? "+\(transaction.amount.formatted())円"
+                : "-\(transaction.amount.formatted())円"
+            )
+            .font(.system(size: 14, weight: .medium))
+            .foregroundStyle(transaction.type == .income ? .green : .red)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
@@ -264,20 +298,81 @@ struct TransactionCalendarView: View {
         return days
     }
     
-    /// ダミーの金額データ(日付ごとに疑似ランダムだが再現性のある値を生成)
-    private func dummyAmount(for date: Date) -> Int {
-        let day = calendar.component(.day, from: date)
-        // 日付に応じて、それっぽいダミー値を再現性を持って生成
-        if day % 5 == 0 {
-            return 0 // データなしの日
-        } else if day % 7 == 0 {
-            return 250000 // 給与日っぽい日
-        } else {
-            return -((day * 137) % 4000 + 300)
-        }
+    // MARK: - 実データの集計
+    
+    /// 指定した日付に該当するTransactionを、時刻の新しい順に返す
+    private func transactions(for date: Date) -> [Transaction] {
+        transactions
+            .filter { calendar.isDate($0.date, inSameDayAs: date) }
+            .sorted { $0.date > $1.date }
+    }
+    
+    /// 指定した日付の収入合計・支出合計
+    private func dailySummary(for date: Date) -> (income: Int, expense: Int) {
+        let dayItems = transactions
+            .filter { calendar.isDate($0.date, inSameDayAs: date) }
+        
+        let income = dayItems
+            .filter { $0.type == .income }
+            .reduce(0) { $0 + $1.amount }
+        
+        let expense = dayItems
+            .filter { $0.type == .expense }
+            .reduce(0) { $0 + $1.amount }
+        
+        return (income, expense)
     }
 }
 
 #Preview {
-    TransactionCalendarView()
+    let container = try! ModelContainer(
+        for: Transaction.self,
+        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+    )
+    
+    let context = container.mainContext
+    
+    let today = Date()
+    let calendar = Calendar.current
+    
+    context.insert(
+        Transaction(
+            date: today,
+            amount: 1280,
+            type: .expense,
+            categoryID: UUID(),
+            categoryName: "食費",
+            categoryImageName: "fork.knife",
+            paymentMethodID: UUID(),
+            paymentMethodName: "現金",
+            paymentMethodType: .cash
+        )
+    )
+    
+    context.insert(
+        Transaction(
+            date: today,
+            amount: 2500000,
+            type: .income,
+            categoryID: UUID(),
+            categoryName: "給与",
+            categoryImageName: "yensign.circle"
+        )
+    )
+    
+    if let yesterday = calendar.date(byAdding: .day, value: -1, to: today) {
+        context.insert(
+            Transaction(
+                date: yesterday,
+                amount: 420,
+                type: .expense,
+                categoryID: UUID(),
+                categoryName: "交通費",
+                categoryImageName: "car"
+            )
+        )
+    }
+    
+    return TransactionCalendarView()
+        .modelContainer(container)
 }
