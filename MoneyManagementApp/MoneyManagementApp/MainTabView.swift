@@ -12,11 +12,18 @@ struct MainTabView: View {
                     Image(systemName: "square.and.pencil")
                 }
                 .tag(0)
+            
             TransactionCalendarView()
                 .tabItem {
                     Image(systemName: "calendar")
                 }
                 .tag(1)
+            
+            SettingListView()
+                .tabItem {
+                    Image(systemName: "gearshape")
+                }
+                .tag(2)
         }
     }
 }
