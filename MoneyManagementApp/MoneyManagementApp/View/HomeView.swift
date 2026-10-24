@@ -407,7 +407,16 @@ struct HomeView: View {
             }
             .scrollContentBackground(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(uiColor: .systemGray6).opacity(0.5))
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color(red: 235.0 / 255.0, green: 240.0 / 255.0, blue: 255.0 / 255.0),
+                        Color(red: 255.0 / 255.0, green: 240.0 / 255.0, blue: 247.0 / 255.0)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
             .ignoresSafeArea(.keyboard, edges: .bottom)
             .contentShape(Rectangle())
             .onTapGesture {
