@@ -11,6 +11,9 @@ struct TransactionCalendarView: View {
     
     private let calendar = Calendar.current
     
+    let customGreen: Color = Color(red: 0.0, green: 180 / 255.0, blue: 0.0)
+    let customRed: Color = Color(red: 230.0 / 255.0, green: 0.0, blue: 0.0)
+    
     var body: some View {
         VStack(spacing: 16) {
             
@@ -104,7 +107,16 @@ struct TransactionCalendarView: View {
             Spacer(minLength: 0)
         }
         .padding(.top, 16)
-        .background(Color(uiColor: .systemGray6).opacity(0.5))
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(red: 235.0 / 255.0, green: 240.0 / 255.0, blue: 255.0 / 255.0),
+                    Color(red: 255.0 / 255.0, green: 240.0 / 255.0, blue: 247.0 / 255.0)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .animation(.easeInOut(duration: 0.2), value: currentMonth)
     }
     
@@ -133,14 +145,14 @@ struct TransactionCalendarView: View {
                     if summary.income > 0 {
                         Text("\(summary.income)")
                             .font(.system(size: 9, weight: .medium))
-                            .foregroundStyle(Color.green.opacity(0.8))
+                            .foregroundStyle(customGreen)
                             .lineLimit(1)
                             .minimumScaleFactor(0.6)
                     }
                     if summary.expense > 0 {
                         Text("\(summary.expense)")
                             .font(.system(size: 9, weight: .medium))
-                            .foregroundStyle(Color.red.opacity(0.8))
+                            .foregroundStyle(customRed)
                             .lineLimit(1)
                             .minimumScaleFactor(0.6)
                     }
@@ -151,7 +163,7 @@ struct TransactionCalendarView: View {
             .frame(maxWidth: .infinity)
             .frame(height: 56)
             .background(
-                isToday ? Color.gray.opacity(0.35) : Color.clear
+                isToday ? Color.gray.opacity(0.25) : Color.clear
             )
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .overlay(
@@ -236,7 +248,7 @@ struct TransactionCalendarView: View {
                 : "-\(transaction.amount.formatted())円"
             )
             .font(.system(size: 14, weight: .medium))
-            .foregroundStyle(transaction.type == .income ? .green : .red)
+            .foregroundStyle(transaction.type == .income ? customGreen : customRed)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
