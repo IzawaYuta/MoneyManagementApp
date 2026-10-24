@@ -48,7 +48,7 @@ struct HomeView: View {
                             .font(.system(size: 15, weight: .regular))
                             .foregroundStyle(.black)
                             .frame(width: 35, height: 35)
-                            .background(Color(uiColor: .systemGray6))
+                            .background(Color(uiColor: .systemGray5))
                             .clipShape(Circle())
                     }
                     
@@ -128,7 +128,7 @@ struct HomeView: View {
                             .font(.system(size: 15, weight: .regular))
                             .foregroundStyle(.black)
                             .frame(width: 30, height: 30)
-                            .background(Color(uiColor: .systemGray6))
+                            .background(Color(uiColor: .systemGray5))
                             .clipShape(Circle())
                     }
                 }
