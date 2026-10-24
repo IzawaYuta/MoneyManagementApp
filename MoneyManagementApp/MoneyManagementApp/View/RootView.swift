@@ -4,6 +4,7 @@ import SwiftUI
 struct RootView: View {
     
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @StateObject private var authManager = AuthManager()
     
     var body: some View {
         ZStack {
@@ -15,6 +16,9 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut(duration: 0.6), value: hasCompletedOnboarding)
+        .task {
+            await authManager.signInAnonymously()
+        }
     }
 }
 
