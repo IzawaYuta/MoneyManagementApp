@@ -7,6 +7,8 @@ struct SettingListView: View {
     
     let privacyPolicyURL: String = "https://wooded-starburst-67e.notion.site/3e3e36f7a27180b6b7fef0d8dbcca9ec?source=copy_link"
     
+    let inquiryFormURL: String = "https://docs.google.com/forms/d/e/1FAIpQLScGUQX5XLgiK9TZPl6V8-W2kNeRzTV5JXbrr0kZyJNaBN1C0w/viewform?usp=dialog"
+    
     var body: some View {
         NavigationStack {
             List {
@@ -25,16 +27,11 @@ struct SettingListView: View {
                     }
                     
                     HStack {
-                        Button("お問い合わせ") {
-                            showMailView = true
-                        }
+                        Link(
+                            "お問い合わせ",
+                            destination: URL(string: inquiryFormURL)!
+                        )
                         .foregroundColor(Color.black)
-                        .sheet(isPresented: $showMailView) {
-                            MailView(
-                                recipients: ["wi17853m@gmail.com"],
-                                subject: "【マネログ】お問い合わせ"
-                            )
-                        }
                         
                         Spacer()
                         
