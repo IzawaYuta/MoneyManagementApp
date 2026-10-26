@@ -517,6 +517,8 @@ struct HomeView: View {
         
         print("✅amount: \(transaction.amount)")
         print("✅category: \(transaction.categoryName)")
+        print("category.imageName: \(category.imageName)")
+        print("transaction.categoryImageName: \(transaction.categoryImageName)")
         
         if let memo = transaction.memo {
             print("✅memo: \"\(memo)\"")

@@ -1,127 +1,115 @@
 
 import SwiftUI
+import SwiftData
 import Charts
 
-// MARK: - Model
+// MARK: - 集計用モデル(カテゴリーごとの月合計)
 
-enum RecordType: String, CaseIterable, Identifiable {
-    case income = "収入"
-    case expense = "支出"
-    var id: String { rawValue }
-}
-
-enum MoneyCategory: String, CaseIterable, Identifiable {
-    // 収入
-    case salary = "給与"
-    case sideJob = "副業"
-    case extra = "臨時収入"
-    // 支出
-    case housing = "住居費"
-    case food = "食費"
-    case entertainment = "娯楽"
-    case transport = "交通費"
-    case daily = "日用品"
-    case telecom = "通信費"
-    
-    var id: String { rawValue }
-    
-    var color: Color {
-        switch self {
-        case .salary:        return Color(hex: 0x1F8A4C)
-        case .sideJob:       return Color(hex: 0x2B8FD6)
-        case .extra:         return Color(hex: 0xC2547A)
-        case .housing:       return Color(hex: 0x3B6FB6)
-        case .food:          return Color(hex: 0xE8833A)
-        case .entertainment: return Color(hex: 0x8A5CC2)
-        case .transport:     return Color(hex: 0x2E9E8F)
-        case .daily:         return Color(hex: 0xD9A92E)
-        case .telecom:       return Color(hex: 0x8892A0)
-        }
-    }
-    
-    var systemImage: String {
-        switch self {
-        case .salary:        return "yensign.circle"
-        case .sideJob:       return "laptopcomputer"
-        case .extra:         return "gift"
-        case .housing:       return "house"
-        case .food:          return "fork.knife"
-        case .entertainment: return "play.circle"
-        case .transport:     return "bus"
-        case .daily:         return "bag"
-        case .telecom:       return "iphone"
-        }
-    }
-}
-
-struct MoneyRecord: Identifiable {
-    let id = UUID()
-    let category: MoneyCategory
-    let amount: Int          // 常に正の値
-    let type: RecordType
-}
-
-// MARK: - Dummy data
-
-enum DummyData {
-    static let records: [MoneyRecord] = [
-        // 収入
-        .init(category: .salary,        amount: 280_000, type: .income),
-        .init(category: .sideJob,       amount: 45_000,  type: .income),
-        .init(category: .extra,         amount: 12_000,  type: .income),
-        // 支出
-        .init(category: .housing,       amount: 72_000,  type: .expense),
-        .init(category: .food,          amount: 48_200,  type: .expense),
-        .init(category: .entertainment, amount: 21_800,  type: .expense),
-        .init(category: .transport,     amount: 12_400,  type: .expense),
-        .init(category: .daily,         amount: 9_600,   type: .expense),
-        .init(category: .telecom,       amount: 8_900,   type: .expense)
-    ]
+struct CategorySummary: Identifiable {
+    let id: UUID            // Transaction.categoryID
+    let name: String
+    let imageName: String   // SF Symbols名を想定
+    let amount: Int
+    let color: Color
 }
 
 // MARK: - Screen
 
 struct MonthlyChartView: View {
-    @State private var month: Date = {
-        var c = DateComponents(); c.year = 2026; c.month = 10; c.day = 1
-        return Calendar.current.date(from: c) ?? .now
-    }()
-    @State private var recordType: RecordType = .expense
-    @State private var selectedCategory: MoneyCategory?
+    @Query(sort: \Transaction.date) private var allTransactions: [Transaction]
+    // 色の割り当て用。並び順(sortIndex → 名前)で安定させる
+    @Query(sort: [SortDescriptor(\Category.sortIndex), SortDescriptor(\Category.name)])
+    private var categories: [Category]
     
-    private let allRecords = DummyData.records
-    private var records: [MoneyRecord] { allRecords.filter { $0.type == recordType } }
-    private var total: Int { records.reduce(0) { $0 + $1.amount } }
+    @State private var month: Date = Date()
+    @State private var transactionType: TransactionType = .expense
+    @State private var selectedID: UUID?
     
-    /// 月の総合計(種別ごと)。セグメントの選択に関わらず常に両方を表示
-    private func monthTotal(of type: RecordType) -> Int {
-        allRecords.filter { $0.type == type }.reduce(0) { $0 + $1.amount }
+    /// カテゴリーの色。公開後は順番・色を変更しないこと(将来のcolorHex移行で固定するため)
+    private static let palette: [Color] = [
+        Color(hex: 0x3B6FB6), Color(hex: 0xE8833A), Color(hex: 0x8A5CC2),
+        Color(hex: 0x2E9E8F), Color(hex: 0xD9A92E), Color(hex: 0xC2547A),
+        Color(hex: 0x1F8A4C), Color(hex: 0x8892A0), Color(hex: 0x2B8FD6),
+        Color(hex: 0xB5452F), Color(hex: 0x7A8F1F), Color(hex: 0x5B4FCF)
+    ]
+    
+    /// カテゴリーの並び順で色を割り当てる(12個までは重ならない)
+    private func color(for id: UUID) -> Color {
+        guard let index = categories.firstIndex(where: { $0.id == id }) else {
+            return Color(.systemGray)   // 削除済みカテゴリー
+        }
+        return Self.palette[index % Self.palette.count]
     }
     
+    // MARK: 集計
+    
+    /// 選択中の月・種別(収入/支出)で絞り込み、カテゴリーごとに合計
+    private var summaries: [CategorySummary] {
+        let calendar = Calendar.current
+        let filtered = allTransactions.filter {
+            $0.type == transactionType &&
+            calendar.isDate($0.date, equalTo: month, toGranularity: .month)
+        }
+        return Dictionary(grouping: filtered, by: \.categoryID)
+            .compactMap { id, items -> CategorySummary? in
+                guard let first = items.first else { return nil }
+                return CategorySummary(
+                    id: id,
+                    name: first.categoryName,
+                    imageName: first.categoryImageName,
+                    amount: items.reduce(0) { $0 + $1.amount },
+                    color: color(for: id)
+                )
+            }
+            .sorted { a, b in
+                a.amount != b.amount ? a.amount > b.amount : a.name < b.name
+            }
+    }
+    
+    // MARK: Body
+    
     var body: some View {
+        let items = summaries
+        let total = items.reduce(0) { $0 + $1.amount }
+        
         NavigationStack {
             VStack(spacing: 0) {
                 monthHeader
-                totalsSummary
-                pieChart
+                totalsSummary(total: total)
+                pieChart(items: items, total: total)
                     .frame(height: 240)
                     .padding(.vertical, 12)
-                recordList
+                recordList(items: items)
             }
             .padding(.horizontal, 20)
-            .background(Color(.systemGroupedBackground))
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color(red: 235.0 / 255.0, green: 240.0 / 255.0, blue: 255.0 / 255.0),
+                        Color(red: 255.0 / 255.0, green: 240.0 / 255.0, blue: 247.0 / 255.0)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Picker("種別", selection: $recordType) {
-                        ForEach(RecordType.allCases) { Text($0.rawValue).tag($0) }
+                    Picker("種別", selection: $transactionType) {
+                        ForEach(TransactionType.allCases, id: \.self) {
+                            Text($0.rawValue).tag($0)
+                        }
                     }
                     .pickerStyle(.segmented)
                     .frame(width: 180)
                 }
             }
-            .onChange(of: recordType) { _, _ in
-                selectedCategory = nil
+            .onChange(of: transactionType) { _, _ in
+                selectedID = nil
+            }
+            // データ変更でカテゴリーが消えた場合に選択を解除
+            .onChange(of: items.map(\.id)) { _, ids in
+                if let id = selectedID, !ids.contains(id) { selectedID = nil }
             }
         }
     }
@@ -156,24 +144,24 @@ struct MonthlyChartView: View {
     private func changeMonth(by value: Int) {
         if let next = Calendar.current.date(byAdding: .month, value: value, to: month) {
             month = next
-            selectedCategory = nil
+            selectedID = nil
         }
     }
     
     // MARK: Totals
     
-    private var totalsSummary: some View {
-        let isIncome = recordType == .income
-        return totalColumn(title: "\(recordType.rawValue)合計", amount: total,
+    private func totalsSummary(total: Int) -> some View {
+        let isIncome = transactionType == .income
+        return totalColumn(title: "\(transactionType.rawValue)合計", amount: total,
                            prefix: isIncome ? "+" : "-",
-                           color: isIncome ? Color(hex: 0x1F6E40) : .primary)
+                           color: Color.primary)
         .padding(.vertical, 12)
         .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemBackground)))
         .padding(.top, 12)
     }
     
     private func totalColumn(title: String, amount: Int, prefix: String, color: Color) -> some View {
-        VStack(spacing: 5) {
+        VStack(spacing: 2) {
             Text(title)
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -187,36 +175,49 @@ struct MonthlyChartView: View {
     
     // MARK: Pie chart
     
-    private var pieChart: some View {
-        Chart(records) { item in
-            SectorMark(
-                angle: .value("金額", item.amount),
-                outerRadius: .ratio(radiusRatio(for: item.category)),
-                angularInset: 1.5
-            )
-            .cornerRadius(4)
-            .foregroundStyle(item.category.color)
-            .opacity(opacity(for: item.category))
-        }
-        .chartLegend(.hidden)
-        .animation(.spring(duration: 0.35), value: selectedCategory)
-        .animation(.spring(duration: 0.35), value: recordType)
-        // 扇形の上だけを反応させるため、自前でヒットテストする
-        .chartOverlay { proxy in
-            GeometryReader { geo in
-                Color.clear
-                    .contentShape(Rectangle())
-                    .onTapGesture { location in
-                        guard let plot = proxy.plotFrame else { return }
-                        handleTap(at: location, plotFrame: geo[plot])
-                    }
+    @ViewBuilder
+    private func pieChart(items: [CategorySummary], total: Int) -> some View {
+        if items.isEmpty {
+            ZStack {
+                Circle()
+                    .stroke(Color(.systemGray4), style: StrokeStyle(lineWidth: 2, dash: [6, 6]))
+                    .padding(12)
+                Text("データがありません")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
+        } else {
+            Chart(items) { item in
+                SectorMark(
+                    angle: .value("金額", item.amount),
+                    outerRadius: .ratio(radiusRatio(for: item.id)),
+                    angularInset: 1.5
+                )
+                .cornerRadius(4)
+                .foregroundStyle(item.color)
+                .opacity(opacity(for: item.id))
+            }
+            .chartLegend(.hidden)
+            .animation(.spring(duration: 0.35), value: selectedID)
+            // 扇形の上だけを反応させるため、自前でヒットテストする
+            .chartOverlay { proxy in
+                GeometryReader { geo in
+                    Color.clear
+                        .contentShape(Rectangle())
+                        .onTapGesture { location in
+                            guard let plot = proxy.plotFrame else { return }
+                            handleTap(at: location, plotFrame: geo[plot],
+                                      items: items, total: total)
+                        }
+                }
+            }
+            .overlay { selectionLabel(items: items, total: total) }
         }
-        .overlay { selectionLabel }
     }
     
     /// タップ位置が扇形の内側にあるときだけ選択を切り替える
-    private func handleTap(at point: CGPoint, plotFrame: CGRect) {
+    private func handleTap(at point: CGPoint, plotFrame: CGRect,
+                           items: [CategorySummary], total: Int) {
         let center = CGPoint(x: plotFrame.midX, y: plotFrame.midY)
         let fullRadius = min(plotFrame.width, plotFrame.height) / 2
         let dx = point.x - center.x
@@ -228,26 +229,25 @@ struct MonthlyChartView: View {
         if angle < 0 { angle += 2 * .pi }
         let value = angle / (2 * .pi) * Double(total)
         
-        guard let tapped = category(at: value) else { return }
+        guard let tapped = categoryID(at: value, items: items) else { return }
         // 現在の表示半径(拡大・縮小後)の外側(余白)は無視
         guard distance <= fullRadius * radiusRatio(for: tapped) else { return }
         
         withAnimation(.spring(duration: 0.35)) {
             // 強調中をタップで解除、別カテゴリーなら強調を移す
-            selectedCategory = (selectedCategory == tapped) ? nil : tapped
+            selectedID = (selectedID == tapped) ? nil : tapped
         }
     }
     
     @ViewBuilder
-    private var selectionLabel: some View {
-        if let selected = selectedCategory,
-           let amount = records.first(where: { $0.category == selected })?.amount {
+    private func selectionLabel(items: [CategorySummary], total: Int) -> some View {
+        if let selected = items.first(where: { $0.id == selectedID }) {
             VStack(spacing: 2) {
-                Text(selected.rawValue)
+                Text(selected.name)
                     .font(.headline)
-                Text("¥\(amount.formatted())")
+                Text("¥\(selected.amount.formatted())")
                     .font(.subheadline.monospacedDigit())
-                Text(String(format: "%.1f%%", Double(amount) / Double(total) * 100))
+                Text(String(format: "%.1f%%", Double(selected.amount) / Double(total) * 100))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -260,35 +260,35 @@ struct MonthlyChartView: View {
     }
     
     /// 選択中は大きく、他は小さく、未選択時は標準
-    private func radiusRatio(for category: MoneyCategory) -> Double {
-        guard let selected = selectedCategory else { return 0.9 }
-        return selected == category ? 1.0 : 0.8
+    private func radiusRatio(for id: UUID) -> Double {
+        guard let selected = selectedID else { return 0.9 }
+        return selected == id ? 1.0 : 0.8
     }
     
     /// 選択中以外は薄くする
-    private func opacity(for category: MoneyCategory) -> Double {
-        guard let selected = selectedCategory else { return 1.0 }
-        return selected == category ? 1.0 : 0.3
+    private func opacity(for id: UUID) -> Double {
+        guard let selected = selectedID else { return 1.0 }
+        return selected == id ? 1.0 : 0.3
     }
     
     /// 角度に対応する累計金額からカテゴリーを求める
-    private func category(at value: Double) -> MoneyCategory? {
+    private func categoryID(at value: Double, items: [CategorySummary]) -> UUID? {
         var cumulative = 0.0
-        for item in records {
+        for item in items {
             cumulative += Double(item.amount)
-            if value <= cumulative { return item.category }
+            if value <= cumulative { return item.id }
         }
         return nil
     }
     
     // MARK: List
     
-    private var recordList: some View {
+    private func recordList(items: [CategorySummary]) -> some View {
         ScrollView {
             VStack(spacing: 0) {
-                ForEach(records) { record in
-                    recordRow(record)
-                    if record.id != records.last?.id {
+                ForEach(items) { item in
+                    recordRow(item)
+                    if item.id != items.last?.id {
                         Divider().padding(.leading, 56)
                     }
                 }
@@ -301,34 +301,35 @@ struct MonthlyChartView: View {
         .padding(.bottom, 8)
     }
     
-    private func recordRow(_ record: MoneyRecord) -> some View {
-        let isDimmed = selectedCategory != nil && selectedCategory != record.category
-        let isIncome = record.type == .income
+    private func recordRow(_ item: CategorySummary) -> some View {
+        let isDimmed = selectedID != nil && selectedID != item.id
+        let isIncome = transactionType == .income
         return HStack(spacing: 12) {
             // Image
-            Image(systemName: record.category.systemImage)
+            Image(systemName: item.imageName)
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(record.category.color)
+                .foregroundStyle(item.color)
                 .frame(width: 40, height: 40)
-                .background(Circle().fill(record.category.color.opacity(0.15)))
+                .background(Circle().fill(item.color.opacity(0.15)))
             
             // カテゴリー
-            Text(record.category.rawValue)
+            Text(item.name)
                 .font(.body.weight(.medium))
             
             Spacer()
             
             // 金額
-            Text("\(isIncome ? "+" : "-")¥\(record.amount.formatted())")
+            Text("\(isIncome ? "+" : "-")\(item.amount.formatted())")
                 .font(.body.bold().monospacedDigit())
-                .foregroundStyle(isIncome ? Color(hex: 0x1F6E40) : .primary)
+            //                .foregroundStyle(isIncome ? Color(hex: 0x1F6E40) : .primary)
+                .foregroundStyle(Color.primary)
         }
         .frame(height: 52)
         .opacity(isDimmed ? 0.4 : 1.0)
         .contentShape(Rectangle())
         .onTapGesture {
             withAnimation(.spring(duration: 0.35)) {
-                selectedCategory = (selectedCategory == record.category) ? nil : record.category
+                selectedID = (selectedID == item.id) ? nil : item.id
             }
         }
     }
@@ -346,6 +347,44 @@ extension Color {
     }
 }
 
+// MARK: - Preview
+
+@MainActor
+enum PreviewData {
+    static var container: ModelContainer {
+        let container = try! ModelContainer(
+            for: Category.self, PaymentMethod.self, Transaction.self,
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+        )
+        let samples: [(String, String, Int, TransactionType)] = [
+            ("給与", "yensign.circle", 280_000, .income),
+            ("副業", "laptopcomputer", 45_000, .income),
+            ("住居費", "house", 72_000, .expense),
+            ("食費", "fork.knife", 48_200, .expense),
+            ("娯楽", "play.circle", 21_800, .expense),
+            ("交通費", "bus", 12_400, .expense),
+            ("日用品", "bag", 9_600, .expense),
+            ("通信費", "iphone", 8_900, .expense)
+        ]
+        for (index, sample) in samples.enumerated() {
+            let category = Category(name: sample.0, imageName: sample.1, sortIndex: index)
+            container.mainContext.insert(category)
+            container.mainContext.insert(
+                Transaction(
+                    date: Date(),
+                    amount: sample.2,
+                    type: sample.3,
+                    categoryID: category.id,
+                    categoryName: category.name,
+                    categoryImageName: category.imageName
+                )
+            )
+        }
+        return container
+    }
+}
+
 #Preview {
     MonthlyChartView()
+        .modelContainer(PreviewData.container)
 }

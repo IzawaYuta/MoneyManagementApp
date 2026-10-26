@@ -19,11 +19,17 @@ struct MainTabView: View {
                 }
                 .tag(1)
             
+            MonthlyChartView()
+                .tabItem {
+                    Image(systemName: "calendar")
+                }
+                .tag(2)
+            
             SettingListView()
                 .tabItem {
                     Image(systemName: "gearshape")
                 }
-                .tag(2)
+                .tag(3)
         }
     }
 }
