@@ -21,13 +21,13 @@ struct MainTabView: View {
             
             MonthlyChartView()
                 .tabItem {
-                    Image(systemName: "calendar")
+                    Image(systemName: "chart.pie")
                 }
                 .tag(2)
             
             SettingListView()
                 .tabItem {
-                    Image(systemName: "gearshape")
+                    Image(systemName: "gear")
                 }
                 .tag(3)
         }
