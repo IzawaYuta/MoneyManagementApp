@@ -86,20 +86,40 @@ struct AddCategoryView: View {
         ("ellipsis.circle", ["その他"])
     ]
     
-    // 選択できるカテゴリーカラー
+    // 選択できるカテゴリーカラー(色相順に5色ずつ並べる)
     private let categoryColors: [(name: String, hex: String)] = [
+        // 赤・オレンジ系
         ("レッド", "#FF6B6B"),
+        ("クリムゾン", "#E03131"),
+        ("ピーチ", "#FFC9A8"),
         ("オレンジ", "#FFA94D"),
+        ("ディープオレンジ", "#F76707"),
+        // 黄・緑系
         ("イエロー", "#FFD43B"),
+        ("ゴールド", "#E0A800"),
+        ("ライム", "#A9E34B"),
         ("グリーン", "#69DB7C"),
-        ("ブルー", "#4DABF7"),
-        ("パープル", "#B197FC"),
-        ("ピンク", "#F783AC"),
+        ("フォレスト", "#2F9E44"),
+        // 青緑・青系
+        ("ミント", "#63E6BE"),
         ("ティール", "#38B2AC"),
+        ("シアン", "#3BC9DB"),
+        ("ブルー", "#4DABF7"),
+        ("ダークブルー", "#1971C2"),
+        // 紫・ピンク系
+        ("インディゴ", "#5C7CFA"),
+        ("バイオレット", "#7048E8"),
+        ("パープル", "#B197FC"),
+        ("ラベンダー", "#D0BFFF"),
+        ("ピンク", "#F783AC"),
+        // その他
+        ("ローズ", "#C2255C"),
+        ("ブラウン", "#A5673F"),
+        ("ベージュ", "#D4B48C"),
         ("グレー", "#868E96"),
         ("ブラック", "#343A40")
     ]
-
+    
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 4)
     
     var body: some View {
@@ -122,7 +142,7 @@ struct AddCategoryView: View {
                                 } label: {
                                     Image(systemName: icon.symbol)
                                         .font(.system(size: 24))
-                                        .foregroundStyle(.black)
+                                        .foregroundStyle(colorFromHex(selectedColor))
                                         .frame(width: 50, height: 50)
                                         .background(
                                             Circle()
