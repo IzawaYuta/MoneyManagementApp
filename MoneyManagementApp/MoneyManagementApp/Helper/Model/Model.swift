@@ -50,21 +50,25 @@ enum PaymentType: String, Codable, CaseIterable {
         }
     }
 }
-//MARK: カテゴリー
+
+// MARK: カテゴリー
 @Model
 final class Category {
     var id: UUID = UUID()
     var name: String
     var imageName: String
+    var colorHex: String
     var sortIndex: Int = 0
-
+    
     init(
         name: String,
         imageName: String,
+        colorHex: String,
         sortIndex: Int = 0
     ) {
         self.name = name
         self.imageName = imageName
+        self.colorHex = colorHex
         self.sortIndex = sortIndex
     }
 }
