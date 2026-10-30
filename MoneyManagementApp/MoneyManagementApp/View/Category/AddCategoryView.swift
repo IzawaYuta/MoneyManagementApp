@@ -12,7 +12,6 @@ struct AddCategoryView: View {
     
     @State private var categoryName = ""
     @State private var selectedIcon: String? = nil
-    @State private var searchText = ""
     
     // オンボーディング用: 追加後にdismiss()の代わりにこちらを呼ぶ
     var onSave: (() -> Void)? = nil
@@ -85,18 +84,7 @@ struct AddCategoryView: View {
         
         ("ellipsis.circle", ["その他"])
     ]
-    
-    private var filteredIcons: [(symbol: String, keywords: [String])] {
-        guard !searchText.isEmpty else { return allIcons }
-        
-        return allIcons.filter { icon in
-            icon.symbol.localizedCaseInsensitiveContains(searchText)
-            || icon.keywords.contains {
-                $0.localizedCaseInsensitiveContains(searchText)
-            }
-        }
-    }
-    
+
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 4)
     
     var body: some View {
@@ -108,7 +96,7 @@ struct AddCategoryView: View {
                 
                 Section("アイコン") {
                     LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(filteredIcons, id: \.symbol) { icon in
+                        ForEach(allIcons, id: \.symbol) { icon in
                             Button {
                                 if selectedIcon == icon.symbol {
                                     selectedIcon = nil
@@ -138,7 +126,6 @@ struct AddCategoryView: View {
             }
             .navigationTitle("カテゴリーを追加")
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, prompt: "アイコンを検索")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("キャンセル") {
