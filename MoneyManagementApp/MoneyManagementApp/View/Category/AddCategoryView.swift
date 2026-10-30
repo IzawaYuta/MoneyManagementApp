@@ -12,6 +12,7 @@ struct AddCategoryView: View {
     
     @State private var categoryName = ""
     @State private var selectedIcon: String? = nil
+    @State private var selectedColor = "#FF6B6B"
     
     // オンボーディング用: 追加後にdismiss()の代わりにこちらを呼ぶ
     var onSave: (() -> Void)? = nil
@@ -84,6 +85,20 @@ struct AddCategoryView: View {
         
         ("ellipsis.circle", ["その他"])
     ]
+    
+    // 選択できるカテゴリーカラー
+    private let categoryColors: [(name: String, hex: String)] = [
+        ("レッド", "#FF6B6B"),
+        ("オレンジ", "#FFA94D"),
+        ("イエロー", "#FFD43B"),
+        ("グリーン", "#69DB7C"),
+        ("ブルー", "#4DABF7"),
+        ("パープル", "#B197FC"),
+        ("ピンク", "#F783AC"),
+        ("ティール", "#38B2AC"),
+        ("グレー", "#868E96"),
+        ("ブラック", "#343A40")
+    ]
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 16), count: 4)
     
@@ -95,30 +110,77 @@ struct AddCategoryView: View {
                 }
                 
                 Section("アイコン") {
-                    LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(allIcons, id: \.symbol) { icon in
-                            Button {
-                                if selectedIcon == icon.symbol {
-                                    selectedIcon = nil
-                                } else {
-                                    selectedIcon = icon.symbol
+                    ScrollView(.vertical) {
+                        LazyVGrid(columns: columns, spacing: 16) {
+                            ForEach(allIcons, id: \.symbol) { icon in
+                                Button {
+                                    if selectedIcon == icon.symbol {
+                                        selectedIcon = nil
+                                    } else {
+                                        selectedIcon = icon.symbol
+                                    }
+                                } label: {
+                                    Image(systemName: icon.symbol)
+                                        .font(.system(size: 24))
+                                        .foregroundStyle(.black)
+                                        .frame(width: 50, height: 50)
+                                        .background(
+                                            Circle()
+                                                .stroke(
+                                                    selectedIcon == icon.symbol
+                                                    ? Color.black
+                                                    : Color.clear,
+                                                    lineWidth: 2
+                                                )
+                                        )
                                 }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    .frame(height: 300)
+                }
+                
+                Section("カラー") {
+                    LazyVGrid(
+                        columns: Array(
+                            repeating: GridItem(.flexible(), spacing: 12),
+                            count: 5
+                        ),
+                        spacing: 16
+                    ) {
+                        ForEach(categoryColors, id: \.hex) { color in
+                            Button {
+                                selectedColor = color.hex
                             } label: {
-                                Image(systemName: icon.symbol)
-                                    .font(.system(size: 24))
-                                    .foregroundStyle(.black)
-                                    .frame(width: 50, height: 50)
-                                    .background(
+                                Circle()
+                                    .fill(colorFromHex(color.hex))
+                                    .frame(width: 36, height: 36)
+                                    .overlay {
+                                        if selectedColor == color.hex {
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 14, weight: .bold))
+                                                .foregroundStyle(.white)
+                                        }
+                                    }
+                                    .overlay {
                                         Circle()
                                             .stroke(
-                                                selectedIcon == icon.symbol
-                                                ? Color.black
+                                                selectedColor == color.hex
+                                                ? Color.primary
                                                 : Color.clear,
                                                 lineWidth: 2
                                             )
-                                    )
+                                            .padding(-4)
+                                    }
+                                    .frame(maxWidth: .infinity)
                             }
                             .buttonStyle(.plain)
+                            .accessibilityLabel(color.name)
+                            .accessibilityAddTraits(
+                                selectedColor == color.hex ? .isSelected : []
+                            )
                         }
                     }
                     .padding(.vertical, 8)
@@ -141,6 +203,19 @@ struct AddCategoryView: View {
                 }
             }
         }
+    }
+    
+    private func colorFromHex(_ hex: String) -> Color {
+        let value = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+        let number = UInt64(value, radix: 16) ?? 0
+        
+        return Color(
+            .sRGB,
+            red: Double((number >> 16) & 0xFF) / 255,
+            green: Double((number >> 8) & 0xFF) / 255,
+            blue: Double(number & 0xFF) / 255,
+            opacity: 1
+        )
     }
     
     private func addCategory() {
