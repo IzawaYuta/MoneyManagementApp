@@ -184,6 +184,7 @@ struct OnboardingCategoryView: View {
         let newCategory = Category(
             name: trimmedName,
             imageName: selectedIcon ?? "ellipsis.circle",
+            colorHex: "343A40",
             sortIndex: newSortIndex
         )
         

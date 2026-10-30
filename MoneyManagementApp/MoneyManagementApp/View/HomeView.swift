@@ -586,6 +586,7 @@ struct HomeView: View {
     let category = Category(
         name: "家賃",
         imageName: "house",
+        colorHex: "#343A40",
         sortIndex: 0
     )
     

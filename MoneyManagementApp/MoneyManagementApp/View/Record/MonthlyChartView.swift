@@ -367,7 +367,7 @@ enum PreviewData {
             ("通信費", "iphone", 8_900, .expense)
         ]
         for (index, sample) in samples.enumerated() {
-            let category = Category(name: sample.0, imageName: sample.1, sortIndex: index)
+            let category = Category(name: sample.0, imageName: sample.1, colorHex: "#343A40", sortIndex: index)
             container.mainContext.insert(category)
             container.mainContext.insert(
                 Transaction(

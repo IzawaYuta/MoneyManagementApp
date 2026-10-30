@@ -12,7 +12,7 @@ struct AddCategoryView: View {
     
     @State private var categoryName = ""
     @State private var selectedIcon: String? = nil
-    @State private var selectedColor = "#FF6B6B"
+    @State private var selectedColor = "#343A40"
     
     // オンボーディング用: 追加後にdismiss()の代わりにこちらを呼ぶ
     var onSave: (() -> Void)? = nil
@@ -349,6 +349,7 @@ struct AddCategoryView: View {
         let newCategory = Category(
             name: categoryName,
             imageName: iconName,
+            colorHex: selectedColor,
             sortIndex: newSortIndex
         )
         

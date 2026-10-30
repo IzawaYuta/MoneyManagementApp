@@ -289,6 +289,7 @@ struct CategorySelectionView: View {
         Category(
             name: "家賃",
             imageName: "house",
+            colorHex: "#4DABF7",
             sortIndex: 0
         )
     )
@@ -297,6 +298,7 @@ struct CategorySelectionView: View {
         Category(
             name: "食費",
             imageName: "fork.knife",
+            colorHex: "#FF6B6B",
             sortIndex: 1
         )
     )
@@ -305,6 +307,7 @@ struct CategorySelectionView: View {
         Category(
             name: "日用品",
             imageName: "basket",
+            colorHex: "#69DB7C",
             sortIndex: 2
         )
     )
@@ -313,6 +316,7 @@ struct CategorySelectionView: View {
         Category(
             name: "交通費",
             imageName: "car",
+            colorHex: "#FFD43B",
             sortIndex: 3
         )
     )
@@ -321,6 +325,7 @@ struct CategorySelectionView: View {
         Category(
             name: "医療費",
             imageName: "cross.case",
+            colorHex: "#B197FC",
             sortIndex: 4
         )
     )
@@ -330,3 +335,4 @@ struct CategorySelectionView: View {
     )
     .modelContainer(container)
 }
+
