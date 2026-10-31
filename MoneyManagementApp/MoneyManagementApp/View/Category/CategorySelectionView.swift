@@ -72,6 +72,7 @@ struct CategorySelectionView: View {
                                     VStack(spacing: 10) {
                                         Image(systemName: category.imageName)
                                             .font(.system(size: 24))
+                                            .foregroundStyle(colorFromHex(category.colorHex))
                                             .foregroundStyle(
                                                 isDeleteMode
                                                 ? (selectedDeleteCategories.contains(category.id)
@@ -199,6 +200,19 @@ struct CategorySelectionView: View {
                 Text("追加画面が表示されます。")
             }
         }
+    }
+    
+    private func colorFromHex(_ hex: String) -> Color {
+        let value = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+        let number = UInt64(value, radix: 16) ?? 0
+        
+        return Color(
+            .sRGB,
+            red: Double((number >> 16) & 0xFF) / 255,
+            green: Double((number >> 8) & 0xFF) / 255,
+            blue: Double(number & 0xFF) / 255,
+            opacity: 1
+        )
     }
     
     private func deleteSelectedCategories() {

@@ -219,7 +219,7 @@ struct TransactionCalendarView: View {
         HStack(spacing: 10) {
             Image(systemName: transaction.categoryImageName)
                 .font(.system(size: 14))
-                .foregroundStyle(.black)
+                .foregroundStyle(colorFromHex(transaction.categoryColorHex))
                 .frame(width: 24)
             
             VStack(alignment: .leading, spacing: 2) {
@@ -252,6 +252,21 @@ struct TransactionCalendarView: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
+    }
+    
+    // MARK: - カラー変換
+    
+    private func colorFromHex(_ hex: String) -> Color {
+        let value = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+        let number = UInt64(value, radix: 16) ?? 0
+        
+        return Color(
+            .sRGB,
+            red: Double((number >> 16) & 0xFF) / 255,
+            green: Double((number >> 8) & 0xFF) / 255,
+            blue: Double(number & 0xFF) / 255,
+            opacity: 1
+        )
     }
     
     // MARK: - 月の切り替え
@@ -355,6 +370,7 @@ struct TransactionCalendarView: View {
             categoryID: UUID(),
             categoryName: "食費",
             categoryImageName: "fork.knife",
+            categoryColorHex: "#FF9800",
             paymentMethodID: UUID(),
             paymentMethodName: "現金",
             paymentMethodType: .cash
@@ -368,7 +384,8 @@ struct TransactionCalendarView: View {
             type: .income,
             categoryID: UUID(),
             categoryName: "給与",
-            categoryImageName: "yensign.circle"
+            categoryImageName: "yensign.circle",
+            categoryColorHex: "#4CAF50"
         )
     )
     
@@ -380,11 +397,11 @@ struct TransactionCalendarView: View {
                 type: .expense,
                 categoryID: UUID(),
                 categoryName: "交通費",
-                categoryImageName: "car"
+                categoryImageName: "car",
+                categoryColorHex: "#2196F3"
             )
         )
     }
-    
     return TransactionCalendarView()
         .modelContainer(container)
 }

@@ -145,13 +145,69 @@ struct WeekdayAmountChartView: View {
 //MARK: プレビュー用サンプル
 #Preview {
     let sample: [Transaction] = [
-        Transaction(date: makeDate(weekday: 1), amount: 100, type: .expense, categoryID: UUID(), categoryName: "食費", categoryImageName: "fork.knife"),
-        Transaction(date: makeDate(weekday: 2), amount: 2000,  type: .expense, categoryID: UUID(), categoryName: "食費", categoryImageName: "fork.knife"),
-        Transaction(date: makeDate(weekday: 3), amount: 3000,  type: .expense, categoryID: UUID(), categoryName: "食費", categoryImageName: "fork.knife"),
-        Transaction(date: makeDate(weekday: 4), amount: 4000, type: .expense, categoryID: UUID(), categoryName: "交通費", categoryImageName: "car"),
-        Transaction(date: makeDate(weekday: 5), amount: 5000, type: .expense, categoryID: UUID(), categoryName: "娯楽", categoryImageName: "gamecontroller"),
-        Transaction(date: makeDate(weekday: 6), amount: 6000, type: .expense, categoryID: UUID(), categoryName: "食費", categoryImageName: "fork.knife"),
-        Transaction(date: makeDate(weekday: 7), amount: 7000000, type: .expense, categoryID: UUID(), categoryName: "食費", categoryImageName: "fork.knife"),
+        Transaction(
+            date: makeDate(weekday: 1),
+            amount: 100,
+            type: .expense,
+            categoryID: UUID(),
+            categoryName: "食費",
+            categoryImageName: "fork.knife",
+            categoryColorHex: "#FF9800"
+        ),
+        Transaction(
+            date: makeDate(weekday: 2),
+            amount: 2000,
+            type: .expense,
+            categoryID: UUID(),
+            categoryName: "食費",
+            categoryImageName: "fork.knife",
+            categoryColorHex: "#FF9800"
+        ),
+        Transaction(
+            date: makeDate(weekday: 3),
+            amount: 3000,
+            type: .expense,
+            categoryID: UUID(),
+            categoryName: "食費",
+            categoryImageName: "fork.knife",
+            categoryColorHex: "#FF9800"
+        ),
+        Transaction(
+            date: makeDate(weekday: 4),
+            amount: 4000,
+            type: .expense,
+            categoryID: UUID(),
+            categoryName: "交通費",
+            categoryImageName: "car",
+            categoryColorHex: "#2196F3"
+        ),
+        Transaction(
+            date: makeDate(weekday: 5),
+            amount: 5000,
+            type: .expense,
+            categoryID: UUID(),
+            categoryName: "娯楽",
+            categoryImageName: "gamecontroller",
+            categoryColorHex: "#9C27B0"
+        ),
+        Transaction(
+            date: makeDate(weekday: 6),
+            amount: 6000,
+            type: .expense,
+            categoryID: UUID(),
+            categoryName: "食費",
+            categoryImageName: "fork.knife",
+            categoryColorHex: "#FF9800"
+        ),
+        Transaction(
+            date: makeDate(weekday: 7),
+            amount: 7000000,
+            type: .expense,
+            categoryID: UUID(),
+            categoryName: "食費",
+            categoryImageName: "fork.knife",
+            categoryColorHex: "#FF9800"
+        )
     ]
     return WeekdayAmountChartView(transactions: sample)
 }

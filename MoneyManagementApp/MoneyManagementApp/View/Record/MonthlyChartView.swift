@@ -10,7 +10,7 @@ struct CategorySummary: Identifiable {
     let name: String
     let imageName: String   // SF Symbols名を想定
     let amount: Int
-    let color: Color
+    let color: String   // Category.colorHex
 }
 
 // MARK: - Screen
@@ -58,7 +58,7 @@ struct MonthlyChartView: View {
                     name: first.categoryName,
                     imageName: first.categoryImageName,
                     amount: items.reduce(0) { $0 + $1.amount },
-                    color: color(for: id)
+                    color: first.categoryColorHex
                 )
             }
             .sorted { a, b in
@@ -112,6 +112,19 @@ struct MonthlyChartView: View {
                 if let id = selectedID, !ids.contains(id) { selectedID = nil }
             }
         }
+    }
+    
+    private func colorFromHex(_ hex: String) -> Color {
+        let value = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+        let number = UInt64(value, radix: 16) ?? 0
+        
+        return Color(
+            .sRGB,
+            red: Double((number >> 16) & 0xFF) / 255,
+            green: Double((number >> 8) & 0xFF) / 255,
+            blue: Double(number & 0xFF) / 255,
+            opacity: 1
+        )
     }
     
     // MARK: Header
@@ -194,7 +207,7 @@ struct MonthlyChartView: View {
                     angularInset: 1.5
                 )
                 .cornerRadius(4)
-                .foregroundStyle(item.color)
+                .foregroundStyle(colorFromHex(categories.first(where: { $0.id == item.id })?.colorHex ?? "#000000"))
                 .opacity(opacity(for: item.id))
             }
             .chartLegend(.hidden)
@@ -304,13 +317,16 @@ struct MonthlyChartView: View {
     private func recordRow(_ item: CategorySummary) -> some View {
         let isDimmed = selectedID != nil && selectedID != item.id
         let isIncome = transactionType == .income
+        let color = colorFromHex(
+            categories.first(where: { $0.id == item.id })?.colorHex ?? "#000000"
+        )
         return HStack(spacing: 12) {
             // Image
             Image(systemName: item.imageName)
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(item.color)
+                .foregroundStyle(colorFromHex(categories.first(where: { $0.id == item.id })?.colorHex ?? "#000000"))
                 .frame(width: 40, height: 40)
-                .background(Circle().fill(item.color.opacity(0.15)))
+                .background(Circle().fill(color.opacity(0.15)))
             
             // カテゴリー
             Text(item.name)
@@ -376,7 +392,8 @@ enum PreviewData {
                     type: sample.3,
                     categoryID: category.id,
                     categoryName: category.name,
-                    categoryImageName: category.imageName
+                    categoryImageName: category.imageName,
+                    categoryColorHex: category.colorHex
                 )
             )
         }

@@ -125,7 +125,7 @@ final class Transaction {
     var categoryID: UUID
     var categoryName: String
     var categoryImageName: String
-    
+    var categoryColorHex: String
     // 支払方法のコピー保存
     var paymentMethodID: UUID?
     var paymentMethodName: String?
@@ -142,6 +142,7 @@ final class Transaction {
         categoryID: UUID,
         categoryName: String,
         categoryImageName: String,
+        categoryColorHex: String,
         paymentMethodID: UUID? = nil,
         paymentMethodName: String? = nil,
         paymentMethodType: PaymentType? = nil,
@@ -156,9 +157,77 @@ final class Transaction {
         self.categoryID = categoryID
         self.categoryName = categoryName
         self.categoryImageName = categoryImageName
+        self.categoryColorHex = categoryColorHex
         self.paymentMethodID = paymentMethodID
         self.paymentMethodName = paymentMethodName
         self.paymentMethodType = paymentMethodType
         self.paymentMethodMemo = paymentMethodMemo
+    }
+}
+
+//MARK: 予算
+/// カテゴリーごとの予算(支出)/目標(収入)。
+/// 期間(startMonth...endMonth)ごとに1行を持つ。同じカテゴリー・同じtypeの行は期間を重ねない。
+@Model
+final class Budget {
+    var id: UUID = UUID()
+    /// 対象カテゴリー(Transactionと同様、リレーションではなくID参照)
+    var categoryID: UUID = UUID()
+    /// 支出=予算、収入=目標
+    var type: TransactionType = TransactionType.expense
+    var amount: Int = 0
+    /// 適用開始月(yyyymm 例: 202611)
+    var startMonth: Int = 0
+    /// 適用終了月(yyyymm)。nil = 以降ずっと続く。単月のみの場合は startMonth と同じ値
+    var endMonth: Int?
+    var createdAt: Date = Date()
+    var updatedAt: Date = Date()
+    
+    init(
+        categoryID: UUID,
+        type: TransactionType = .expense,
+        amount: Int = 0,
+        startMonth: Int,
+        endMonth: Int? = nil,
+        createdAt: Date = Date(),
+        updatedAt: Date = Date()
+    ) {
+        self.categoryID = categoryID
+        self.type = type
+        self.amount = amount
+        self.startMonth = startMonth
+        self.endMonth = endMonth
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
+    
+    /// 指定した年月(yyyymm)がこの予算の適用期間に含まれるか
+    func contains(month: Int) -> Bool {
+        guard startMonth <= month else { return false }
+        if let endMonth { return month <= endMonth }
+        return true
+    }
+}
+
+//MARK: 年月(yyyymm)ヘルパー
+enum YearMonth {
+    /// Date → yyyymm
+    static func make(from date: Date, calendar: Calendar = .current) -> Int {
+        let c = calendar.dateComponents([.year, .month], from: date)
+        return (c.year ?? 0) * 100 + (c.month ?? 0)
+    }
+    
+    /// 前月(202601 → 202512)
+    static func previous(_ yyyymm: Int) -> Int {
+        let year = yyyymm / 100
+        let month = yyyymm % 100
+        return month == 1 ? (year - 1) * 100 + 12 : year * 100 + (month - 1)
+    }
+    
+    /// 翌月(202512 → 202601)
+    static func next(_ yyyymm: Int) -> Int {
+        let year = yyyymm / 100
+        let month = yyyymm % 100
+        return month == 12 ? (year + 1) * 100 + 1 : year * 100 + (month + 1)
     }
 }

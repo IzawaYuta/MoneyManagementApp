@@ -262,7 +262,10 @@ struct HomeView: View {
                                 Spacer()
                                 
                                 Text(selectedCategory?.name ?? "-")
-                                    .foregroundStyle(.black.opacity(0.7))
+                                    .foregroundStyle(
+                                        selectedCategory.map { colorFromHex($0.colorHex) }
+                                        ?? Color.black.opacity(0.7)
+                                    )
                             }
                             .contentShape(Rectangle())
                         }
@@ -471,6 +474,20 @@ struct HomeView: View {
         }
     }
     
+    private func colorFromHex(_ hex: String) -> Color {
+        let value = hex.trimmingCharacters(in: CharacterSet(charactersIn: "#"))
+        let number = UInt64(value, radix: 16) ?? 0
+        
+        return Color(
+            .sRGB,
+            red: Double((number >> 16) & 0xFF) / 255,
+            green: Double((number >> 8) & 0xFF) / 255,
+            blue: Double(number & 0xFF) / 255,
+            opacity: 1
+        )
+    }
+
+    
     private func saveTransaction() {
         
         guard let category = selectedCategory else {
@@ -490,6 +507,7 @@ struct HomeView: View {
             categoryID: category.id,
             categoryName: category.name,
             categoryImageName: category.imageName,
+            categoryColorHex: category.colorHex,
             paymentMethodID: selectedPaymentMethod?.id,
             paymentMethodName: selectedPaymentMethod?.name,
             paymentMethodType: selectedPaymentMethod?.type,
@@ -586,7 +604,7 @@ struct HomeView: View {
     let category = Category(
         name: "家賃",
         imageName: "house",
-        colorHex: "#343A40",
+        colorHex: "#FF6B6B",
         sortIndex: 0
     )
     

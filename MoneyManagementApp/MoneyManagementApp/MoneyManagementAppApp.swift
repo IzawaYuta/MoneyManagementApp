@@ -19,20 +19,29 @@ struct MoneyManagementAppApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Transaction.self,
-            Category.self,
-            PaymentMethod.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
+        // 最新バージョンのスキーマ
+        let schema = Schema(versionedSchema: SchemaV1.self)
+        // 現在はiCloud同期なし(将来CloudKitを使うときに .automatic などへ変更)
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            cloudKitDatabase: .none
+        )
+        
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            let container = try ModelContainer(
+                for: schema,
+                migrationPlan: MigrationPlan.self,
+                configurations: [modelConfiguration]
+            )
+            // 手動でModelContainerを初期化するとautosaveEnabledがfalseになるため明示的に指定
+            container.mainContext.autosaveEnabled = true
+            return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
-
+    
     var body: some Scene {
         WindowGroup {
             RootView()

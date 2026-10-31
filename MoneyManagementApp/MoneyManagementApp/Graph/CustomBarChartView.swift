@@ -185,7 +185,8 @@ struct CustomBarChartView: View {
             type: .expense,
             categoryID: UUID(),
             categoryName: "食費",
-            categoryImageName: "fork.knife"
+            categoryImageName: "fork.knife",
+            categoryColorHex: "#FF6B6B"
         )
         
         container.mainContext.insert(transaction)
