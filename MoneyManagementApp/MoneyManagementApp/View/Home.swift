@@ -225,14 +225,14 @@ struct Home: View {
                         HStack(spacing: 12) {
                             ForEach([100, 500, 1000, 5000], id: \.self) { amount in
                                 Button {
-                                    // 金額を入力する処理
+                                    let currentPrice = Int(priceTextField) ?? 0
+                                    priceTextField = String(currentPrice + amount)
                                 } label: {
                                     Text(amount.formatted())
                                         .font(.system(size: 15, design: .rounded))
                                         .foregroundStyle(.black.opacity(0.8))
                                         .frame(maxWidth: .infinity)
                                         .padding(10)
-//                                        .priceCardBackground()
                                 }
                                 .buttonStyle(RaisedButtonStyle(
                                     cornerRadius: 10,
