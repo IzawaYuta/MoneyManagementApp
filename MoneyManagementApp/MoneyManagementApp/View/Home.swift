@@ -70,9 +70,12 @@ struct MemoCard: View {
 
 struct Home: View {
     
+    @FocusState private var focusedField: Field?
+    
     @State private var selectedTransactionType: TransactionType = .expense
     @State private var selectedDate = Date()
     @State private var isShowingDatePicker = false
+    @State private var priceTextField: String = ""
     @State private var categoryName: String = "食費"
     @State private var paymentMethodName: String = "現金"
     @State private var memoTextField: String = ""
@@ -197,12 +200,27 @@ struct Home: View {
                         }
                         
                         // 金額
-                        Text("¥10,000")
-                            .font(.system(size: 45, weight: .bold, design: .rounded))
-                            .foregroundStyle(.black)
-                            .lineLimit(1)
-                            .padding(.top, 20)
-                            .padding(.horizontal, 20)
+                        ZStack {
+                            Text(Decimal(string: priceTextField) ?? 0, format: .number)
+                                .font(.system(size: 50, weight: .bold, design: .rounded))
+                                .contentTransition(.numericText())
+                                .animation(.snappy, value: priceTextField)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    focusedField = .price
+                                }
+                            
+                            TextField("", text: $priceTextField)
+                                .keyboardType(.numberPad)
+                                .focused($focusedField, equals: .price)
+                                .foregroundColor(.clear)
+                                .tint(.clear)
+                                .opacity(0.01)
+                                .allowsHitTesting(false)
+                        }
+                        .frame(height: 90)
+                        .padding(.top, 10)
+                        .padding(.horizontal, 10)
                         
                         HStack(spacing: 12) {
                             ForEach([100, 500, 1000, 5000], id: \.self) { amount in
@@ -226,7 +244,7 @@ struct Home: View {
                                 ))
                             }
                         }
-                        .padding(.top, 30)
+                        .padding(.top, 10)
                         .padding(.horizontal, 20)
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
