@@ -47,6 +47,12 @@ struct Home: View {
         .ignoresSafeArea()
     }
     
+    // MARK: ボタンの色
+    /// 確定・クリアボタンの下に敷く色(背景グラデーションの2色目に合わせて、収入/支出で切り替える)
+    private var accentColor: Color {
+        selectedTransactionType == .expense ? .orange : .cyan
+    }
+    
     // MARK: 上部(日付・金額・クイック金額ボタン)
     private var topSection: some View {
         VStack(spacing: 30) {
@@ -62,7 +68,7 @@ struct Home: View {
             QuickAmountButtons(priceText: $priceTextField)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .padding(.top, -30)
+        .padding(.top, -13)
     }
     
     // MARK: 下部の白いシート(カテゴリー・支払方法・メモ・ボタン)
@@ -89,6 +95,7 @@ struct Home: View {
                 Spacer()
                 
                 InputActionButtons(
+                    accentColor: accentColor,
                     onConfirm: {
                         // TODO: saveTransaction()
                         // カテゴリー未選択のときは「カテゴリーが選択されていません」のアラートを出す

@@ -129,7 +129,7 @@ struct AmountDisplay: View {
                 .allowsHitTesting(false)
         }
         .frame(height: 90)
-        .padding(.top, 10)
+        .padding(.top, 1)
         .padding(.horizontal, 10)
     }
 }
@@ -215,6 +215,8 @@ struct MemoCard: View {
 
 // MARK: - 確定・クリアボタン
 struct InputActionButtons: View {
+    
+    let accentColor: Color
     let onConfirm: () -> Void
     let onClear: () -> Void
     
@@ -228,8 +230,8 @@ struct InputActionButtons: View {
                     .frame(height: 35)
             }
             .frame(width: 220)
-            .buttonStyle(CustomButtonStyle())
-            
+            .buttonStyle(CustomButtonStyle(accentColor: accentColor))
+
             Button(action: onClear) {
                 Text("クリア")
                     .font(.system(size: 16))
@@ -238,7 +240,7 @@ struct InputActionButtons: View {
                     .frame(height: 35)
             }
             .frame(maxWidth: .infinity)
-            .buttonStyle(CustomButtonStyle())
+            .buttonStyle(CustomButtonStyle(accentColor: accentColor))
         }
     }
 }

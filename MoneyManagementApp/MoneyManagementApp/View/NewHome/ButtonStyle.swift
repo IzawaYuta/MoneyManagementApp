@@ -39,6 +39,8 @@ struct RaisedButtonStyle: ButtonStyle {
 /// 白いカプセルの下にオレンジのカプセルを重ね、押すと8pt沈んで重なる。
 struct CustomButtonStyle: ButtonStyle {
     
+    var accentColor: Color = .orange
+    
     func makeBody(configuration: Configuration) -> some View {
         let isPressed = configuration.isPressed
         
@@ -48,7 +50,7 @@ struct CustomButtonStyle: ButtonStyle {
             .background(
                 ZStack {
                     Capsule()
-                        .fill(.orange)
+                        .fill(accentColor)
                         .stroke(.black, lineWidth: isPressed ? 0.5 : 1.0)
                         .offset(y: isPressed ? 0 : 8)
                     Capsule()
