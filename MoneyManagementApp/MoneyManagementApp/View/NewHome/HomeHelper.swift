@@ -1,3 +1,4 @@
+
 import SwiftUI
 
 // MARK: - 日付ナビゲーター
@@ -28,7 +29,6 @@ struct DateNavigator: View {
             
             arrowButton(systemName: "chevron.right", days: 1)
         }
-        .padding(.top, -30)
     }
     
     private func arrowButton(systemName: String, days: Int) -> some View {
@@ -129,7 +129,7 @@ struct AmountDisplay: View {
                 .allowsHitTesting(false)
         }
         .frame(height: 90)
-        .padding(.top, 30)
+        .padding(.top, 10)
         .padding(.horizontal, 10)
     }
 }
@@ -215,8 +215,6 @@ struct MemoCard: View {
 
 // MARK: - 確定・クリアボタン
 struct InputActionButtons: View {
-    /// ボタンの下に敷く色(収入/支出で切り替える)
-    let accentColor: Color
     let onConfirm: () -> Void
     let onClear: () -> Void
     
@@ -230,7 +228,7 @@ struct InputActionButtons: View {
                     .frame(height: 35)
             }
             .frame(width: 220)
-            .buttonStyle(CustomButtonStyle(accentColor: accentColor))
+            .buttonStyle(CustomButtonStyle())
             
             Button(action: onClear) {
                 Text("クリア")
@@ -240,7 +238,7 @@ struct InputActionButtons: View {
                     .frame(height: 35)
             }
             .frame(maxWidth: .infinity)
-            .buttonStyle(CustomButtonStyle(accentColor: accentColor))
+            .buttonStyle(CustomButtonStyle())
         }
     }
 }
