@@ -224,24 +224,50 @@ struct MemoCard: View {
 struct InputActionButtons: View {
     
     let accentColor: Color
-    @Binding var isShowingBubble: Bool
-    let bubbleText: String
     let onConfirm: () -> Void
     let onClear: () -> Void
     
+    @State private var isShowingCheck = false
+    
     var body: some View {
         HStack(spacing: 12) {
-            Button(action: onConfirm) {
-                Text("確定")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(.black)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 35)
+            Button {
+                guard !isShowingCheck else { return }
+                
+                onConfirm()
+                
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isShowingCheck = true
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        isShowingCheck = false
+                    }
+                }
+                
+            } label: {
+                ZStack {
+                    Text("確定")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(.black)
+                        .offset(x: isShowingCheck ? -220 : 0)
+                        .opacity(isShowingCheck ? 0 : 1)
+                    
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(Color.checkRGB)
+                        .offset(x: isShowingCheck ? 0 : 220)
+                        .opacity(isShowingCheck ? 1 : 0)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 35)
+                .clipped()
             }
             .frame(width: 220)
             .buttonStyle(CustomButtonStyle(accentColor: accentColor))
-            .bubbleToast(isPresented: $isShowingBubble, text: bubbleText)
-
+            .disabled(isShowingCheck)
+            
             Button(action: onClear) {
                 Text("クリア")
                     .font(.system(size: 16))
@@ -258,7 +284,7 @@ struct InputActionButtons: View {
 // MARK: カテゴリー・支払方法・メモの背景
 struct CustomBackground: ViewModifier {
     
-    var cornerRadius: CGFloat = 18
+    var cornerRadius: CGFloat = 3
     
     func body(content: Content) -> some View {
         content

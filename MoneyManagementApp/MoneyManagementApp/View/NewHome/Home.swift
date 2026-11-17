@@ -100,12 +100,8 @@ struct Home: View {
                 
                 InputActionButtons(
                     accentColor: accentColor,
-                    isShowingBubble: $isShowingBubbleToast,
-                    bubbleText: "¥\((Int(priceTextField) ?? 0).formatted()) 記録!",
                     onConfirm: {
                         // TODO: saveTransaction()
-                        isShowingTopToast = true
-//                        isShowingBubbleToast = true
                     },
                     onClear: {
                         // TODO: 「内容をクリアしますか？」の確認アラートを出し、
