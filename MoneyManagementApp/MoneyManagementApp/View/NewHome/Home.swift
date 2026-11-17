@@ -16,6 +16,9 @@ struct Home: View {
     @State private var isShowingTopToast = false
     @State private var isShowingBubbleToast = false
     
+    @State private var showCategorySelectionView: Bool = false
+    @State var selectedCategoryID: UUID?
+    
     /// 下の白いシートが画面の高さに占める割合
     private let sheetHeightRatio: CGFloat = 0.705
     
@@ -87,7 +90,13 @@ struct Home: View {
             VStack(spacing: 12) {
                 HStack(spacing: 12) {
                     SelectionCard(title: "カテゴリー", value: categoryName, corners: .categoryCard) {
-                        // TODO: カテゴリー選択の処理
+                        showCategorySelectionView.toggle()
+                    }
+                    .sheet(isPresented: $showCategorySelectionView) {
+                        CategorySelectionView(
+                            selectedCategoryID: $selectedCategoryID
+                        )
+                        .interactiveDismissDisabled(true)
                     }
                     SelectionCard(title: "支払方法", value: paymentMethodName, corners: .paymentCard) {
                         // TODO: 支払方法選択の処理

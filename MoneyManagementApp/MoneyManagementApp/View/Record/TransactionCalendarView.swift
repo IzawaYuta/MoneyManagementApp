@@ -217,13 +217,13 @@ struct TransactionCalendarView: View {
     @ViewBuilder
     private func transactionRow(_ transaction: Transaction) -> some View {
         HStack(spacing: 10) {
-            Image(systemName: transaction.categoryImageName)
+            Image(systemName: transaction.categoryImageName ?? "なし")
                 .font(.system(size: 14))
-                .foregroundStyle(colorFromHex(transaction.categoryColorHex))
+                .foregroundStyle(colorFromHex(transaction.categoryColorHex ?? "なし"))
                 .frame(width: 24)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(transaction.categoryName)
+                Text(transaction.categoryName ?? "なし")
                     .font(.system(size: 14))
                     .foregroundStyle(.black)
                 

@@ -43,27 +43,42 @@ struct MonthlyChartView: View {
     
     // MARK: 集計
     
+    /// カテゴリー未設定の取引をまとめるための固定ID
+    private static let uncategorizedID = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+    
+    /// 選択中の月・種別(収入/支出)で絞り込み、カテゴリーごとに合計
     /// 選択中の月・種別(収入/支出)で絞り込み、カテゴリーごとに合計
     private var summaries: [CategorySummary] {
         let calendar = Calendar.current
-        let filtered = allTransactions.filter {
-            $0.type == transactionType &&
-            calendar.isDate($0.date, equalTo: month, toGranularity: .month)
+        
+        let filtered: [Transaction] = allTransactions.filter { t in
+            t.type == transactionType &&
+            calendar.isDate(t.date, equalTo: month, toGranularity: .month)
         }
-        return Dictionary(grouping: filtered, by: \.categoryID)
-            .compactMap { id, items -> CategorySummary? in
-                guard let first = items.first else { return nil }
-                return CategorySummary(
+        
+        let grouped: [UUID: [Transaction]] = Dictionary(grouping: filtered) { t in
+            t.categoryID ?? Self.uncategorizedID
+        }
+        
+        var result: [CategorySummary] = []
+        for (id, items) in grouped {
+            guard let first = items.first else { continue }
+            let total: Int = items.reduce(0) { $0 + $1.amount }
+            result.append(
+                CategorySummary(
                     id: id,
-                    name: first.categoryName,
-                    imageName: first.categoryImageName,
-                    amount: items.reduce(0) { $0 + $1.amount },
-                    color: first.categoryColorHex
+                    name: first.categoryName ?? "未分類",
+                    imageName: first.categoryImageName ?? "questionmark.circle",
+                    amount: total,
+                    color: first.categoryColorHex ?? "#9E9E9E"
                 )
-            }
-            .sorted { a, b in
-                a.amount != b.amount ? a.amount > b.amount : a.name < b.name
-            }
+            )
+        }
+        
+        return result.sorted { a, b in
+            if a.amount != b.amount { return a.amount > b.amount }
+            return a.name < b.name
+        }
     }
     
     // MARK: Body
