@@ -179,17 +179,18 @@ struct SelectionCard: View {
                     Spacer()
                     
                     Text(value)
-                        .font(.system(size: 20))
-                        .foregroundStyle(.primary)
+                        .font(.system(size: 25, weight: .semibold))
+                        .foregroundStyle(.black.opacity(0.7))
                         .lineLimit(1)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 10)
             .frame(height: 64)
-            .cardBackground(UnevenRoundedRectangle(cornerRadii: corners))
+//            .cardBackground(UnevenRoundedRectangle(cornerRadii: corners))
         }
         .buttonStyle(.plain)
+        .customBackground()
     }
 }
 
@@ -198,18 +199,24 @@ struct MemoCard: View {
     @Binding var text: String
     
     var body: some View {
-        TextField(
-            text: $text,
-            prompt: Text("メモを入力")
-                .font(.callout)
-        ) {
-            EmptyView()
+        HStack {
+            Image(systemName: "pencil")
+                .scaledToFit()
+                .foregroundColor(.primary)
+            TextField(
+                text: $text,
+                prompt: Text("メモを入力")
+                    .font(.callout)
+            ) {
+                EmptyView()
+            }
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
-        .lineLimit(1)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-        .padding(10)
-        .frame(height: 64)
-        .cardBackground(UnevenRoundedRectangle(cornerRadii: .memoCard))
+        .padding(.vertical, 5)
+        .padding(.horizontal, 15)
+        .frame(height: 50)
+        .customBackground(cornerRadius: 30)
     }
 }
 
@@ -245,5 +252,38 @@ struct InputActionButtons: View {
             .frame(maxWidth: .infinity)
             .buttonStyle(CustomButtonStyle(accentColor: accentColor))
         }
+    }
+}
+
+// MARK: カテゴリー・支払方法・メモの背景
+struct CustomBackground: ViewModifier {
+    
+    var cornerRadius: CGFloat = 18
+    
+    func body(content: Content) -> some View {
+        content
+            .background {
+                ZStack {
+                    // 下側の黒い立体部分
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .fill(.black)
+                        .offset(x: 3, y: 3)
+                    
+                    // 上側の白い本体
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .fill(.white)
+                        .stroke(.black, lineWidth: 0.5)
+                    //                        .offset(x: -3, y: -0.05)
+                }
+            }
+            .padding(.bottom, 5)
+    }
+}
+
+extension View {
+    func customBackground(cornerRadius: CGFloat = 18) -> some View {
+        self.modifier(
+            CustomBackground(cornerRadius: cornerRadius)
+        )
     }
 }

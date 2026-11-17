@@ -29,13 +29,13 @@ struct Home: View {
                         .padding(.bottom, -geometry.safeAreaInsets.bottom)
                 }
             }
-            .topPillToast(isPresented: $isShowingTopToast, message: "保存しました")
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     transactionTypePicker
                 }
             }
         }
+        .topPillToast(isPresented: $isShowingTopToast, message: "保存しました")
     }
     
     // MARK: 背景
@@ -105,7 +105,7 @@ struct Home: View {
                     onConfirm: {
                         // TODO: saveTransaction()
                         isShowingTopToast = true
-                        isShowingBubbleToast = true
+//                        isShowingBubbleToast = true
                     },
                     onClear: {
                         // TODO: 「内容をクリアしますか？」の確認アラートを出し、
