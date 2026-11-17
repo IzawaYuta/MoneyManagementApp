@@ -10,10 +10,28 @@ struct PaymentMethodView: View {
     @Query(sort: \PaymentMethod.sortIndex)
     private var paymentMethods: [PaymentMethod]
     
+    @Query(sort: \Transaction.date, order: .reverse)
+    private var transactions: [Transaction]
+    
     @State private var showAddPaymentMethodView: Bool = false
     @State private var isEditing: Bool = false
     
     @Binding var selectedPaymentMethodID: UUID?
+    
+    /// 最近使った支払方法(最大3件、新しい順)
+    private var recentPaymentMethods: [PaymentMethod] {
+        var seen = Set<UUID>()
+        var result: [PaymentMethod] = []
+        
+        for t in transactions {
+            guard let id = t.paymentMethodID, seen.insert(id).inserted else { continue }
+            if let method = paymentMethods.first(where: { $0.id == id }) {
+                result.append(method)
+                if result.count == 3 { break }
+            }
+        }
+        return result
+    }
     
     var body: some View {
         NavigationStack {
@@ -52,37 +70,20 @@ struct PaymentMethodView: View {
                         .listRowBackground(Color.clear)
                     
                 } else {
-                    ForEach(paymentMethods, id: \.id) { paymentMethod in
-                        Section {
-                            Button {
-                                guard !isEditing else { return }
-                                selectedPaymentMethodID = paymentMethod.id
-                                dismiss()
-                            } label: {
-                                VStack(alignment: .leading, spacing: 5) {
-                                    HStack {
-                                        Text(paymentMethod.name)
-                                            .foregroundStyle(.black)
-                                        
-                                        Spacer()
-                                        
-                                        Text(paymentMethod.type.title)
-                                            .foregroundColor(.gray)
-                                            .font(.subheadline)
-                                    }
-                                    if let memo = paymentMethod.memo, !memo.isEmpty {
-                                        Text(memo)
-                                            .foregroundColor(.gray)
-                                            .font(.subheadline)
-                                    }
-                                }
+                    if !recentPaymentMethods.isEmpty {
+                        Section("最近の支払い") {
+                            ForEach(recentPaymentMethods, id: \.id) { paymentMethod in
+                                paymentMethodRow(paymentMethod)
                             }
-                            .buttonStyle(.plain)
-                            .padding(.horizontal, 3)
                         }
                     }
-                    .onMove(perform: movePaymentMethod)
-                    .onDelete(perform: deletePaymentMethods)
+                    
+                    Section(recentPaymentMethods.isEmpty ? "" : "すべて") {
+                        ForEach(paymentMethods, id: \.id) { paymentMethod in
+                            paymentMethodRow(paymentMethod)
+                        }
+                        .onDelete(perform: deletePaymentMethods)
+                    }
                 }
             }
             .environment(\.editMode, .constant(isEditing ? .active : .inactive))
@@ -124,6 +125,34 @@ struct PaymentMethodView: View {
                 AddPaymentMethodView()
             }
         }
+    }
+    
+    private func paymentMethodRow(_ paymentMethod: PaymentMethod) -> some View {
+        Button {
+            guard !isEditing else { return }
+            selectedPaymentMethodID = paymentMethod.id
+            dismiss()
+        } label: {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack {
+                    Text(paymentMethod.name)
+                        .foregroundStyle(.black)
+                    
+                    Spacer()
+                    
+                    Text(paymentMethod.type.title)
+                        .foregroundColor(.gray)
+                        .font(.subheadline)
+                }
+                if let memo = paymentMethod.memo, !memo.isEmpty {
+                    Text(memo)
+                        .foregroundColor(.gray)
+                        .font(.subheadline)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 3)
     }
     
     private func deletePaymentMethods(at offsets: IndexSet) {
