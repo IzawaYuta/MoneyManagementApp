@@ -10,7 +10,6 @@ struct CategorySelectionView: View {
     @State private var isDeleteMode = false
     @State private var showDeleteCategoryAlert: Bool = false
     @State private var selectedDeleteCategories: Set<UUID> = []
-    @State private var showCannotDeleteAllAlert = false
     
     @Environment(\.dismiss) private var dismiss
     
@@ -19,8 +18,6 @@ struct CategorySelectionView: View {
     
     // CategorySelectionView側
     @Binding var selectedCategoryID: UUID?
-    
-    @State private var showNoCategoryAlert = false
     
     var body: some View {
         NavigationStack {
@@ -36,10 +33,20 @@ struct CategorySelectionView: View {
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(.black)
                         
-                        Text("右上のメニューから\nカテゴリーを追加してください")
-                            .font(.system(size: 13))
-                            .foregroundStyle(.gray)
-                            .multilineTextAlignment(.center)
+                        Button(action: {
+                            isShowingAddCategory.toggle()
+                        }) {
+                            HStack {
+                                Image(systemName: "plus")
+                                Text("追加")
+                            }
+                            .padding(13)
+                        }
+                        .background(
+                            RoundedRectangle(cornerRadius: 15)
+                                .fill(Color.blue.opacity(0.1))
+                        )
+                        
                         Spacer()
                     }
                     .frame(maxWidth: .infinity)
@@ -56,56 +63,8 @@ struct CategorySelectionView: View {
                             ],
                             spacing: 12
                         ) {
-                            ForEach(categories, id: \.self) { category in
-                                Button {
-                                    if isDeleteMode {
-                                        if selectedDeleteCategories.contains(category.id) {
-                                            selectedDeleteCategories.remove(category.id)
-                                        } else {
-                                            selectedDeleteCategories.insert(category.id)
-                                        }
-                                    } else {
-                                        selectedCategoryID = category.id
-                                        dismiss()
-                                    }
-                                } label: {
-                                    VStack(spacing: 10) {
-                                        Image(systemName: category.imageName)
-                                            .font(.system(size: 24))
-                                            .foregroundStyle(colorFromHex(category.colorHex))
-                                            .foregroundStyle(
-                                                isDeleteMode
-                                                ? (selectedDeleteCategories.contains(category.id)
-                                                   ? Color.black : Color.gray)
-                                                : Color.black
-                                            )
-                                        
-                                        Text(category.name)
-                                            .font(.system(size: 14))
-                                            .foregroundStyle(
-                                                isDeleteMode
-                                                ? (selectedDeleteCategories.contains(category.id)
-                                                   ? Color.black : Color.gray)
-                                                : Color.black
-                                            )
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 100)
-                                    .background(
-                                        isDeleteMode
-                                        ? (selectedDeleteCategories.contains(category.id)
-                                           ? Color.red.opacity(0.05)
-                                           : Color.white)
-                                        : Color.white
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(
-                                                isDeleteMode ? (selectedDeleteCategories.contains(category.id) ? Color.red : Color.gray) : Color.black, lineWidth: 1.5
-                                            )
-                                    )
-                                }
-                                .buttonStyle(.plain)
+                            ForEach(categories, id: \.id) { category in
+                                categoryButton(category)
                             }
                         }
                         .padding(.horizontal, 16)
@@ -125,11 +84,6 @@ struct CategorySelectionView: View {
                     )
                 }
                 print("========================")
-            }
-            .alert("すべてのカテゴリーは削除できません", isPresented: $showCannotDeleteAllAlert) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text("カテゴリーは1つ必要です。")
             }
             .navigationTitle("カテゴリー")
             .navigationBarTitleDisplayMode(.inline)
@@ -155,6 +109,7 @@ struct CategorySelectionView: View {
                             } label: {
                                 Text("削除")
                             }
+                            .disabled(categories.isEmpty)
                         } label: {
                             Image(systemName: "ellipsis")
                         }
@@ -164,11 +119,7 @@ struct CategorySelectionView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     if !isDeleteMode {
                         Button("閉じる") {
-                            if categories.isEmpty {
-                                showNoCategoryAlert = true
-                            } else {
-                                dismiss()
-                            }
+                            dismiss()
                         }
                     } else {
                         Button("キャンセル") {
@@ -190,15 +141,64 @@ struct CategorySelectionView: View {
             } message: {
                 Text("選択したカテゴリーを削除しますか？")
             }
-            .alert("カテゴリーが1つ以上必要です", isPresented: $showNoCategoryAlert) {
-                Button {
-                    isShowingAddCategory = true
-                } label: {
-                    Text("追加する")
-                }
-            } message: {
-                Text("追加画面が表示されます。")
+        }
+    }
+    
+    // MARK: カテゴリーのセル
+    
+    private func categoryButton(_ category: Category) -> some View {
+        let isChecked: Bool = selectedDeleteCategories.contains(category.id)
+        let dimmed: Bool = isDeleteMode && !isChecked
+        let contentColor: Color = (isDeleteMode && !isChecked) ? .gray : .black
+        let categoryColor: Color = colorFromHex(category.colorHex)
+        
+        // 背景
+        let backgroundColor: Color = {
+            if isChecked { return Color.red.opacity(0.05) }      // 削除対象: 赤
+            if isDeleteMode { return Color.gray.opacity(0.1) }   // 削除モードの未チェック: グレー
+            return categoryColor.opacity(0.2)                    // 通常: カテゴリーの色
+        }()
+        
+        // 枠線
+        let borderColor: Color = {
+            if isChecked { return .red }
+            if isDeleteMode { return .gray }
+            return categoryColor
+        }()
+        
+        return Button {
+            didTap(category)
+        } label: {
+            VStack(spacing: 10) {
+                Image(systemName: category.imageName)
+                    .font(.system(size: 30))
+                    .foregroundStyle(contentColor)
+                
+                Text(category.name)
+                    .font(.system(size: 15))
+                    .foregroundStyle(contentColor)
             }
+            .frame(maxWidth: .infinity)
+            .frame(height: 100)
+            .background(backgroundColor)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(borderColor, lineWidth: 1.5)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+    
+    private func didTap(_ category: Category) {
+        if isDeleteMode {
+            if selectedDeleteCategories.contains(category.id) {
+                selectedDeleteCategories.remove(category.id)
+            } else {
+                selectedDeleteCategories.insert(category.id)
+            }
+        } else {
+            selectedCategoryID = category.id
+            dismiss()
         }
     }
     
@@ -222,16 +222,6 @@ struct CategorySelectionView: View {
         
         for category in categories.sorted(by: { $0.sortIndex < $1.sortIndex }) {
             print("📌 \(category.name) | sortIndex: \(category.sortIndex)")
-        }
-        
-
-        
-        // 削除後の残数を先に計算
-        let remainingCount = categories.count - selectedDeleteCategories.count
-        
-        guard remainingCount > 0 else {
-            showCannotDeleteAllAlert = true
-            return
         }
         
         // 選択中のカテゴリーが削除対象に含まれていたら、参照が消える前にリセットする
@@ -291,62 +281,26 @@ struct CategorySelectionView: View {
     }
 }
 
-#Preview {
-    let container = try! ModelContainer(
-        for: Category.self,
-        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-    )
-    
-    let context = container.mainContext
-    
-    context.insert(
-        Category(
-            name: "家賃",
-            imageName: "house",
-            colorHex: "#4DABF7",
-            sortIndex: 0
+#Preview("ダミー") {
+    let container = PreviewContainer.make()
+    let samples: [(String, String, String)] = [
+        ("家賃", "house", "#4DABF7"),
+        ("食費", "fork.knife", "#FF6B6B"),
+        ("日用品", "basket", "#69DB7C"),
+        ("交通費", "car", "#FFD43B"),
+        ("医療費", "cross.case", "#B197FC")
+    ]
+    for (index, s) in samples.enumerated() {
+        container.mainContext.insert(
+            Category(name: s.0, imageName: s.1, colorHex: s.2, sortIndex: index)
         )
-    )
-    
-    context.insert(
-        Category(
-            name: "食費",
-            imageName: "fork.knife",
-            colorHex: "#FF6B6B",
-            sortIndex: 1
-        )
-    )
-    
-    context.insert(
-        Category(
-            name: "日用品",
-            imageName: "basket",
-            colorHex: "#69DB7C",
-            sortIndex: 2
-        )
-    )
-    
-    context.insert(
-        Category(
-            name: "交通費",
-            imageName: "car",
-            colorHex: "#FFD43B",
-            sortIndex: 3
-        )
-    )
-    
-    context.insert(
-        Category(
-            name: "医療費",
-            imageName: "cross.case",
-            colorHex: "#B197FC",
-            sortIndex: 4
-        )
-    )
-    
-    return CategorySelectionView(
-        selectedCategoryID: .constant(nil)
-    )
-    .modelContainer(container)
+    }
+    return CategorySelectionView(selectedCategoryID: .constant(nil))
+        .modelContainer(container)
 }
 
+#Preview("カテゴリーなし") {
+    let container = PreviewContainer.make()
+    return CategorySelectionView(selectedCategoryID: .constant(nil))
+        .modelContainer(container)
+}

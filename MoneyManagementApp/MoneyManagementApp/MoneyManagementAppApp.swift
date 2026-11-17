@@ -20,7 +20,7 @@ struct MoneyManagementAppApp: App {
     
     var sharedModelContainer: ModelContainer = {
         // 最新バージョンのスキーマ
-        let schema = Schema(versionedSchema: SchemaV1.self)
+        let schema = Schema(versionedSchema: SchemaV2.self)
         // 現在はiCloud同期なし(将来CloudKitを使うときに .automatic などへ変更)
         let modelConfiguration = ModelConfiguration(
             schema: schema,

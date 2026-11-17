@@ -73,3 +73,16 @@ enum YearMonth {
         return month == 12 ? (year + 1) * 100 + 1 : year * 100 + (month + 1)
     }
 }
+
+@MainActor
+enum PreviewContainer {
+    static func make() -> ModelContainer {
+        let schema = Schema(versionedSchema: SchemaV2.self)
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        return try! ModelContainer(
+            for: schema,
+            migrationPlan: MigrationPlan.self,
+            configurations: config
+        )
+    }
+}
