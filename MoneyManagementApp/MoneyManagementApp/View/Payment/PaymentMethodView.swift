@@ -19,16 +19,37 @@ struct PaymentMethodView: View {
         NavigationStack {
             List {
                 if paymentMethods.isEmpty {
-                    VStack(alignment: .center, spacing: 20) {
-                        Image(systemName: "wallet.bifold")
-                            .font(.system(size: 30))
-                        Text("支払い方法を追加してください")
-                    }
-                    .foregroundStyle(.gray)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 250)
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
+                        VStack(spacing: 12) {
+                            Spacer()
+                            Image(systemName: "wallet.bifold")
+                                .font(.system(size: 32))
+                                .foregroundStyle(.gray)
+                            
+                            Text("支払方法がありません")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundStyle(.black)
+                            
+                            Button(action: {
+                                showAddPaymentMethodView.toggle()
+                            }) {
+                                HStack {
+                                    Image(systemName: "plus")
+                                    Text("追加")
+                                }
+                                .padding(13)
+                            }
+                            .background(
+                                RoundedRectangle(cornerRadius: 15)
+                                    .fill(Color.blue.opacity(0.1))
+                            )
+                            
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(10)
+                        .padding(.top, 200)
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                     
                 } else {
                     ForEach(paymentMethods, id: \.id) { paymentMethod in
@@ -87,9 +108,6 @@ struct PaymentMethodView: View {
                     }) {
                         Image(systemName: "plus")
                     }
-                    .sheet(isPresented: $showAddPaymentMethodView) {
-                        AddPaymentMethodView()
-                    }
                 }
                 
                 //                ToolbarSpacer(.fixed, placement: .topBarTrailing)
@@ -101,6 +119,9 @@ struct PaymentMethodView: View {
                 //                        Image(systemName: "list.bullet")
                 //                    }
                 //                }
+            }
+            .sheet(isPresented: $showAddPaymentMethodView) {
+                AddPaymentMethodView()
             }
         }
     }
