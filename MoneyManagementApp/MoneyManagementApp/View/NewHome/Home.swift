@@ -13,6 +13,9 @@ struct Home: View {
     @State private var paymentMethodName = "現金"
     @State private var memoTextField = ""
     
+    @State private var isShowingTopToast = false
+    @State private var isShowingBubbleToast = false
+    
     /// 下の白いシートが画面の高さに占める割合
     private let sheetHeightRatio: CGFloat = 0.705
     
@@ -26,6 +29,7 @@ struct Home: View {
                         .padding(.bottom, -geometry.safeAreaInsets.bottom)
                 }
             }
+            .topPillToast(isPresented: $isShowingTopToast, message: "保存しました")
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     transactionTypePicker
@@ -96,13 +100,15 @@ struct Home: View {
                 
                 InputActionButtons(
                     accentColor: accentColor,
+                    isShowingBubble: $isShowingBubbleToast,
+                    bubbleText: "¥\((Int(priceTextField) ?? 0).formatted()) 記録!",
                     onConfirm: {
                         // TODO: saveTransaction()
-                        // カテゴリー未選択のときは「カテゴリーが選択されていません」のアラートを出す
+                        isShowingTopToast = true
+                        isShowingBubbleToast = true
                     },
                     onClear: {
                         // TODO: 「内容をクリアしますか？」の確認アラートを出し、
-                        // 「クリア」で日付・金額・カテゴリー(先頭)・メモ・支払方法(先頭)を初期化する
                     }
                 )
                 .padding(.bottom, 50)

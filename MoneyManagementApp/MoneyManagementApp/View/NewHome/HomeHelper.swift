@@ -217,6 +217,8 @@ struct MemoCard: View {
 struct InputActionButtons: View {
     
     let accentColor: Color
+    @Binding var isShowingBubble: Bool
+    let bubbleText: String
     let onConfirm: () -> Void
     let onClear: () -> Void
     
@@ -231,6 +233,7 @@ struct InputActionButtons: View {
             }
             .frame(width: 220)
             .buttonStyle(CustomButtonStyle(accentColor: accentColor))
+            .bubbleToast(isPresented: $isShowingBubble, text: bubbleText)
 
             Button(action: onClear) {
                 Text("クリア")
