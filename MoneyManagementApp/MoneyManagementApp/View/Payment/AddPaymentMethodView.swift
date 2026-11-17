@@ -34,7 +34,7 @@ struct AddPaymentMethodView: View {
                     TextField("メモ", text: $memo)
                 }
                 
-                Section("カテゴリー") {
+                Section {
                     ForEach(PaymentType.allCases, id: \.self) { type in
                         Button {
                             paymentType = type
@@ -50,6 +50,7 @@ struct AddPaymentMethodView: View {
                                         .font(.system(size: 15))
                                 }
                             }
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }
