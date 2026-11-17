@@ -11,6 +11,9 @@ struct CategorySelectionView: View {
     @State private var showDeleteCategoryAlert: Bool = false
     @State private var selectedDeleteCategories: Set<UUID> = []
     
+    @State private var isEditMode = false
+    @State private var editingCategory: Category?
+    
     @Environment(\.dismiss) private var dismiss
     
     @Query(sort: \Category.sortIndex)
@@ -95,19 +98,37 @@ struct CategorySelectionView: View {
                             showDeleteCategoryAlert.toggle()
                         }
                         .disabled(selectedDeleteCategories.isEmpty)
+                    } else if isEditMode {
+                        EmptyView()
                     } else {
                         Menu {
                             Button {
                                 isShowingAddCategory = true
                             } label: {
-                                Text("追加")
+                                HStack {
+                                    Image(systemName: "plus")
+                                    Text("追加")
+                                }
                             }
+                            
+                            Button {
+                                isEditMode = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "pencil")
+                                    Text("編集")
+                                }
+                            }
+                                .disabled(categories.isEmpty)
                             
                             Button {
                                 isDeleteMode = true
                                 selectedDeleteCategories.removeAll()
                             } label: {
-                                Text("削除")
+                                HStack {
+                                    Image(systemName: "trash")
+                                    Text("削除")
+                                }
                             }
                             .disabled(categories.isEmpty)
                         } label: {
@@ -117,19 +138,20 @@ struct CategorySelectionView: View {
                 }
                 
                 ToolbarItem(placement: .topBarLeading) {
-                    if !isDeleteMode {
-                        Button("閉じる") {
-                            dismiss()
-                        }
+                    if isDeleteMode {
+                        Button("キャンセル") { isDeleteMode = false }
+                    } else if isEditMode {
+                        Button("完了") { isEditMode = false }
                     } else {
-                        Button("キャンセル") {
-                            isDeleteMode = false
-                        }
+                        Button("閉じる") { dismiss() }
                     }
                 }
             }
             .sheet(isPresented: $isShowingAddCategory) {
                 AddCategoryView()
+            }
+            .sheet(item: $editingCategory) { category in
+                AddCategoryView(editingCategory: category)
             }
             .alert("削除確認", isPresented: $showDeleteCategoryAlert) {
                 Button("削除", role: .destructive) {
@@ -185,6 +207,14 @@ struct CategorySelectionView: View {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(borderColor, lineWidth: 1.5)
             )
+            .overlay(alignment: .topTrailing) {
+                if isEditMode {
+                    Image(systemName: "pencil.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(.gray)
+                        .padding(6)
+                }
+            }
         }
         .buttonStyle(.plain)
     }
@@ -196,6 +226,8 @@ struct CategorySelectionView: View {
             } else {
                 selectedDeleteCategories.insert(category.id)
             }
+        } else if isEditMode {
+            editingCategory = category
         } else {
             selectedCategoryID = category.id
             dismiss()

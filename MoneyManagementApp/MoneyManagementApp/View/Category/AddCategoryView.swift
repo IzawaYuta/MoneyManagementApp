@@ -12,13 +12,31 @@ struct AddCategoryView: View {
     
     @State private var categoryName = ""
     @State private var selectedIcon: String? = nil
-    @State private var selectedColor = "#343A40"
+    @State private var selectedColor: String? = nil
     
     // オンボーディング用: 追加後にdismiss()の代わりにこちらを呼ぶ
     var onSave: (() -> Void)? = nil
     // オンボーディング用: キャンセルボタンを非表示にする
     var hideCancelButton: Bool = false
-
+    
+    // 編集対象(nilなら新規追加)
+    let editingCategory: Category?
+    
+    private var isEditing: Bool { editingCategory != nil }
+    
+    init(
+        editingCategory: Category? = nil,
+        onSave: (() -> Void)? = nil,
+        hideCancelButton: Bool = false
+    ) {
+        self.editingCategory = editingCategory
+        self.onSave = onSave
+        self.hideCancelButton = hideCancelButton
+        // 編集時は既存の値を初期値にする
+        _categoryName = State(initialValue: editingCategory?.name ?? "")
+        _selectedIcon = State(initialValue: editingCategory?.imageName)
+        _selectedColor = State(initialValue: editingCategory?.colorHex)
+    }
     
     // 家計簿カテゴリー向けによく使うSF Symbolを厳選
     // (CategoryIconPickerView と同じ一覧を共有)
@@ -231,7 +249,7 @@ struct AddCategoryView: View {
                                 } label: {
                                     Image(systemName: icon.symbol)
                                         .font(.system(size: 24))
-                                        .foregroundStyle(colorFromHex(selectedColor))
+                                        .foregroundStyle(selectedColor.map { colorFromHex($0) } ?? .black)
                                         .frame(width: 50, height: 50)
                                         .background(
                                             Circle()
@@ -295,23 +313,40 @@ struct AddCategoryView: View {
                     .padding(.vertical, 8)
                 }
             }
-            .navigationTitle("カテゴリーを追加")
+            .navigationTitle(isEditing ? "カテゴリーを編集" : "カテゴリーを追加")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("キャンセル") {
+                    Button(action: {
                         dismiss()
+                    }) {
+                        Image(systemName: "xmark")
+                            .foregroundColor(.red)
                     }
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("追加") {
-                        addCategory()
+                    Button(action: {
+                        if let category = editingCategory {
+                            updateCategory(category)
+                        } else {
+                            addCategory()
+                        }
+
+                    }) {
+                        Image(systemName: "checkmark")
+                            .foregroundStyle(canSave ? Color.black : Color.gray.opacity(0.4))
                     }
-                    .disabled(categoryName.isEmpty)
+                    .disabled(!canSave)
                 }
             }
         }
+    }
+    
+    private var canSave: Bool {
+        !categoryName.trimmingCharacters(in: .whitespaces).isEmpty
+        && selectedIcon != nil
+        && selectedColor != nil
     }
     
     private func colorFromHex(_ hex: String) -> Color {
@@ -327,8 +362,16 @@ struct AddCategoryView: View {
         )
     }
     
+    private func updateCategory(_ category: Category) {
+        guard let colorHex = selectedColor else { return }
+        category.name = categoryName
+        category.imageName = selectedIcon ?? "ellipsis.circle"
+        category.colorHex = colorHex
+        dismiss()
+    }
+    
     private func addCategory() {
-        
+        guard let colorHex = selectedColor else { return }
         // 📋 追加前の一覧
         print("========== 📋 追加前のカテゴリー一覧 ==========")
         
@@ -349,7 +392,7 @@ struct AddCategoryView: View {
         let newCategory = Category(
             name: categoryName,
             imageName: iconName,
-            colorHex: selectedColor,
+            colorHex: colorHex,
             sortIndex: newSortIndex
         )
         
