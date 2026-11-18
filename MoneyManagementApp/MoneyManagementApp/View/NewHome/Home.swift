@@ -1,7 +1,25 @@
+
 import SwiftUI
+import SwiftData
 
 // MARK: - 収支入力画面
 struct Home: View {
+    
+    @Environment(\.modelContext) private var modelContext
+    
+    @Query(sort: \Category.sortIndex)
+    private var categories: [Category]
+    @Query private var paymentMethod: [PaymentMethod]
+    @Query private var transactions: [Transaction]
+    
+    /// 選択中のカテゴリー
+    private var selectedCategory: Category? {
+        categories.first(where: { $0.id == selectedCategoryID })
+    }
+    
+    private var selectedPaymentMethod: PaymentMethod? {
+        paymentMethod.first(where: { $0.id == selectedPaymentMethodID })
+    }
     
     @FocusState private var focusedField: Field?
     
@@ -18,6 +36,8 @@ struct Home: View {
     
     @State private var showCategorySelectionView: Bool = false
     @State var selectedCategoryID: UUID?
+    @State private var showPaymentMethodView = false
+    @State private var selectedPaymentMethodID: UUID?
     
     /// 下の白いシートが画面の高さに占める割合
     private let sheetHeightRatio: CGFloat = 0.705
@@ -99,7 +119,10 @@ struct Home: View {
                         .interactiveDismissDisabled(true)
                     }
                     SelectionCard(title: "支払方法", value: paymentMethodName, corners: .paymentCard) {
-                        // TODO: 支払方法選択の処理
+                        showPaymentMethodView.toggle()
+                    }
+                    .sheet(isPresented: $showPaymentMethodView) {
+                        PaymentMethodView(selectedPaymentMethodID: $selectedPaymentMethodID)
                     }
                 }
                 
@@ -110,10 +133,10 @@ struct Home: View {
                 InputActionButtons(
                     accentColor: accentColor,
                     onConfirm: {
-                        // TODO: saveTransaction()
+                        saveTransaction()
                     },
                     onClear: {
-                        // TODO: 「内容をクリアしますか？」の確認アラートを出し、
+                        clearButton()
                     }
                 )
                 .padding(.bottom, 50)
@@ -135,6 +158,73 @@ struct Home: View {
         .pickerStyle(.segmented)
         .frame(width: 160)
         .padding(.vertical, 5)
+    }
+    
+    // MARK: 収支確定
+    private func saveTransaction() {
+        
+        let nextSortIndex = (transactions.map(\.sortIndex).max() ?? -1) + 1
+        
+        let transaction = Transaction(
+            date: selectedDate,
+            amount: Int(priceTextField) ?? 0,
+            type: selectedTransactionType,
+            //            category: category,
+            memo: memoTextField,
+            sortIndex: nextSortIndex,
+            categoryID: selectedCategoryID,
+            categoryName: selectedCategory?.name,
+            categoryImageName: selectedCategory?.imageName,
+            categoryColorHex: selectedCategory?.colorHex,
+            paymentMethodID: selectedPaymentMethod?.id,
+            paymentMethodName: selectedPaymentMethod?.name,
+            paymentMethodType: selectedPaymentMethod?.type,
+            paymentMethodMemo: selectedPaymentMethod?.memo
+        )
+        
+        modelContext.insert(transaction)
+        
+        priceTextField = ""
+        memoTextField = ""
+        print("🔥新規保存情報🔥")
+        print("✅type: \(transaction.type.rawValue)")
+        
+        let japanDate = transaction.date.formatted(
+            .dateTime
+                .year()
+                .month()
+                .day()
+                .hour()
+                .minute()
+                .second()
+                .locale(Locale(identifier: "ja_JP"))
+        )
+        print("✅date: \(japanDate)")
+        
+        print("✅amount: \(transaction.amount)")
+        print("✅category: \(transaction.categoryName)")
+        print("category.imageName: \(selectedCategory?.imageName)")
+        print("transaction.categoryImageName: \(transaction.categoryImageName)")
+        
+        if let memo = transaction.memo {
+            print("✅memo: \"\(memo)\"")
+        } else {
+            print("✅memo: nil")
+        }
+        
+        print("✅sortIndex: \(transaction.sortIndex)")
+        print("✅paymentMethodID: \(transaction.paymentMethodID?.uuidString ?? "nil")")
+        print("✅paymentMethodName: \(transaction.paymentMethodName ?? "nil")")
+        print("✅paymentMethodType: \(transaction.paymentMethodType?.title ?? "nil")")
+        print("✅paymentMethodMemo: \(transaction.paymentMethodMemo ?? "nil")")
+    }
+    
+    private func clearButton() {
+        selectedDate = Date()
+        priceTextField = ""
+        selectedCategoryID = categories.sorted { $0.sortIndex < $1.sortIndex }.first?.id
+        memoTextField = ""
+        selectedPaymentMethodID = paymentMethod.sorted { $0.sortIndex < $1.sortIndex }.first?.id
     }
 }
 
