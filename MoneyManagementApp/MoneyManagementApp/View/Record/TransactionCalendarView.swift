@@ -52,7 +52,7 @@ struct TransactionCalendarView: View {
                             .clipShape(Circle())
                     }
                 }
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 30)
                 
                 // 曜日ヘッダー
                 HStack(spacing: 0) {
@@ -100,7 +100,7 @@ struct TransactionCalendarView: View {
             // 選択日の詳細
             ScrollView {
                 selectedDayDetail
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 10)
                     .padding(.top, 4)
             }
             
@@ -110,8 +110,8 @@ struct TransactionCalendarView: View {
         .background(
             LinearGradient(
                 colors: [
-                    Color(red: 235.0 / 255.0, green: 240.0 / 255.0, blue: 255.0 / 255.0),
-                    Color(red: 255.0 / 255.0, green: 240.0 / 255.0, blue: 247.0 / 255.0)
+                    Color(red: 140.0 / 255.0, green: 230.0 / 255.0, blue: 225.0 / 255.0),
+                    Color(red: 255.0 / 255.0, green: 173.0 / 255.0, blue: 169.0 / 255.0)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -216,42 +216,57 @@ struct TransactionCalendarView: View {
     
     @ViewBuilder
     private func transactionRow(_ transaction: Transaction) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: transaction.categoryImageName ?? "なし")
-                .font(.system(size: 14))
-                .foregroundStyle(colorFromHex(transaction.categoryColorHex ?? "なし"))
-                .frame(width: 24)
+        let color = transaction.categoryColorHex.map(colorFromHex) ?? .gray
+        
+        return HStack(spacing: 12) {
+            // アイコン(カテゴリー色の薄い丸の上に表示)
+            Image(systemName: transaction.categoryImageName ?? "questionmark")
+                .font(.system(size: 17, weight: .medium))
+                .foregroundStyle(color)
+                .frame(width: 38, height: 38)
+                .background(
+                    Circle().fill(color.opacity(0.15))
+                )
             
-            VStack(alignment: .leading, spacing: 2) {
-                Text(transaction.categoryName ?? "なし")
-                    .font(.system(size: 14))
+            // カテゴリー名 + メモ
+            VStack(alignment: .leading, spacing: 3) {
+                Text(transaction.categoryName ?? "未設定")
+                    .font(.system(size: 16, weight: .medium))
                     .foregroundStyle(.black)
                 
-                if let memo = transaction.memo {
+                if let memo = transaction.memo, !memo.isEmpty {
                     Text(memo)
-                        .font(.system(size: 11))
+                        .font(.system(size: 13))
                         .foregroundStyle(.gray)
+                        .lineLimit(1)
                 }
                 
                 if let paymentMethodName = transaction.paymentMethodName {
                     Text(paymentMethodName)
                         .font(.system(size: 11))
                         .foregroundStyle(.gray)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 2)
+                        .background(
+                            Capsule().fill(Color.gray.opacity(0.12))
+                        )
                 }
             }
             
-            Spacer()
+            Spacer(minLength: 8)
             
+            // 金額 + 支払方法
             Text(
                 transaction.type == .income
                 ? "+\(transaction.amount.formatted())円"
                 : "-\(transaction.amount.formatted())円"
             )
-            .font(.system(size: 14, weight: .medium))
+            .font(.system(size: 17, weight: .semibold))
+            .monospacedDigit()
             .foregroundStyle(transaction.type == .income ? customGreen : customRed)
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.vertical, 10)
     }
     
     // MARK: - カラー変換
