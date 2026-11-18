@@ -100,8 +100,8 @@ struct MonthlyChartView: View {
             .background(
                 LinearGradient(
                     colors: [
-                        Color(red: 235.0 / 255.0, green: 240.0 / 255.0, blue: 255.0 / 255.0),
-                        Color(red: 255.0 / 255.0, green: 240.0 / 255.0, blue: 247.0 / 255.0)
+                        Color(red: 140.0 / 255.0, green: 230.0 / 255.0, blue: 225.0 / 255.0),
+                        Color(red: 255.0 / 255.0, green: 173.0 / 255.0, blue: 169.0 / 255.0)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -398,7 +398,7 @@ enum PreviewData {
             ("通信費", "iphone", 8_900, .expense)
         ]
         for (index, sample) in samples.enumerated() {
-            let category = Category(name: sample.0, imageName: sample.1, colorHex: "#343A40", sortIndex: index)
+            let category = Category(name: sample.0, imageName: sample.1, colorHex: "#342A40", sortIndex: index)
             container.mainContext.insert(category)
             container.mainContext.insert(
                 Transaction(

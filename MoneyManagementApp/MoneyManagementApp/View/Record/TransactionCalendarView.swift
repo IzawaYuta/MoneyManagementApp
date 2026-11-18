@@ -191,7 +191,7 @@ struct TransactionCalendarView: View {
             if dayItems.isEmpty {
                 Text("この日の記録はありません")
                     .font(.system(size: 13))
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(.black)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 24)
             } else {
