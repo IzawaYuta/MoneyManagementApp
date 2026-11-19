@@ -22,7 +22,7 @@ struct BudgetProgressBar: View {
 
 // MARK: - 表示ラベル(予算は支出のみ)
 extension TransactionType {
-    var totalTitle: String { "今月の総予算" }
+    var totalTitle: String { "総予算" }
     var budgetTitle: String { "予算" }
     var spentTitle: String { "使用済み" }
     var remainingTitle: String { "残り" }
@@ -52,6 +52,14 @@ extension LinearGradient {
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
+}
+
+// MARK: - バーの割合
+/// 予算に対する「残り」の割合(0〜1)。バーの長さに使う。
+/// 予算を使い切った・超過した・予算が0のときは0(空のバー)。
+func budgetRemainingRatio(budget: Int, spent: Int) -> Double {
+    guard budget > 0 else { return 0 }
+    return min(max(Double(budget - spent) / Double(budget), 0), 1)
 }
 
 // MARK: - 金額・色

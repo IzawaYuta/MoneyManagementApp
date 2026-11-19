@@ -1,4 +1,3 @@
-
 import SwiftUI
 import SwiftData
 
@@ -157,10 +156,7 @@ private struct BudgetDetailSummaryCard: View {
     
     private var remaining: Int { budget - spent }
     private var isOver: Bool { remaining < 0 }
-    private var progress: Double {
-        if budget > 0 { return min(Double(spent) / Double(budget), 1) }
-        return spent > 0 ? 1 : 0
-    }
+    private var remainingRatio: Double { budgetRemainingRatio(budget: budget, spent: spent) }
     
     private var gradient: LinearGradient {
         let base: Color = (type == .expense && isOver) ? .red : Color(budgetHex: colorHex)
@@ -193,7 +189,7 @@ private struct BudgetDetailSummaryCard: View {
                     .minimumScaleFactor(0.6)
             }
             
-            BudgetProgressBar(progress: progress, fill: .white, track: .white.opacity(0.3), height: 10)
+            BudgetProgressBar(progress: remainingRatio, fill: .white, track: .white.opacity(0.3), height: 10)
             
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 2) {

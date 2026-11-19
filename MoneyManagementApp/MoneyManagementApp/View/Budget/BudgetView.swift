@@ -196,10 +196,7 @@ private struct BudgetRow: Identifiable {
     
     var remaining: Int { budget - spent }
     var isOver: Bool { remaining < 0 }
-    var progress: Double {
-        if budget > 0 { return min(Double(spent) / Double(budget), 1) }
-        return spent > 0 ? 1 : 0
-    }
+    var remainingRatio: Double { budgetRemainingRatio(budget: budget, spent: spent) }
 }
 
 // MARK: - 総予算カード(上部)
@@ -209,13 +206,10 @@ private struct BudgetTotalCard: View {
     let budget: Int
     let spent: Int
     
-    private var progress: Double {
-        if budget > 0 { return min(Double(spent) / Double(budget), 1) }
-        return spent > 0 ? 1 : 0
-    }
+    private var remainingRatio: Double { budgetRemainingRatio(budget: budget, spent: spent) }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             Text(type.totalTitle)
                 .font(.subheadline.weight(.medium))
                 .opacity(0.85)
@@ -225,7 +219,7 @@ private struct BudgetTotalCard: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
             
-            BudgetProgressBar(progress: progress, fill: .white, track: .white.opacity(0.3), height: 10)
+            BudgetProgressBar(progress: remainingRatio, fill: .white, track: .white.opacity(0.3), height: 10)
             
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(type.spentTitle)
@@ -235,7 +229,7 @@ private struct BudgetTotalCard: View {
                     .font(.title3.weight(.semibold))
             }
         }
-        .foregroundStyle(.black.opacity(0.8))
+        .foregroundStyle(.white)
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(LinearGradient.budgetTotal)
@@ -277,7 +271,7 @@ private struct BudgetCategoryCard: View {
                         .font(.subheadline.weight(.semibold))
                 }
                 
-                BudgetProgressBar(progress: row.progress, fill: panelColor, track: color.opacity(0.15))
+                BudgetProgressBar(progress: row.remainingRatio, fill: panelColor, track: panelColor.opacity(0.15))
                 
                 HStack(spacing: 4) {
                     Spacer()
