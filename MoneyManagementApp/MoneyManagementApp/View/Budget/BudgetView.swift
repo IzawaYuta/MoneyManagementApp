@@ -1,4 +1,3 @@
-
 import SwiftUI
 import SwiftData
 
@@ -7,7 +6,8 @@ import SwiftData
 /// データは Budget(期間ごとに1行) + Transaction(使用額) + Category(表示情報) から算出する。
 struct BudgetView: View {
     @State private var month: Int = YearMonth.make(from: Date())
-    @State private var type: TransactionType = .expense
+    /// 予算は支出のみ
+    private let type = TransactionType.expense
     @State private var isShowingSetup = false
     
     var body: some View {
@@ -21,28 +21,20 @@ struct BudgetView: View {
                 BudgetMonthContent(month: month, type: type)
             }
             .background(Color(.systemGroupedBackground))
+            .navigationTitle("予算")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Picker("種別", selection: $type) {
-                        ForEach(TransactionType.allCases, id: \.self) { t in
-                            Text(t.rawValue).tag(t)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 180)
-                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         isShowingSetup = true
                     } label: {
                         Image(systemName: "plus")
                     }
-                    .accessibilityLabel(type == .expense ? "予算を設定" : "目標を設定")
+                    .accessibilityLabel("予算を設定")
                 }
             }
             .sheet(isPresented: $isShowingSetup) {
-                BudgetSetupSheet(initialMonth: month, type: type)
+                BudgetSetupSheet(initialMonth: month)
             }
         }
     }

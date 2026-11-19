@@ -7,27 +7,27 @@ import SwiftData
 /// 月の切り替え / 総予算 / 保存してあるカテゴリーごとの予算金額を表示し、
 /// カテゴリーをタップすると金額と適用範囲を設定できる(BudgetEditSheet を使用)。
 struct BudgetSetupSheet: View {
-    let type: TransactionType
-
+    /// 予算は支出のみ
+    private let type = TransactionType.expense
+    
     @State private var month: Int
     @State private var editingTarget: EditTarget?
-
+    
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Category.sortIndex) private var categories: [Category]
     @Query private var budgets: [Budget]
-
-    init(initialMonth: Int, type: TransactionType) {
-        self.type = type
+    
+    init(initialMonth: Int) {
         _month = State(initialValue: initialMonth)
     }
-
+    
     /// 金額を設定するカテゴリー(シートを開くための情報)
     private struct EditTarget: Identifiable {
         let id: UUID        // categoryID
         let name: String
         let amount: Int
     }
-
+    
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -37,16 +37,16 @@ struct BudgetSetupSheet: View {
                         onPrevious: { month = YearMonth.previous(month) },
                         onNext: { month = YearMonth.next(month) }
                     )
-
+                    
                     totalCard
-
+                    
                     categoryList
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 24)
             }
             .background(Color(.systemGroupedBackground))
-            .navigationTitle(type == .expense ? "予算を設定" : "目標を設定")
+            .navigationTitle("予算を設定")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -65,7 +65,7 @@ struct BudgetSetupSheet: View {
             }
         }
     }
-
+    
     // MARK: 総予算
     /// 総予算 = その月のカテゴリー予算の合計(削除済みカテゴリーの予算も含む。予算管理画面と同じ)
     private var totalAmount: Int {
@@ -79,14 +79,12 @@ struct BudgetSetupSheet: View {
         }
         .reduce(0, +)
     }
-
+    
     private var totalCard: some View {
-        let colors: [Color] = type == .expense
-            ? [Color(budgetHex: "#4F46E5"), Color(budgetHex: "#9333EA")]
-            : [Color(budgetHex: "#0D9488"), Color(budgetHex: "#22C55E")]
-
+        let colors = [Color(budgetHex: "#4F46E5"), Color(budgetHex: "#9333EA")]
+        
         return VStack(spacing: 4) {
-            Text(type.totalTitle)
+            Text("\(month % 100)月の総予算")
                 .font(.subheadline.weight(.medium))
                 .opacity(0.85)
             Text(budgetYen(totalAmount))
@@ -103,7 +101,7 @@ struct BudgetSetupSheet: View {
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .shadow(color: .black.opacity(0.12), radius: 8, y: 3)
     }
-
+    
     // MARK: カテゴリー別の予算
     private func amount(for category: Category) -> Int? {
         BudgetService.applied(
@@ -112,7 +110,7 @@ struct BudgetSetupSheet: View {
             month: month
         )?.amount
     }
-
+    
     @ViewBuilder
     private var categoryList: some View {
         if categories.isEmpty {
@@ -125,7 +123,7 @@ struct BudgetSetupSheet: View {
             VStack(spacing: 0) {
                 ForEach(Array(categories.enumerated()), id: \.element.id) { index, category in
                     categoryRow(category)
-
+                    
                     if index < categories.count - 1 {
                         Divider().padding(.leading, 62)
                     }
@@ -135,10 +133,10 @@ struct BudgetSetupSheet: View {
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
     }
-
+    
     private func categoryRow(_ category: Category) -> some View {
         let amount = amount(for: category)
-
+        
         return Button {
             editingTarget = EditTarget(id: category.id, name: category.name, amount: amount ?? 0)
         } label: {
@@ -147,13 +145,13 @@ struct BudgetSetupSheet: View {
                     .foregroundStyle(.white)
                     .frame(width: 34, height: 34)
                     .background(Color(budgetHex: category.colorHex), in: Circle())
-
+                
                 Text(category.name)
                     .foregroundStyle(.primary)
                     .lineLimit(1)
-
+                
                 Spacer()
-
+                
                 if let amount {
                     Text(budgetYen(amount))
                         .font(.body.weight(.semibold))
@@ -162,7 +160,7 @@ struct BudgetSetupSheet: View {
                     Text("未設定")
                         .foregroundStyle(.secondary)
                 }
-
+                
                 Image(systemName: "chevron.right")
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(.tertiary)
@@ -182,16 +180,16 @@ struct BudgetSetupSheet: View {
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
     )
     let context = container.mainContext
-
+    
     let food = Category(name: "食費", imageName: "fork.knife", colorHex: "#FF6B6B", sortIndex: 0)
     let transport = Category(name: "交通費", imageName: "tram.fill", colorHex: "#4D96FF", sortIndex: 1)
     let fun = Category(name: "娯楽", imageName: "gamecontroller.fill", colorHex: "#9B5DE5", sortIndex: 2)
     [food, transport, fun].forEach { context.insert($0) }
-
+    
     let ym = YearMonth.make(from: Date())
     context.insert(Budget(categoryID: food.id, type: .expense, amount: 30000, startMonth: ym))
     context.insert(Budget(categoryID: transport.id, type: .expense, amount: 10000, startMonth: ym))
-
-    return BudgetSetupSheet(initialMonth: ym, type: .expense)
+    
+    return BudgetSetupSheet(initialMonth: ym)
         .modelContainer(container)
 }
