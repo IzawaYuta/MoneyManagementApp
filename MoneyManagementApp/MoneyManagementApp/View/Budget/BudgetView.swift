@@ -207,6 +207,8 @@ private struct BudgetTotalCard: View {
     let spent: Int
     
     private var remainingRatio: Double { budgetRemainingRatio(budget: budget, spent: spent) }
+    /// 使用済みが総予算を超えているか
+    private var isOver: Bool { spent > budget }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -229,6 +231,7 @@ private struct BudgetTotalCard: View {
                     .opacity(0.5)
                 Text(budgetYen(spent))
                     .font(.title3.weight(.semibold))
+                .foregroundStyle(isOver ? Color(red: 0.75, green: 0.05, blue: 0.05) : .black)
             }
         }
         .foregroundStyle(.black)
@@ -248,9 +251,7 @@ private struct BudgetCategoryCard: View {
     let type: TransactionType
     
     private var color: Color { Color(budgetHex: row.colorHex) }
-    /// 支出で予算超過のときはパネルを赤にする
-    private var isExpenseOver: Bool { type == .expense && row.isOver }
-    private var panelColor: Color { isExpenseOver ? .red : color.opacity(0.8) }
+    private var panelColor: Color { color.opacity(0.8) }
     private var remainingTitle: String { row.isOver ? type.overTitle : type.remainingTitle }
     
     var body: some View {
@@ -290,7 +291,7 @@ private struct BudgetCategoryCard: View {
             VStack(spacing: 4) {
                 Text(remainingTitle)
                     .font(.caption.weight(.medium))
-                Text(budgetYen(abs(row.remaining)))
+                Text(budgetYen(row.remaining))
                     .font(.title3.bold())
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
@@ -325,7 +326,7 @@ private struct BudgetCategoryCard: View {
     context.insert(Budget(categoryID: transport.id, type: .expense, amount: 10000, startMonth: ym))
     context.insert(Budget(categoryID: fun.id, type: .expense, amount: 8000, startMonth: ym))
     
-    for (category, amount) in [(food, 21000), (transport, 3500), (fun, 3000)] {
+    for (category, amount) in [(food, 50000), (transport, 3500), (fun, 3000)] {
         context.insert(Transaction(
             date: Date(), amount: amount, type: .expense,
             categoryID: category.id, categoryName: category.name,

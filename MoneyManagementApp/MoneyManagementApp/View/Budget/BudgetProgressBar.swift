@@ -64,7 +64,7 @@ func budgetRemainingRatio(budget: Int, spent: Int) -> Double {
 
 // MARK: - 金額・色
 func budgetYen(_ value: Int) -> String {
-    value < 0 ? "-¥\(abs(value).formatted())" : "¥\(value.formatted())"
+    value < 0 ? "+¥\(abs(value).formatted())" : "¥\(value.formatted())"
 }
 
 extension Color {
