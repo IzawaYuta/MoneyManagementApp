@@ -1,10 +1,3 @@
-//
-//  BudgetView.swift
-//  MoneyManagementApp
-//
-//  Created by Engineer MacBook Air on 2026/11/18.
-//
-
 
 import SwiftUI
 import SwiftData
@@ -15,7 +8,8 @@ import SwiftData
 struct BudgetView: View {
     @State private var month: Int = YearMonth.make(from: Date())
     @State private var type: TransactionType = .expense
-
+    @State private var isShowingSetup = false
+    
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -28,6 +22,28 @@ struct BudgetView: View {
             }
             .background(Color(.systemGroupedBackground))
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Picker("種別", selection: $type) {
+                        ForEach(TransactionType.allCases, id: \.self) { t in
+                            Text(t.rawValue).tag(t)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 180)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        isShowingSetup = true
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel(type == .expense ? "予算を設定" : "目標を設定")
+                }
+            }
+            .sheet(isPresented: $isShowingSetup) {
+                BudgetSetupSheet(initialMonth: month, type: type)
+            }
         }
     }
 }
@@ -37,7 +53,7 @@ private struct BudgetMonthHeader: View {
     let month: Int
     let onPrevious: () -> Void
     let onNext: () -> Void
-
+    
     var body: some View {
         HStack {
             Button(action: onPrevious) {
@@ -46,12 +62,12 @@ private struct BudgetMonthHeader: View {
                     .frame(width: 44, height: 44)
             }
             .accessibilityLabel("前月")
-
+            
             Spacer()
             Text("\(month / 100)年\(month % 100)月")
                 .font(.headline)
             Spacer()
-
+            
             Button(action: onNext) {
                 Image(systemName: "chevron.right")
                     .font(.headline)
@@ -67,32 +83,32 @@ private struct BudgetMonthHeader: View {
 private struct BudgetMonthContent: View {
     let month: Int
     let type: TransactionType
-
+    
     @Query private var budgets: [Budget]
     @Query(sort: \Category.sortIndex) private var categories: [Category]
     @Query private var transactions: [Transaction]
-
+    
     init(month: Int, type: TransactionType) {
         self.month = month
         self.type = type
-
+        
         // 取引はその月の範囲のみ取得(種別は列挙型のためメモリ上で絞り込む)
         let range = Self.dateRange(of: month)
         let start = range.lowerBound
         let end = range.upperBound
         _transactions = Query(filter: #Predicate<Transaction> { $0.date >= start && $0.date < end })
-
+        
         // 予算は開始月が対象月以前のものを取得(終了月はメモリ上で判定)
         let m = month
         _budgets = Query(filter: #Predicate<Budget> { $0.startMonth <= m })
     }
-
+    
     var body: some View {
         let rows = makeRows()
         // 総予算 = カテゴリー予算の合計。使用済みは予算のあるカテゴリー分のみ集計
         let totalBudget = rows.reduce(0) { $0 + $1.budget }
         let totalSpent = rows.reduce(0) { $0 + $1.spent }
-
+        
         ScrollView {
             VStack(spacing: 16) {
                 if rows.isEmpty {
@@ -120,7 +136,7 @@ private struct BudgetMonthContent: View {
             .padding(.bottom, 24)
         }
     }
-
+    
     // MARK: 行データの作成
     private func makeRows() -> [BudgetRow] {
         // 対象月に適用される予算(カテゴリーごとに1件。期間は重ならない想定だが、念のため新しい方を採用)
@@ -134,14 +150,14 @@ private struct BudgetMonthContent: View {
                 applied[b.categoryID] = b
             }
         }
-
+        
         // カテゴリーごとの使用額
         let monthTransactions = transactions.filter { $0.type == type }
         let spentByCategory = Dictionary(grouping: monthTransactions, by: \.categoryID)
             .mapValues { $0.map(\.amount).reduce(0, +) }
-
+        
         let categoryByID = Dictionary(categories.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-
+        
         let rows: [BudgetRow] = applied.values.map { b in
             let spent = spentByCategory[b.categoryID] ?? 0
             if let c = categoryByID[b.categoryID] {
@@ -162,12 +178,12 @@ private struct BudgetMonthContent: View {
                 budget: b.amount, spent: spent, sortIndex: Int.max
             )
         }
-
+        
         return rows.sorted {
             $0.sortIndex != $1.sortIndex ? $0.sortIndex < $1.sortIndex : $0.name < $1.name
         }
     }
-
+    
     private static func dateRange(of yyyymm: Int) -> Range<Date> {
         let calendar = Calendar.current
         let start = calendar.date(from: DateComponents(year: yyyymm / 100, month: yyyymm % 100, day: 1)) ?? Date()
@@ -185,7 +201,7 @@ private struct BudgetRow: Identifiable {
     let budget: Int
     let spent: Int
     let sortIndex: Int
-
+    
     var remaining: Int { budget - spent }
     var isOver: Bool { remaining < 0 }
     var progress: Double {
@@ -200,32 +216,32 @@ private struct BudgetTotalCard: View {
     let type: TransactionType
     let budget: Int
     let spent: Int
-
+    
     private var progress: Double {
         if budget > 0 { return min(Double(spent) / Double(budget), 1) }
         return spent > 0 ? 1 : 0
     }
-
+    
     private var gradient: LinearGradient {
         let colors: [Color] = type == .expense
-            ? [Color(budgetHex: "#4F46E5"), Color(budgetHex: "#9333EA")]
-            : [Color(budgetHex: "#0D9488"), Color(budgetHex: "#22C55E")]
+        ? [Color(budgetHex: "#4F46E5"), Color(budgetHex: "#9333EA")]
+        : [Color(budgetHex: "#0D9488"), Color(budgetHex: "#22C55E")]
         return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
     }
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(type.totalTitle)
                 .font(.subheadline.weight(.medium))
                 .opacity(0.85)
-
+            
             Text(budgetYen(budget))
                 .font(.system(size: 40, weight: .bold, design: .rounded))
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
-
+            
             BudgetProgressBar(progress: progress, fill: .white, track: .white.opacity(0.3), height: 10)
-
+            
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(type.spentTitle)
                     .font(.subheadline)
@@ -249,13 +265,13 @@ private struct BudgetTotalCard: View {
 private struct BudgetCategoryCard: View {
     let row: BudgetRow
     let type: TransactionType
-
+    
     private var color: Color { Color(budgetHex: row.colorHex) }
     /// 支出で予算超過のときはパネルを赤にする
     private var isExpenseOver: Bool { type == .expense && row.isOver }
     private var panelColor: Color { isExpenseOver ? .red : color }
     private var remainingTitle: String { row.isOver ? type.overTitle : type.remainingTitle }
-
+    
     var body: some View {
         HStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 8) {
@@ -267,7 +283,7 @@ private struct BudgetCategoryCard: View {
                         .font(.headline)
                         .lineLimit(1)
                 }
-
+                
                 HStack(spacing: 4) {
                     Text(type.budgetTitle)
                         .font(.caption)
@@ -275,9 +291,9 @@ private struct BudgetCategoryCard: View {
                     Text(budgetYen(row.budget))
                         .font(.subheadline.weight(.semibold))
                 }
-
+                
                 BudgetProgressBar(progress: row.progress, fill: panelColor, track: color.opacity(0.15))
-
+                
                 HStack(spacing: 4) {
                     Spacer()
                     Text(type.spentTitle)
@@ -289,7 +305,7 @@ private struct BudgetCategoryCard: View {
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
-
+            
             VStack(spacing: 4) {
                 Text(remainingTitle)
                     .font(.caption.weight(.medium))
@@ -317,17 +333,17 @@ private struct BudgetCategoryCard: View {
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
     )
     let context = container.mainContext
-
+    
     let food = Category(name: "食費", imageName: "fork.knife", colorHex: "#FF6B6B", sortIndex: 0)
     let transport = Category(name: "交通費", imageName: "tram.fill", colorHex: "#4D96FF", sortIndex: 1)
     let fun = Category(name: "娯楽", imageName: "gamecontroller.fill", colorHex: "#9B5DE5", sortIndex: 2)
     [food, transport, fun].forEach { context.insert($0) }
-
+    
     let ym = YearMonth.make(from: Date())
     context.insert(Budget(categoryID: food.id, type: .expense, amount: 30000, startMonth: ym))
     context.insert(Budget(categoryID: transport.id, type: .expense, amount: 10000, startMonth: ym))
     context.insert(Budget(categoryID: fun.id, type: .expense, amount: 8000, startMonth: ym))
-
+    
     for (category, amount) in [(food, 12500), (transport, 11200), (fun, 3000)] {
         context.insert(Transaction(
             date: Date(), amount: amount, type: .expense,
@@ -335,6 +351,6 @@ private struct BudgetCategoryCard: View {
             categoryImageName: category.imageName, categoryColorHex: category.colorHex
         ))
     }
-
+    
     return BudgetView().modelContainer(container)
 }

@@ -25,11 +25,17 @@ struct MainTabView: View {
                 }
                 .tag(2)
             
+            BudgetView()
+                .tabItem {
+                    Image(systemName: "chart.pie")
+                }
+                .tag(3)
+            
             SettingListView()
                 .tabItem {
                     Image(systemName: "gear")
                 }
-                .tag(3)
+                .tag(4)
         }
     }
 }

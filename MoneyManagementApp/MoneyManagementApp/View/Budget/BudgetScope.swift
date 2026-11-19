@@ -1,10 +1,3 @@
-//
-//  BudgetScope.swift
-//  MoneyManagementApp
-//
-//  Created by Engineer MacBook Air on 2026/11/18.
-//
-
 
 import Foundation
 import SwiftData

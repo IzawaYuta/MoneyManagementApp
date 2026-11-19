@@ -1,10 +1,3 @@
-//
-//  BudgetDetailView.swift
-//  MoneyManagementApp
-//
-//  Created by Engineer MacBook Air on 2026/11/18.
-//
-
 
 import SwiftUI
 import SwiftData
@@ -19,11 +12,11 @@ struct BudgetDetailView: View {
     let colorHex: String
     let month: Int
     let type: TransactionType
-
+    
     @Query private var budgets: [Budget]
     @Query private var transactions: [Transaction]
     @State private var showingEdit = false
-
+    
     init(categoryID: UUID, name: String, imageName: String, colorHex: String, month: Int, type: TransactionType) {
         self.categoryID = categoryID
         self.name = name
@@ -31,7 +24,7 @@ struct BudgetDetailView: View {
         self.colorHex = colorHex
         self.month = month
         self.type = type
-
+        
         let id = categoryID
         let range = YearMonth.dateRange(month)
         let start = range.lowerBound
@@ -43,20 +36,20 @@ struct BudgetDetailView: View {
             order: .reverse
         )
     }
-
+    
     var body: some View {
         let budget = BudgetService.applied(in: budgets, type: type, month: month)
         let amount = budget?.amount ?? 0
         let monthTransactions = transactions.filter { $0.type == type }
         let spent = monthTransactions.reduce(0) { $0 + $1.amount }
-
+        
         ScrollView {
             VStack(spacing: 16) {
                 BudgetDetailSummaryCard(
                     name: name, imageName: imageName, colorHex: colorHex,
                     month: month, type: type, budget: amount, spent: spent
                 )
-
+                
                 VStack(spacing: 6) {
                     Button {
                         showingEdit = true
@@ -68,14 +61,14 @@ struct BudgetDetailView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(Color(budgetHex: colorHex))
-
+                    
                     if let period = periodText(of: budget) {
                         Text("適用期間: \(period)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
-
+                
                 transactionsSection(monthTransactions)
             }
             .padding(.horizontal, 16)
@@ -92,18 +85,18 @@ struct BudgetDetailView: View {
             .presentationDetents([.medium, .large])
         }
     }
-
+    
     // MARK: 適用期間の表示
     private func periodText(of budget: Budget?) -> String? {
         guard let b = budget else { return nil }
         if let end = b.endMonth {
             return b.startMonth == end
-                ? "\(YearMonth.label(b.startMonth))のみ"
-                : "\(YearMonth.label(b.startMonth))〜\(YearMonth.label(end))"
+            ? "\(YearMonth.label(b.startMonth))のみ"
+            : "\(YearMonth.label(b.startMonth))〜\(YearMonth.label(end))"
         }
         return "\(YearMonth.label(b.startMonth))〜"
     }
-
+    
     // MARK: その月の取引一覧
     @ViewBuilder
     private func transactionsSection(_ items: [Transaction]) -> some View {
@@ -112,7 +105,7 @@ struct BudgetDetailView: View {
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 4)
-
+            
             VStack(spacing: 0) {
                 if items.isEmpty {
                     Text("この月の取引はありません")
@@ -137,7 +130,7 @@ struct BudgetDetailView: View {
                         }
                         .padding(.horizontal, 14)
                         .padding(.vertical, 12)
-
+                        
                         if index < items.count - 1 {
                             Divider().padding(.leading, 14)
                         }
@@ -161,14 +154,14 @@ private struct BudgetDetailSummaryCard: View {
     let type: TransactionType
     let budget: Int
     let spent: Int
-
+    
     private var remaining: Int { budget - spent }
     private var isOver: Bool { remaining < 0 }
     private var progress: Double {
         if budget > 0 { return min(Double(spent) / Double(budget), 1) }
         return spent > 0 ? 1 : 0
     }
-
+    
     private var gradient: LinearGradient {
         let base: Color = (type == .expense && isOver) ? .red : Color(budgetHex: colorHex)
         return LinearGradient(
@@ -176,7 +169,7 @@ private struct BudgetDetailSummaryCard: View {
             startPoint: .topLeading, endPoint: .bottomTrailing
         )
     }
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 10) {
@@ -189,7 +182,7 @@ private struct BudgetDetailSummaryCard: View {
                     Text(YearMonth.label(month)).font(.caption).opacity(0.85)
                 }
             }
-
+            
             VStack(alignment: .leading, spacing: 2) {
                 Text(type.budgetTitle)
                     .font(.subheadline)
@@ -199,9 +192,9 @@ private struct BudgetDetailSummaryCard: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
             }
-
+            
             BudgetProgressBar(progress: progress, fill: .white, track: .white.opacity(0.3), height: 10)
-
+            
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(type.spentTitle).font(.caption).opacity(0.85)
@@ -225,19 +218,19 @@ private struct BudgetDetailSummaryCard: View {
 
 // MARK: - 予算の変更シート
 /// 金額と適用範囲(この月のみ / この月以降すべて)を選んで保存する
-private struct BudgetEditSheet: View {
+struct BudgetEditSheet: View {
     let categoryID: UUID
     let name: String
     let month: Int
     let type: TransactionType
-
+    
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @State private var amountText: String
     @State private var scope: BudgetScope = .fromThisMonth
     @State private var errorMessage: String?
     @FocusState private var amountFocused: Bool
-
+    
     init(categoryID: UUID, name: String, month: Int, type: TransactionType, currentAmount: Int) {
         self.categoryID = categoryID
         self.name = name
@@ -245,9 +238,9 @@ private struct BudgetEditSheet: View {
         self.type = type
         _amountText = State(initialValue: currentAmount > 0 ? String(currentAmount) : "")
     }
-
+    
     private var parsedAmount: Int? { Int(amountText) }
-
+    
     private var scopeFooter: String {
         switch scope {
         case .thisMonthOnly:
@@ -256,7 +249,7 @@ private struct BudgetEditSheet: View {
             return "\(YearMonth.label(month))以降の\(type.budgetTitle)をこの金額にします。以降に設定済みの個別の変更は上書きされます。"
         }
     }
-
+    
     var body: some View {
         NavigationStack {
             Form {
@@ -272,7 +265,7 @@ private struct BudgetEditSheet: View {
                             }
                     }
                 }
-
+                
                 Section {
                     Picker("適用範囲", selection: $scope) {
                         ForEach(BudgetScope.allCases) { s in
@@ -309,7 +302,7 @@ private struct BudgetEditSheet: View {
             .onAppear { amountFocused = true }
         }
     }
-
+    
     private func save() {
         guard let amount = parsedAmount else { return }
         do {
@@ -331,13 +324,13 @@ private struct BudgetEditSheet: View {
         configurations: ModelConfiguration(isStoredInMemoryOnly: true)
     )
     let context = container.mainContext
-
+    
     let food = Category(name: "食費", imageName: "fork.knife", colorHex: "#FF6B6B", sortIndex: 0)
     context.insert(food)
-
+    
     let ym = YearMonth.make(from: Date())
     context.insert(Budget(categoryID: food.id, type: .expense, amount: 30000, startMonth: ym))
-
+    
     for (amount, memo) in [(1280, "スーパー"), (3400, "ランチ"), (7820, "まとめ買い")] {
         context.insert(Transaction(
             date: Date(), amount: amount, type: .expense, memo: memo,
@@ -345,7 +338,7 @@ private struct BudgetEditSheet: View {
             categoryImageName: food.imageName, categoryColorHex: food.colorHex
         ))
     }
-
+    
     return NavigationStack {
         BudgetDetailView(
             categoryID: food.id, name: food.name, imageName: food.imageName,
