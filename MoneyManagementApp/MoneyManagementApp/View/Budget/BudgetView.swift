@@ -13,7 +13,7 @@ struct BudgetView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                BudgetMonthHeader(
+                BudgetMonthCapsule(
                     month: month,
                     onPrevious: { month = YearMonth.previous(month) },
                     onNext: { month = YearMonth.next(month) }
@@ -209,10 +209,10 @@ private struct BudgetTotalCard: View {
     private var remainingRatio: Double { budgetRemainingRatio(budget: budget, spent: spent) }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(type.totalTitle)
                 .font(.subheadline.weight(.medium))
-                .opacity(0.85)
+                .opacity(0.5)
             
             Text(budgetYen(budget))
                 .font(.system(size: 40, weight: .bold, design: .rounded))
@@ -222,14 +222,16 @@ private struct BudgetTotalCard: View {
             BudgetProgressBar(progress: remainingRatio, fill: .white, track: .white.opacity(0.3), height: 10)
             
             HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Spacer()
+                
                 Text(type.spentTitle)
                     .font(.subheadline)
-                    .opacity(0.85)
+                    .opacity(0.5)
                 Text(budgetYen(spent))
                     .font(.title3.weight(.semibold))
             }
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(.black)
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(LinearGradient.budgetTotal)
@@ -248,7 +250,7 @@ private struct BudgetCategoryCard: View {
     private var color: Color { Color(budgetHex: row.colorHex) }
     /// 支出で予算超過のときはパネルを赤にする
     private var isExpenseOver: Bool { type == .expense && row.isOver }
-    private var panelColor: Color { isExpenseOver ? .red : color }
+    private var panelColor: Color { isExpenseOver ? .red : color.opacity(0.8) }
     private var remainingTitle: String { row.isOver ? type.overTitle : type.remainingTitle }
     
     var body: some View {
@@ -293,7 +295,7 @@ private struct BudgetCategoryCard: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(.black)
             .padding(.horizontal, 8)
             .frame(width: 112)
             .frame(maxHeight: .infinity)
@@ -323,7 +325,7 @@ private struct BudgetCategoryCard: View {
     context.insert(Budget(categoryID: transport.id, type: .expense, amount: 10000, startMonth: ym))
     context.insert(Budget(categoryID: fun.id, type: .expense, amount: 8000, startMonth: ym))
     
-    for (category, amount) in [(food, 12500), (transport, 11200), (fun, 3000)] {
+    for (category, amount) in [(food, 21000), (transport, 3500), (fun, 3000)] {
         context.insert(Transaction(
             date: Date(), amount: amount, type: .expense,
             categoryID: category.id, categoryName: category.name,

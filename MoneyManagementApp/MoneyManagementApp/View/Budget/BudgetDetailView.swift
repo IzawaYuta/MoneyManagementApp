@@ -75,13 +75,14 @@ struct BudgetDetailView: View {
             .padding(.bottom, 24)
         }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle(name)
+        .navigationTitle("\(name)の予算")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingEdit) {
             BudgetEditSheet(
                 categoryID: categoryID, name: name, month: month, type: type, currentAmount: amount
             )
             .presentationDetents([.medium, .large])
+            .presentationBackground(.white)
         }
     }
     
@@ -107,7 +108,7 @@ struct BudgetDetailView: View {
             
             VStack(spacing: 0) {
                 if items.isEmpty {
-                    Text("この月の取引はありません")
+                    Text("この月の支出はありません")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
@@ -115,11 +116,18 @@ struct BudgetDetailView: View {
                 } else {
                     ForEach(Array(items.enumerated()), id: \.element.id) { index, t in
                         HStack(spacing: 12) {
-                            Text(t.date, format: .dateTime.month().day())
+                            Text(
+                                t.date.formatted(
+                                    .dateTime
+                                        .month()
+                                        .day()
+                                        .locale(Locale(identifier: "ja_JP"))
+                                )
+                            )
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                                 .frame(width: 64, alignment: .leading)
-                            Text((t.memo ?? "").isEmpty ? "メモなし" : (t.memo ?? ""))
+                            Text((t.memo ?? "メモなし").isEmpty ? "メモなし" : (t.memo ?? "メモなし"))
                                 .font(.subheadline)
                                 .foregroundStyle((t.memo ?? "").isEmpty ? .secondary : .primary)
                                 .lineLimit(1)
@@ -203,7 +211,7 @@ private struct BudgetDetailSummaryCard: View {
                 }
             }
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(.black.opacity(0.7))
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(gradient)
@@ -327,7 +335,7 @@ struct BudgetEditSheet: View {
     let ym = YearMonth.make(from: Date())
     context.insert(Budget(categoryID: food.id, type: .expense, amount: 30000, startMonth: ym))
     
-    for (amount, memo) in [(1280, "スーパー"), (3400, "ランチ"), (7820, "まとめ買い")] {
+    for (amount, memo) in [(1280, ""), (3400, "ランチ"), (7820, "まとめ買い")] {
         context.insert(Transaction(
             date: Date(), amount: amount, type: .expense, memo: memo,
             categoryID: food.id, categoryName: food.name,
