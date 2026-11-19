@@ -214,15 +214,8 @@ private struct BudgetTotalCard: View {
         return spent > 0 ? 1 : 0
     }
     
-    private var gradient: LinearGradient {
-        let colors: [Color] = type == .expense
-        ? [Color(budgetHex: "#4F46E5"), Color(budgetHex: "#9333EA")]
-        : [Color(budgetHex: "#0D9488"), Color(budgetHex: "#22C55E")]
-        return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
-    }
-    
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(type.totalTitle)
                 .font(.subheadline.weight(.medium))
                 .opacity(0.85)
@@ -242,10 +235,10 @@ private struct BudgetTotalCard: View {
                     .font(.title3.weight(.semibold))
             }
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(.black.opacity(0.8))
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(gradient)
+        .background(LinearGradient.budgetTotal)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .shadow(color: .black.opacity(0.12), radius: 8, y: 3)
     }

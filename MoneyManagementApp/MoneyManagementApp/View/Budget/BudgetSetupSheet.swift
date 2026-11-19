@@ -62,6 +62,7 @@ struct BudgetSetupSheet: View {
                     currentAmount: target.amount
                 )
                 .presentationDetents([.medium, .large])
+                .presentationBackground(.white)
             }
         }
     }
@@ -81,9 +82,7 @@ struct BudgetSetupSheet: View {
     }
     
     private var totalCard: some View {
-        let colors = [Color(budgetHex: "#4F46E5"), Color(budgetHex: "#9333EA")]
-        
-        return VStack(spacing: 4) {
+        VStack(spacing: 4) {
             Text("\(month % 100)月の総予算")
                 .font(.subheadline.weight(.medium))
                 .opacity(0.85)
@@ -92,12 +91,10 @@ struct BudgetSetupSheet: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(.black.opacity(0.8))
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
-        .background(
-            LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
-        )
+        .background(LinearGradient.budgetTotal)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .shadow(color: .black.opacity(0.12), radius: 8, y: 3)
     }
