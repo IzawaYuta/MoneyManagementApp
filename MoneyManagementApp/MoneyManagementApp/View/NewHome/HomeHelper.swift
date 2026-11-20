@@ -107,6 +107,7 @@ struct DatePickerSheet: View {
 /// 画面には通貨表示のTextを出し、数字キーボードを出すための入力欄(TextField)は透明にして重ねている。
 struct AmountDisplay: View {
     @Binding var text: String
+//    @State private var isTextFieldFocused: Bool = false
     var focus: FocusState<Field?>.Binding
     
     var body: some View {
@@ -127,10 +128,32 @@ struct AmountDisplay: View {
                 .tint(.clear)
                 .opacity(0.01)
                 .allowsHitTesting(false)
+//                .onTapGesture {
+//                    isTextFieldFocused.toggle()
+//                }
         }
         .frame(height: 90)
         .padding(.top, 1)
         .padding(.horizontal, 10)
+//        .safeAreaInset(edge: .bottom) {
+//            if isTextFieldFocused {
+//                HStack(alignment: .center, spacing: 0) {
+//                    Spacer()
+//                    Button(
+//                        action: {
+//                            isTextFieldFocused = false
+//                        },
+//                        label: {
+//                            Text("閉じる")
+//                                .foregroundStyle(Color.primary)
+//                                .padding(14)
+//                                .glassEffect()
+//                        },
+//                    )
+//                    .padding(8)
+//                }
+//            }
+//        }
     }
 }
 
