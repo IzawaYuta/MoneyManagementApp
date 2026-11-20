@@ -74,7 +74,7 @@ struct BudgetDetailView: View {
             .padding(.top, 8)
             .padding(.bottom, 24)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color(uiColor: .systemGray5))
         .navigationTitle("\(name)の予算")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingEdit) {
@@ -167,9 +167,9 @@ private struct BudgetDetailSummaryCard: View {
     private var remainingRatio: Double { budgetRemainingRatio(budget: budget, spent: spent) }
     
     private var gradient: LinearGradient {
-        let base: Color = (type == .expense && isOver) ? .red : Color(budgetHex: colorHex)
+        let base = Color(budgetHex: colorHex)
         return LinearGradient(
-            colors: [base, base.opacity(0.7)],
+            colors: [base.opacity(0.6), base.opacity(0.3)],
             startPoint: .topLeading, endPoint: .bottomTrailing
         )
     }

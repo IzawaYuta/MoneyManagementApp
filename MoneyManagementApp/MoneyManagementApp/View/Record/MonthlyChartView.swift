@@ -68,9 +68,9 @@ struct MonthlyChartView: View {
                 CategorySummary(
                     id: id,
                     name: first.categoryName ?? "未分類",
-                    imageName: first.categoryImageName ?? "questionmark.circle",
+                    imageName: first.categoryImageName ?? "questionmark",
                     amount: total,
-                    color: first.categoryColorHex ?? "#9E9E9E"
+                    color: first.categoryColorHex ?? "#111111"
                 )
             )
         }

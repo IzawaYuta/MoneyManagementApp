@@ -61,7 +61,7 @@ struct TransactionCalendarView: View {
                     ForEach(weekdaySymbols, id: \.self) { symbol in
                         Text(symbol)
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(.gray)
+                            .foregroundStyle(symbol == "日" ? .orange : symbol == "土" ? .cyan : .gray)
                             .frame(maxWidth: .infinity)
                     }
                 }
@@ -218,7 +218,7 @@ struct TransactionCalendarView: View {
     
     @ViewBuilder
     private func transactionRow(_ transaction: Transaction) -> some View {
-        let color = transaction.categoryColorHex.map(colorFromHex) ?? .gray
+        let color = transaction.categoryColorHex.map(colorFromHex) ?? .black
         
         return HStack(spacing: 12) {
             // アイコン(カテゴリー色の薄い丸の上に表示)
