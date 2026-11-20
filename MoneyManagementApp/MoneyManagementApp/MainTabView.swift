@@ -20,7 +20,7 @@ struct MainTabView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeView()
+            Home()
                 .tabItem {
                     Image(systemName: "square.and.pencil")
                         .modifier(TabImageModifier(isSelected: selectedTab == 0))

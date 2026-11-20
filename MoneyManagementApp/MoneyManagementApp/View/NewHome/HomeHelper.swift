@@ -179,7 +179,7 @@ struct QuickAmountButtons: View {
                 .buttonStyle(RaisedButtonStyle(cornerRadius: 10))
             }
         }
-        .padding(.top, 10)
+        .padding(.top, 5)
         .padding(.horizontal, 20)
     }
 }

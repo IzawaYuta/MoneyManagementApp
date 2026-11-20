@@ -29,16 +29,13 @@ struct Home: View {
     @State private var priceTextField = ""
     @State private var memoTextField = ""
     
-    @State private var isShowingTopToast = false
-    @State private var isShowingBubbleToast = false
-    
     @State private var showCategorySelectionView: Bool = false
     @State var selectedCategoryID: UUID?
     @State private var showPaymentMethodView = false
     @State private var selectedPaymentMethodID: UUID?
     
     /// 下の白いシートが画面の高さに占める割合
-    private let sheetHeightRatio: CGFloat = 0.705
+    private let sheetHeightRatio: CGFloat = 0.65
     
     var body: some View {
         NavigationStack {
@@ -47,7 +44,6 @@ struct Home: View {
                     backgroundGradient
                     topSection
                     inputSheet(height: geometry.size.height * sheetHeightRatio)
-                        .padding(.bottom, -geometry.safeAreaInsets.bottom)
                 }
             }
             .toolbar {
@@ -56,7 +52,6 @@ struct Home: View {
                 }
             }
         }
-        .topPillToast(isPresented: $isShowingTopToast, message: "保存しました")
         .onAppear { selectDefaultsIfNeeded() }
         .onChange(of: categories.map(\.id)) { selectDefaultsIfNeeded() }
         .onChange(of: paymentMethod.map(\.id)) { selectDefaultsIfNeeded() }
@@ -85,7 +80,7 @@ struct Home: View {
     
     // MARK: 上部(日付・金額・クイック金額ボタン)
     private var topSection: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 20) {
             DateNavigator(date: $selectedDate) {
                 isShowingDatePicker = true
             }
@@ -109,6 +104,7 @@ struct Home: View {
                 topTrailingRadius: 45
             )
             .fill(.white)
+            .ignoresSafeArea(edges: .bottom)
             
             VStack(spacing: 12) {
                 HStack(spacing: 12) {
@@ -142,7 +138,7 @@ struct Home: View {
                         clearButton()
                     }
                 )
-                .padding(.bottom, 50)
+                .padding(.bottom, 16)
             }
             .padding(.horizontal, 20)
             .padding(.top, 20)
@@ -189,7 +185,6 @@ struct Home: View {
         
         priceTextField = ""
         memoTextField = ""
-        isShowingTopToast = true
         print("🔥新規保存情報🔥")
         print("✅type: \(transaction.type.rawValue)")
         

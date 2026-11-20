@@ -97,16 +97,7 @@ struct MonthlyChartView: View {
                 recordList(items: items)
             }
             .padding(.horizontal, 20)
-            .background(
-                LinearGradient(
-                    colors: [
-                        Color(red: 140.0 / 255.0, green: 230.0 / 255.0, blue: 225.0 / 255.0),
-                        Color(red: 255.0 / 255.0, green: 173.0 / 255.0, blue: 169.0 / 255.0)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
+            .background(Color(uiColor: .systemGray5))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -146,27 +137,37 @@ struct MonthlyChartView: View {
     
     private var monthHeader: some View {
         HStack {
-            Button { changeMonth(by: -1) } label: {
+            Button {
+                changeMonth(by: -1)
+            } label: {
                 Image(systemName: "chevron.left")
-                    .frame(width: 44, height: 44)
-                    .background(Circle().fill(Color(.systemBackground)))
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(.black)
+                    .frame(width: 32, height: 32)
+                    .background(Color(uiColor: .systemGray6))
+                    .clipShape(Circle())
             }
-            .accessibilityLabel("前月")
             
             Spacer()
+            
             Text(month.formatted(.dateTime.year().month().locale(Locale(identifier: "ja_JP"))))
-                .font(.title2.bold())
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(.black)
+            
             Spacer()
             
-            Button { changeMonth(by: 1) } label: {
+            Button {
+                changeMonth(by: 1)
+            } label: {
                 Image(systemName: "chevron.right")
-                    .frame(width: 44, height: 44)
-                    .background(Circle().fill(Color(.systemBackground)))
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(.black)
+                    .frame(width: 32, height: 32)
+                    .background(Color(uiColor: .systemGray6))
+                    .clipShape(Circle())
             }
-            .accessibilityLabel("翌月")
         }
-        .foregroundStyle(.primary)
-        .padding(.top, 8)
+        .padding(.horizontal, 30)
     }
     
     private func changeMonth(by value: Int) {

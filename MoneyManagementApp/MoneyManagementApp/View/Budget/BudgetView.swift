@@ -20,7 +20,7 @@ struct BudgetView: View {
                 )
                 BudgetMonthContent(month: month, type: type)
             }
-            .background(Color(.systemGroupedBackground))
+            .background(Color(uiColor: .systemGray5))
             .navigationTitle("予算")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

@@ -109,16 +109,7 @@ struct TransactionCalendarView: View {
             Spacer(minLength: 0)
         }
         .padding(.top, 16)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color(red: 140.0 / 255.0, green: 230.0 / 255.0, blue: 225.0 / 255.0),
-                    Color(red: 255.0 / 255.0, green: 173.0 / 255.0, blue: 169.0 / 255.0)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
+        .background(Color(uiColor: .systemGray5))
         .animation(.easeInOut(duration: 0.2), value: currentMonth)
         .sheet(item: $editingTransaction) { transaction in
             OverwriteRecordView(transaction: transaction)
