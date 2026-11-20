@@ -27,8 +27,6 @@ struct Home: View {
     @State private var selectedDate = Date()
     @State private var isShowingDatePicker = false
     @State private var priceTextField = ""
-    @State private var categoryName = "食費"
-    @State private var paymentMethodName = "現金"
     @State private var memoTextField = ""
     
     @State private var isShowingTopToast = false
@@ -59,6 +57,9 @@ struct Home: View {
             }
         }
         .topPillToast(isPresented: $isShowingTopToast, message: "保存しました")
+        .onAppear { selectDefaultsIfNeeded() }
+        .onChange(of: categories.map(\.id)) { selectDefaultsIfNeeded() }
+        .onChange(of: paymentMethod.map(\.id)) { selectDefaultsIfNeeded() }
     }
     
     // MARK: 背景
@@ -109,7 +110,7 @@ struct Home: View {
             
             VStack(spacing: 12) {
                 HStack(spacing: 12) {
-                    SelectionCard(title: "カテゴリー", value: categoryName, corners: .categoryCard) {
+                    SelectionCard(title: "カテゴリー", value: selectedCategory?.name ?? "未選択", corners: .categoryCard) {
                         showCategorySelectionView.toggle()
                     }
                     .sheet(isPresented: $showCategorySelectionView) {
@@ -118,7 +119,7 @@ struct Home: View {
                         )
                         .interactiveDismissDisabled(true)
                     }
-                    SelectionCard(title: "支払方法", value: paymentMethodName, corners: .paymentCard) {
+                    SelectionCard(title: "支払方法", value: selectedPaymentMethod?.name ?? "未選択", corners: .paymentCard) {
                         showPaymentMethodView.toggle()
                     }
                     .sheet(isPresented: $showPaymentMethodView) {
@@ -172,7 +173,7 @@ struct Home: View {
             //            category: category,
             memo: memoTextField,
             sortIndex: nextSortIndex,
-            categoryID: selectedCategoryID,
+            categoryID: selectedCategory?.id,
             categoryName: selectedCategory?.name,
             categoryImageName: selectedCategory?.imageName,
             categoryColorHex: selectedCategory?.colorHex,
@@ -186,6 +187,7 @@ struct Home: View {
         
         priceTextField = ""
         memoTextField = ""
+        isShowingTopToast = true
         print("🔥新規保存情報🔥")
         print("✅type: \(transaction.type.rawValue)")
         
@@ -225,6 +227,16 @@ struct Home: View {
         selectedCategoryID = categories.sorted { $0.sortIndex < $1.sortIndex }.first?.id
         memoTextField = ""
         selectedPaymentMethodID = paymentMethod.sorted { $0.sortIndex < $1.sortIndex }.first?.id
+    }
+    
+    /// 未選択、または選択中のものが削除されたときは、先頭のカテゴリー・支払方法を選ぶ
+    private func selectDefaultsIfNeeded() {
+        if selectedCategory == nil {
+            selectedCategoryID = categories.first?.id
+        }
+        if selectedPaymentMethod == nil {
+            selectedPaymentMethodID = paymentMethod.sorted { $0.sortIndex < $1.sortIndex }.first?.id
+        }
     }
 }
 
