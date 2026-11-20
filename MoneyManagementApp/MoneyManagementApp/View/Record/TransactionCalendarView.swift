@@ -9,6 +9,8 @@ struct TransactionCalendarView: View {
     @State private var currentMonth: Date = Date()
     @State private var selectedDate: Date = Date()
     
+    @State private var editingTransaction: Transaction?
+    
     private let calendar = Calendar.current
     
     let customGreen: Color = Color(red: 0.0, green: 180 / 255.0, blue: 0.0)
@@ -118,6 +120,9 @@ struct TransactionCalendarView: View {
             )
         )
         .animation(.easeInOut(duration: 0.2), value: currentMonth)
+        .sheet(item: $editingTransaction) { transaction in
+            OverwriteRecordView(transaction: transaction)
+        }
     }
     
     // MARK: - 各日付セル
@@ -197,7 +202,12 @@ struct TransactionCalendarView: View {
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(dayItems.enumerated()), id: \.element.id) { index, transaction in
-                        transactionRow(transaction)
+                        Button {
+                            editingTransaction = transaction
+                        } label: {
+                            transactionRow(transaction)
+                                .contentShape(Rectangle())
+                        }
                         
                         if index < dayItems.count - 1 {
                             Divider().padding(.leading, 44)
