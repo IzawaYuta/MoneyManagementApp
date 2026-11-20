@@ -66,10 +66,10 @@ struct Home: View {
     private var backgroundGradient: some View {
         LinearGradient(
             colors: selectedTransactionType == .expense
-            ? [Color(red: 255.0 / 255.0, green: 97.0 / 255.0, blue: 95.0 / 255.0),
-               Color(red: 241.0 / 255.0, green: 146.0 / 255.0, blue: 28.0 / 255.0)]
-            : [Color(red: 82.0 / 255.0, green: 129.0 / 255.0, blue: 255.0 / 255.0),
-               Color(red: 169.0 / 255.0, green: 185.0 / 255.0, blue: 255.0 / 255.0)],
+            ? [Color(red: 255.0 / 255.0, green: 137.0 / 255.0, blue: 114.0 / 255.0),
+               Color(red: 241.0 / 255.0, green: 237.0 / 255.0, blue: 235.0 / 255.0)]
+            : [Color(red: 139.0 / 255.0, green: 192.0 / 255.0, blue: 255.0 / 255.0),
+               Color(red: 233.0 / 255.0, green: 241.0 / 255.0, blue: 255.0 / 255.0)],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -80,7 +80,7 @@ struct Home: View {
     // MARK: ボタンの色
     /// 確定・クリアボタンの下に敷く色(背景グラデーションの2色目に合わせて、収入/支出で切り替える)
     private var accentColor: Color {
-        selectedTransactionType == .expense ? .orange : .cyan
+        selectedTransactionType == .expense ? Color(red: 241.0 / 255.0, green: 237.0 / 255.0, blue: 235.0 / 255.0) : Color(red: 233.0 / 255.0, green: 241.0 / 255.0, blue: 255.0 / 255.0)
     }
     
     // MARK: 上部(日付・金額・クイック金額ボタン)

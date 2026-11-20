@@ -292,8 +292,8 @@ struct CustomBackground: ViewModifier {
                 ZStack {
                     // 下側の黒い立体部分
                     RoundedRectangle(cornerRadius: cornerRadius)
-                        .fill(.black)
-                        .offset(x: 3, y: 3)
+                        .fill(.gray)
+                        .offset(x: 2, y: 2)
                     
                     // 上側の白い本体
                     RoundedRectangle(cornerRadius: cornerRadius)

@@ -122,6 +122,7 @@ struct TransactionCalendarView: View {
         .animation(.easeInOut(duration: 0.2), value: currentMonth)
         .sheet(item: $editingTransaction) { transaction in
             OverwriteRecordView(transaction: transaction)
+                .interactiveDismissDisabled(true)
         }
     }
     
