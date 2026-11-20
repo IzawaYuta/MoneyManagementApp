@@ -66,8 +66,10 @@ struct Home: View {
     private var backgroundGradient: some View {
         LinearGradient(
             colors: selectedTransactionType == .expense
-            ? [.red, .orange]
-            : [.blue, .cyan],
+            ? [Color(red: 255.0 / 255.0, green: 97.0 / 255.0, blue: 95.0 / 255.0),
+               Color(red: 241.0 / 255.0, green: 146.0 / 255.0, blue: 28.0 / 255.0)]
+            : [Color(red: 82.0 / 255.0, green: 129.0 / 255.0, blue: 255.0 / 255.0),
+               Color(red: 169.0 / 255.0, green: 185.0 / 255.0, blue: 255.0 / 255.0)],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
