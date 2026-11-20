@@ -293,7 +293,7 @@ struct AddCategoryView: View {
                         } else {
                             addCategory()
                         }
-
+                        
                     }) {
                         Image(systemName: "checkmark")
                             .foregroundStyle(canSave ? Color.black : Color.gray.opacity(0.4))
@@ -302,12 +302,6 @@ struct AddCategoryView: View {
                 }
             }
         }
-    }
-    
-    private var canSave: Bool {
-        !categoryName.trimmingCharacters(in: .whitespaces).isEmpty
-        && selectedIcon != nil
-        && selectedColor != nil
     }
     
     private func colorFromHex(_ hex: String) -> Color {
@@ -323,59 +317,29 @@ struct AddCategoryView: View {
         )
     }
     
+    private var canSave: Bool {
+        CategoryService.isValid(name: categoryName, imageName: selectedIcon, colorHex: selectedColor)
+    }
+    
     private func updateCategory(_ category: Category) {
         guard let colorHex = selectedColor else { return }
-        category.name = categoryName
-        category.imageName = selectedIcon ?? "ellipsis.circle"
-        category.colorHex = colorHex
+        CategoryService.update(
+            category,
+            name: categoryName,
+            imageName: selectedIcon ?? "ellipsis.circle",
+            colorHex: colorHex
+        )
         dismiss()
     }
     
     private func addCategory() {
         guard let colorHex = selectedColor else { return }
-        // 📋 追加前の一覧
-        print("========== 📋 追加前のカテゴリー一覧 ==========")
-        
-        for category in categories.sorted(by: { $0.sortIndex < $1.sortIndex }) {
-            print("📌 \(category.name) | sortIndex: \(category.sortIndex)")
-        }
-        
-        // ➕ 追加するカテゴリーの情報
-        let iconName = selectedIcon ?? "ellipsis.circle"
-        let newSortIndex = (categories.map(\.sortIndex).max() ?? -1) + 1
-        
-        print("========== ➕ 追加するカテゴリー ==========")
-        print("📌 カテゴリー名: \(categoryName)")
-        print("🖼️ アイコン: \(iconName)")
-        print("🔢 sortIndex: \(newSortIndex)")
-        
-        // ➕ Categoryを作成
-        let newCategory = Category(
+        try? CategoryService.add(
             name: categoryName,
-            imageName: iconName,
+            imageName: selectedIcon ?? "ellipsis.circle",
             colorHex: colorHex,
-            sortIndex: newSortIndex
+            in: modelContext
         )
-        
-        // 💾 SwiftDataに追加
-        modelContext.insert(newCategory)
-        
-        // 📋 追加後の一覧
-        print("========== 📋 追加後のカテゴリー一覧 ==========")
-        
-        let updatedCategories = categories
-            .sorted { $0.sortIndex < $1.sortIndex }
-        
-        for category in updatedCategories {
-            print("""
-        📌 カテゴリー名: \(category.name)
-        🖼️ アイコン: \(category.imageName)
-        🔢 sortIndex: \(category.sortIndex)
-        """)
-        }
-        
-        print("==============================================")
-        
         dismiss()
     }
 }
