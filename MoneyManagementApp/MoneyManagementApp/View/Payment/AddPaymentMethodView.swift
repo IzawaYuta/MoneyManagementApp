@@ -67,42 +67,15 @@ struct AddPaymentMethodView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("追加") {
-                        // 追加前
-                        print("========== 📋 追加前の支払方法一覧 ==========")
-                        for payment in paymentMethods.sorted(by: { $0.sortIndex < $1.sortIndex }) {
-                            print("📌 \(payment.name) | type: \(payment.type.title) | memo: \(payment.memo ?? "nil") | sortIndex: \(payment.sortIndex)")
-                        }
-                        
-                        let nextSortIndex = (paymentMethods.map(\.sortIndex).max() ?? -1) + 1
-                        
-                        let paymentMethod = PaymentMethod(
+                        try? PaymentMethodService.add(
                             name: name,
                             type: paymentType,
-                            memo: memo.isEmpty ? nil : memo,
-                            sortIndex: nextSortIndex
+                            memo: memo,
+                            in: modelContext
                         )
-                        
-                        // 追加するもの
-                        print("========== ➕ 追加する支払方法 ==========")
-                        print("📌 名前: \(paymentMethod.name)")
-                        print("💳 種類: \(paymentMethod.type.title)")
-                        print("📝 メモ: \(paymentMethod.memo ?? "nil")")
-                        print("🔢 sortIndex: \(paymentMethod.sortIndex)")
-                        
-                        modelContext.insert(paymentMethod)
-                        
-                        // 追加後
-                        print("========== 📋 追加後の支払方法一覧 ==========")
-                        for payment in paymentMethods.sorted(by: { $0.sortIndex < $1.sortIndex }) {
-                            print("📌 名前: \(payment.name)")
-                            print("💳 種類: \(payment.type.title)")
-                            print("📝 メモ: \(payment.memo ?? "nil")")
-                            print("🔢 sortIndex: \(payment.sortIndex)")
-                        }
-                        
                         dismiss()
                     }
-                    .disabled(name.isEmpty)
+                    .disabled(!PaymentMethodService.isValid(name: name))
                 }
             }
         }

@@ -20,17 +20,7 @@ struct PaymentMethodView: View {
     
     /// 最近使った支払方法(最大3件、新しい順)
     private var recentPaymentMethods: [PaymentMethod] {
-        var seen = Set<UUID>()
-        var result: [PaymentMethod] = []
-        
-        for t in transactions {
-            guard let id = t.paymentMethodID, seen.insert(id).inserted else { continue }
-            if let method = paymentMethods.first(where: { $0.id == id }) {
-                result.append(method)
-                if result.count == 3 { break }
-            }
-        }
-        return result
+        PaymentMethodService.recent(from: paymentMethods, transactions: transactions)
     }
     
     var body: some View {
@@ -156,55 +146,15 @@ struct PaymentMethodView: View {
     }
     
     private func deletePaymentMethods(at offsets: IndexSet) {
-        
-        // 削除前
-        print("========== 📋 削除前の支払方法一覧 ==========")
-        for paymentMethod in paymentMethods.sorted(by: { $0.sortIndex < $1.sortIndex }) {
-            print("📌 \(paymentMethod.name)")
-            print("💳 種類: \(paymentMethod.type.title)")
-            print("📝 メモ: \(paymentMethod.memo ?? "nil")")
-            print("🔢 sortIndex: \(paymentMethod.sortIndex)")
-        }
-        
         let targets = offsets.map { paymentMethods[$0] }
         
-        // 削除するもの
-        print("========== ➖ 削除する支払方法 ==========")
-        for paymentMethod in targets {
-            print("📌 名前: \(paymentMethod.name)")
-            print("💳 種類: \(paymentMethod.type.title)")
-            print("📝 メモ: \(paymentMethod.memo ?? "nil")")
-            print("🔢 sortIndex: \(paymentMethod.sortIndex)")
+        // 選択中の支払方法が削除対象なら、参照が消える前にリセット
+        if let selected = selectedPaymentMethodID,
+           targets.contains(where: { $0.id == selected }) {
+            selectedPaymentMethodID = nil
         }
         
-        // 削除
-        for paymentMethod in targets {
-            if selectedPaymentMethodID == paymentMethod.id {
-                selectedPaymentMethodID = nil
-            }
-            
-            modelContext.delete(paymentMethod)
-        }
-        
-        let remaining = paymentMethods
-            .filter { item in
-                !targets.contains(where: { $0.id == item.id })
-            }
-            .sorted { $0.sortIndex < $1.sortIndex }
-        
-        // sortIndexを振り直す
-        for (index, item) in remaining.enumerated() {
-            item.sortIndex = index
-        }
-        
-        // 削除後
-        print("========== 📋 削除後の支払方法一覧 ==========")
-        for paymentMethod in remaining {
-            print("📌 名前: \(paymentMethod.name)")
-            print("💳 種類: \(paymentMethod.type.title)")
-            print("📝 メモ: \(paymentMethod.memo ?? "nil")")
-            print("🔢 sortIndex: \(paymentMethod.sortIndex)")
-        }
+        try? PaymentMethodService.delete(ids: Set(targets.map(\.id)), in: modelContext)
     }
     
     private func movePaymentMethod(from source: IndexSet, to destination: Int) {
