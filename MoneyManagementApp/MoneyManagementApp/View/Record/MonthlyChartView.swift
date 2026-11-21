@@ -3,16 +3,6 @@ import SwiftUI
 import SwiftData
 import Charts
 
-// MARK: - 集計用モデル(カテゴリーごとの月合計)
-
-struct CategorySummary: Identifiable {
-    let id: UUID            // Transaction.categoryID
-    let name: String
-    let imageName: String   // SF Symbols名を想定
-    let amount: Int
-    let color: String   // Category.colorHex
-}
-
 // MARK: - Screen
 
 struct MonthlyChartView: View {
@@ -43,42 +33,9 @@ struct MonthlyChartView: View {
     
     // MARK: 集計
     
-    /// カテゴリー未設定の取引をまとめるための固定ID
-    private static let uncategorizedID = UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
-    
-    /// 選択中の月・種別(収入/支出)で絞り込み、カテゴリーごとに合計
     /// 選択中の月・種別(収入/支出)で絞り込み、カテゴリーごとに合計
     private var summaries: [CategorySummary] {
-        let calendar = Calendar.current
-        
-        let filtered: [Transaction] = allTransactions.filter { t in
-            t.type == transactionType &&
-            calendar.isDate(t.date, equalTo: month, toGranularity: .month)
-        }
-        
-        let grouped: [UUID: [Transaction]] = Dictionary(grouping: filtered) { t in
-            t.categoryID ?? Self.uncategorizedID
-        }
-        
-        var result: [CategorySummary] = []
-        for (id, items) in grouped {
-            guard let first = items.first else { continue }
-            let total: Int = items.reduce(0) { $0 + $1.amount }
-            result.append(
-                CategorySummary(
-                    id: id,
-                    name: first.categoryName ?? "未分類",
-                    imageName: first.categoryImageName ?? "questionmark",
-                    amount: total,
-                    color: first.categoryColorHex ?? "#111111"
-                )
-            )
-        }
-        
-        return result.sorted { a, b in
-            if a.amount != b.amount { return a.amount > b.amount }
-            return a.name < b.name
-        }
+        MonthlyChartService.summaries(from: allTransactions, month: month, type: transactionType)
     }
     
     // MARK: Body
@@ -223,7 +180,7 @@ struct MonthlyChartView: View {
                     angularInset: 1.5
                 )
                 .cornerRadius(4)
-                .foregroundStyle(colorFromHex(categories.first(where: { $0.id == item.id })?.colorHex ?? "#000000"))
+                .foregroundStyle(colorFromHex(item.color))
                 .opacity(opacity(for: item.id))
             }
             .chartLegend(.hidden)
@@ -249,24 +206,18 @@ struct MonthlyChartView: View {
                            items: [CategorySummary], total: Int) {
         let center = CGPoint(x: plotFrame.midX, y: plotFrame.midY)
         let fullRadius = min(plotFrame.width, plotFrame.height) / 2
-        let dx = point.x - center.x
-        let dy = point.y - center.y
-        let distance = hypot(dx, dy)
         
-        // 12時方向を0として時計回りの角度(0〜2π)
-        var angle = atan2(dx, -dy)
-        if angle < 0 { angle += 2 * .pi }
-        let value = angle / (2 * .pi) * Double(total)
-        
-        guard let tapped = categoryID(at: value, items: items) else { return }
-        // 現在の表示半径(拡大・縮小後)の外側(余白)は無視
-        guard distance <= fullRadius * radiusRatio(for: tapped) else { return }
+        guard let tapped = MonthlyChartService.tappedCategoryID(
+            at: point, center: center, fullRadius: fullRadius,
+            items: items, selectedID: selectedID
+        ) else { return }
         
         withAnimation(.spring(duration: 0.35)) {
             // 強調中をタップで解除、別カテゴリーなら強調を移す
             selectedID = (selectedID == tapped) ? nil : tapped
         }
     }
+
     
     @ViewBuilder
     private func selectionLabel(items: [CategorySummary], total: Int) -> some View {
@@ -276,7 +227,7 @@ struct MonthlyChartView: View {
                     .font(.headline)
                 Text("¥\(selected.amount.formatted())")
                     .font(.subheadline.monospacedDigit())
-                Text(String(format: "%.1f%%", Double(selected.amount) / Double(total) * 100))
+                Text(MonthlyChartService.percentText(amount: selected.amount, total: total))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -290,24 +241,12 @@ struct MonthlyChartView: View {
     
     /// 選択中は大きく、他は小さく、未選択時は標準
     private func radiusRatio(for id: UUID) -> Double {
-        guard let selected = selectedID else { return 0.9 }
-        return selected == id ? 1.0 : 0.8
+        MonthlyChartService.radiusRatio(for: id, selectedID: selectedID)
     }
     
     /// 選択中以外は薄くする
     private func opacity(for id: UUID) -> Double {
-        guard let selected = selectedID else { return 1.0 }
-        return selected == id ? 1.0 : 0.3
-    }
-    
-    /// 角度に対応する累計金額からカテゴリーを求める
-    private func categoryID(at value: Double, items: [CategorySummary]) -> UUID? {
-        var cumulative = 0.0
-        for item in items {
-            cumulative += Double(item.amount)
-            if value <= cumulative { return item.id }
-        }
-        return nil
+        MonthlyChartService.opacity(for: id, selectedID: selectedID)
     }
     
     // MARK: List
@@ -333,14 +272,13 @@ struct MonthlyChartView: View {
     private func recordRow(_ item: CategorySummary) -> some View {
         let isDimmed = selectedID != nil && selectedID != item.id
         let isIncome = transactionType == .income
-        let color = colorFromHex(
-            categories.first(where: { $0.id == item.id })?.colorHex ?? "#000000"
-        )
+        let color = colorFromHex(item.color)
+        
         return HStack(spacing: 12) {
             // Image
             Image(systemName: item.imageName)
                 .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(colorFromHex(categories.first(where: { $0.id == item.id })?.colorHex ?? "#000000"))
+                .foregroundStyle(color)
                 .frame(width: 40, height: 40)
                 .background(Circle().fill(color.opacity(0.15)))
             
