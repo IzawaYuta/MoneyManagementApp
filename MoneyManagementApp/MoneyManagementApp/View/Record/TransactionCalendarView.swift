@@ -321,50 +321,21 @@ struct TransactionCalendarView: View {
     
     /// 現在の月に表示する日付の配列(月初の曜日オフセット分はnilで埋める)
     private var daysInMonth: [Date?] {
-        guard
-            let monthInterval = calendar.dateInterval(of: .month, for: currentMonth),
-            let firstWeekday = calendar.dateComponents([.weekday], from: monthInterval.start).weekday
-        else {
-            return []
-        }
-        
-        let leadingEmptyCount = firstWeekday - 1
-        let daysCount = calendar.range(of: .day, in: .month, for: currentMonth)?.count ?? 0
-        
-        var days: [Date?] = Array(repeating: nil, count: leadingEmptyCount)
-        
-        for dayOffset in 0..<daysCount {
-            if let date = calendar.date(byAdding: .day, value: dayOffset, to: monthInterval.start) {
-                days.append(date)
-            }
-        }
-        
-        return days
+        CalendarService.daysInMonth(of: currentMonth, calendar: calendar)
     }
+    
+    // MARK: - 実データの集計
     
     // MARK: - 実データの集計
     
     /// 指定した日付に該当するTransactionを、時刻の新しい順に返す
     private func transactions(for date: Date) -> [Transaction] {
-        transactions
-            .filter { calendar.isDate($0.date, inSameDayAs: date) }
-            .sorted { $0.date > $1.date }
+        CalendarService.transactions(for: date, in: transactions, calendar: calendar)
     }
     
     /// 指定した日付の収入合計・支出合計
-    private func dailySummary(for date: Date) -> (income: Int, expense: Int) {
-        let dayItems = transactions
-            .filter { calendar.isDate($0.date, inSameDayAs: date) }
-        
-        let income = dayItems
-            .filter { $0.type == .income }
-            .reduce(0) { $0 + $1.amount }
-        
-        let expense = dayItems
-            .filter { $0.type == .expense }
-            .reduce(0) { $0 + $1.amount }
-        
-        return (income, expense)
+    private func dailySummary(for date: Date) -> CalendarService.DailySummary {
+        CalendarService.dailySummary(for: date, in: transactions, calendar: calendar)
     }
 }
 
