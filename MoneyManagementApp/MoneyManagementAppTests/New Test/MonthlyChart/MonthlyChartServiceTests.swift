@@ -9,7 +9,7 @@
 import Testing
 import Foundation
 import CoreGraphics
-@testable import MoneyManagementApp  // ← Product Module Name に合わせる
+@testable import MoneyManagementApp 
 
 @MainActor
 struct MonthlyChartServiceTests {
