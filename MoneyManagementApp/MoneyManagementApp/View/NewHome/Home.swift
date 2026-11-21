@@ -161,61 +161,21 @@ struct Home: View {
     
     // MARK: 収支確定
     private func saveTransaction() {
-        
-        let nextSortIndex = (transactions.map(\.sortIndex).max() ?? -1) + 1
-        
-        let transaction = Transaction(
-            date: selectedDate,
-            amount: Int(priceTextField) ?? 0,
-            type: selectedTransactionType,
-            //            category: category,
-            memo: memoTextField,
-            sortIndex: nextSortIndex,
-            categoryID: selectedCategory?.id,
-            categoryName: selectedCategory?.name,
-            categoryImageName: selectedCategory?.imageName,
-            categoryColorHex: selectedCategory?.colorHex,
-            paymentMethodID: selectedPaymentMethod?.id,
-            paymentMethodName: selectedPaymentMethod?.name,
-            paymentMethodType: selectedPaymentMethod?.type,
-            paymentMethodMemo: selectedPaymentMethod?.memo
-        )
-        
-        modelContext.insert(transaction)
-        
-        priceTextField = ""
-        memoTextField = ""
-        print("🔥新規保存情報🔥")
-        print("✅type: \(transaction.type.rawValue)")
-        
-        let japanDate = transaction.date.formatted(
-            .dateTime
-                .year()
-                .month()
-                .day()
-                .hour()
-                .minute()
-                .second()
-                .locale(Locale(identifier: "ja_JP"))
-        )
-        print("✅date: \(japanDate)")
-        
-        print("✅amount: \(transaction.amount)")
-        print("✅category: \(transaction.categoryName)")
-        print("category.imageName: \(selectedCategory?.imageName)")
-        print("transaction.categoryImageName: \(transaction.categoryImageName)")
-        
-        if let memo = transaction.memo {
-            print("✅memo: \"\(memo)\"")
-        } else {
-            print("✅memo: nil")
+        do {
+            try TransactionService.save(
+                date: selectedDate,
+                amountText: priceTextField,
+                type: selectedTransactionType,
+                memo: memoTextField,
+                category: selectedCategory,
+                paymentMethod: selectedPaymentMethod,
+                in: modelContext
+            )
+            priceTextField = ""
+            memoTextField = ""
+        } catch {
+            print("保存に失敗しました: \(error)")
         }
-        
-        print("✅sortIndex: \(transaction.sortIndex)")
-        print("✅paymentMethodID: \(transaction.paymentMethodID?.uuidString ?? "nil")")
-        print("✅paymentMethodName: \(transaction.paymentMethodName ?? "nil")")
-        print("✅paymentMethodType: \(transaction.paymentMethodType?.title ?? "nil")")
-        print("✅paymentMethodMemo: \(transaction.paymentMethodMemo ?? "nil")")
     }
     
     private func clearButton() {
