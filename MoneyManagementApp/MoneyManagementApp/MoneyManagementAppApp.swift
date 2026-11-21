@@ -24,7 +24,7 @@ struct MoneyManagementAppApp: App {
         // 現在はiCloud同期なし(将来CloudKitを使うときに .automatic などへ変更)
         let modelConfiguration = ModelConfiguration(
             schema: schema,
-            isStoredInMemoryOnly: false,
+            isStoredInMemoryOnly: UITestSupport.isUITesting,
             cloudKitDatabase: .none
         )
         
@@ -36,6 +36,9 @@ struct MoneyManagementAppApp: App {
             )
             // 手動でModelContainerを初期化するとautosaveEnabledがfalseになるため明示的に指定
             container.mainContext.autosaveEnabled = true
+            if UITestSupport.isUITesting {
+                UITestSupport.seed(container.mainContext)
+            }
             return container
         } catch {
             fatalError("Could not create ModelContainer: \(error)")

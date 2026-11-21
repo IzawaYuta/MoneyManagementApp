@@ -120,6 +120,7 @@ struct AmountDisplay: View {
                 .onTapGesture {
                     focus.wrappedValue = .price
                 }
+                .accessibilityIdentifier("home.amountText")
             
             TextField("", text: $text)
                 .keyboardType(.numberPad)
@@ -177,6 +178,7 @@ struct QuickAmountButtons: View {
                         .padding(10)
                 }
                 .buttonStyle(RaisedButtonStyle(cornerRadius: 10))
+                .accessibilityIdentifier("home.quickAmount.\(amount)")
             }
         }
         .padding(.top, 5)
@@ -234,6 +236,7 @@ struct MemoCard: View {
                 EmptyView()
             }
             .lineLimit(1)
+            .accessibilityIdentifier("home.memoField")
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
         .padding(.vertical, 5)
@@ -291,6 +294,10 @@ struct InputActionButtons: View {
             .buttonStyle(CustomButtonStyle(accentColor: accentColor))
             .disabled(isShowingCheck)
             
+            .disabled(isShowingCheck)
+            .accessibilityIdentifier("home.confirmButton")
+            
+            
             Button(action: onClear) {
                 Text("クリア")
                     .font(.system(size: 16))
@@ -300,6 +307,9 @@ struct InputActionButtons: View {
             }
             .frame(maxWidth: .infinity)
             .buttonStyle(CustomButtonStyle(accentColor: accentColor))
+            
+            .buttonStyle(CustomButtonStyle(accentColor: accentColor))
+            .accessibilityIdentifier("home.clearButton")
         }
     }
 }

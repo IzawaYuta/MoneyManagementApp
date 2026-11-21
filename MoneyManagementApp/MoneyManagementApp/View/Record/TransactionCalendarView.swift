@@ -200,6 +200,7 @@ struct TransactionCalendarView: View {
                             transactionRow(transaction)
                                 .contentShape(Rectangle())
                         }
+                        .accessibilityIdentifier("calendar.transactionRow")  
                         
                         if index < dayItems.count - 1 {
                             Divider().padding(.leading, 44)

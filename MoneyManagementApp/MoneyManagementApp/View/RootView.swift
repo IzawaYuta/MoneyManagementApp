@@ -8,7 +8,7 @@ struct RootView: View {
     
     var body: some View {
         ZStack {
-            if hasCompletedOnboarding {
+            if UITestSupport.isUITesting || hasCompletedOnboarding {
                 MainTabView()
             } else {
                 OnboardingView()
@@ -17,6 +17,7 @@ struct RootView: View {
         }
         .animation(.easeInOut(duration: 0.6), value: hasCompletedOnboarding)
         .task {
+            guard !UITestSupport.isUITesting else { return }      
             await authManager.signInAnonymously()
         }
     }
