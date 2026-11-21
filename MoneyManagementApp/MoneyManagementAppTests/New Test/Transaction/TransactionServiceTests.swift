@@ -135,15 +135,15 @@ struct TransactionServiceTests {
         #expect(t.memo == "ランチ")
     }
 
-    @Test("【現状の仕様】メモが空のときは、nilではなく空文字で保存される")
-    func emptyMemoStaysEmptyString() throws {
+    @Test("メモが空のときは、nilで保存される")
+    func emptyMemoBecomesNil() throws {
         let context = try makeContext()
-
+        
         let t = try save(in: context, memo: "")
-
-        #expect(t.memo == "")
+        
+        #expect(t.memo == nil)
     }
-
+    
     // MARK: - カテゴリー
 
     @Test("選択したカテゴリーの内容がコピーして保存される")

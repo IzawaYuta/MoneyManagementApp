@@ -56,7 +56,7 @@ struct OverwriteRecordView: View {
     
     /// 入力された金額(数字以外は無視)
     private var amount: Int? {
-        Int(priceTextField.filter(\.isNumber))
+        TransactionService.parseAmount(priceTextField)
     }
     
     private var canSave: Bool {
@@ -131,7 +131,7 @@ struct OverwriteRecordView: View {
                             Button(action: {
                                 showCategorySelectionView.toggle()
                             }) {
-                                Text(transaction.categoryName ?? "未選択")
+                                Text(selectedCategory?.name ?? transaction.categoryName ?? "未選択")
                                     .tint((transaction.categoryName == nil) ? .gray : .black)
                             }
                             .sheet(isPresented: $showCategorySelectionView) {
@@ -146,7 +146,7 @@ struct OverwriteRecordView: View {
                             Button(action: {
                                 showPaymentMethodSelectionView.toggle()
                             }) {
-                                Text(transaction.paymentMethodName ?? "未選択")
+                                Text(selectedPaymentMethod?.name ?? transaction.paymentMethodName ?? "未選択")
                                     .tint((transaction.paymentMethodName == nil) ? .gray : .black)
                             }
                             .sheet(isPresented: $showPaymentMethodSelectionView) {
@@ -186,7 +186,7 @@ struct OverwriteRecordView: View {
                     .alert("削除確認", isPresented: $showDeleteAlert) {
                         Button("キャンセル", role: .cancel) {}
                         Button("削除", role: .destructive) {
-                            modelContext.delete(transaction)
+                            TransactionService.delete(transaction, in: modelContext)
                             dismiss()
                         }
                     } message: {
@@ -218,29 +218,16 @@ struct OverwriteRecordView: View {
     
     // MARK: - 上書き保存
     private func save() {
-        guard let amount, amount > 0 else { return }
-        
-        transaction.type = type
-        transaction.date = date
-        transaction.amount = amount
-        transaction.memo = memoTextField.isEmpty ? nil : memoTextField
-        
-        // カテゴリーは「変更したときだけ」情報をコピーし直す
-        // (削除済みカテゴリーのまま保存しても、記録の名前・色が消えない)
-        if selectedCategoryID != transaction.categoryID, let category = selectedCategory {
-            transaction.categoryID = category.id
-            transaction.categoryName = category.name
-            transaction.categoryImageName = category.imageName
-            transaction.categoryColorHex = category.colorHex
-        }
-        
-        if selectedPaymentMethodID != transaction.paymentMethodID, let method = selectedPaymentMethod {
-            transaction.paymentMethodID = method.id
-            transaction.paymentMethodName = method.name
-            transaction.paymentMethodType = method.type
-        }
-        
-        dismiss()
+        let updated = TransactionService.update(
+            transaction,
+            type: type,
+            date: date,
+            amountText: priceTextField,
+            memo: memoTextField,
+            category: selectedCategory,
+            paymentMethod: selectedPaymentMethod
+        )
+        if updated { dismiss() }
     }
 }
 

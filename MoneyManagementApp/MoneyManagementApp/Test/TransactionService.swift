@@ -33,7 +33,7 @@ enum TransactionService {
             date: date,
             amount: Int(amountText) ?? 0,
             type: type,
-            memo: memo,
+            memo: memo.isEmpty ? nil : memo,
             sortIndex: nextSortIndex,
             categoryID: category?.id,
             categoryName: category?.name,
@@ -46,5 +46,54 @@ enum TransactionService {
         )
         context.insert(transaction)
         return transaction
+    }
+    
+    /// 金額の入力文字列を整数にする(数字以外は無視。「¥1,280」→ 1280)
+    static func parseAmount(_ text: String) -> Int? {
+        Int(text.filter(\.isNumber))
+    }
+    
+    /// 記録を上書きする(OverwriteRecordView の「上書きする」ボタンの処理)
+    /// - 金額が読み取れない、または0以下のときは何も変えず false を返す
+    /// - カテゴリー・支払方法は「別のものに変えたときだけ」コピーし直す
+    ///   (削除済みカテゴリーのまま保存しても、記録の名前・色が消えない)
+    /// - id と sortIndex は変わらない
+    @discardableResult
+    static func update(
+        _ transaction: SchemaV2.Transaction,
+        type: TransactionType,
+        date: Date,
+        amountText: String,
+        memo: String,
+        category: Category?,
+        paymentMethod: PaymentMethod?
+    ) -> Bool {
+        guard let amount = parseAmount(amountText), amount > 0 else { return false }
+        
+        transaction.type = type
+        transaction.date = date
+        transaction.amount = amount
+        transaction.memo = memo.isEmpty ? nil : memo
+        
+        if let category, category.id != transaction.categoryID {
+            transaction.categoryID = category.id
+            transaction.categoryName = category.name
+            transaction.categoryImageName = category.imageName
+            transaction.categoryColorHex = category.colorHex
+        }
+        
+        if let paymentMethod, paymentMethod.id != transaction.paymentMethodID {
+            transaction.paymentMethodID = paymentMethod.id
+            transaction.paymentMethodName = paymentMethod.name
+            transaction.paymentMethodType = paymentMethod.type
+            transaction.paymentMethodMemo = paymentMethod.memo  
+        }
+        
+        return true
+    }
+    
+    /// 記録を削除する
+    static func delete(_ transaction: SchemaV2.Transaction, in context: ModelContext) {
+        context.delete(transaction)
     }
 }
