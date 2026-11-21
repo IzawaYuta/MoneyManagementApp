@@ -45,12 +45,22 @@ enum CategoryService {
     }
     
     /// 指定IDのカテゴリーを削除し、残りのsortIndexを0から詰め直す
-    static func delete(ids: Set<UUID>, in context: ModelContext) throws {
+    /// - 削除するカテゴリーの予算は、今月以降を削除する(過去の月は残す)
+    static func delete(
+        ids: Set<UUID>,
+        in context: ModelContext,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) throws {
         let all = try context.fetch(
             FetchDescriptor<Category>(sortBy: [SortDescriptor(\.sortIndex)])
         )
+        let currentMonth = YearMonth.make(from: now, calendar: calendar)
         
         for category in all where ids.contains(category.id) {
+            try BudgetService.removeBudgets(
+                categoryID: category.id, fromMonth: currentMonth, context: context
+            )
             context.delete(category)
         }
         

@@ -61,7 +61,7 @@ struct BudgetDetailView: View {
                     .buttonStyle(.borderedProminent)
                     .tint(Color(budgetHex: colorHex))
                     
-                    if let period = periodText(of: budget) {
+                    if let period = BudgetService.periodText(of: budget) {
                         Text("適用期間: \(period)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -84,17 +84,6 @@ struct BudgetDetailView: View {
             .presentationDetents([.medium, .large])
             .presentationBackground(.white)
         }
-    }
-    
-    // MARK: 適用期間の表示
-    private func periodText(of budget: Budget?) -> String? {
-        guard let b = budget else { return nil }
-        if let end = b.endMonth {
-            return b.startMonth == end
-            ? "\(YearMonth.label(b.startMonth))のみ"
-            : "\(YearMonth.label(b.startMonth))〜\(YearMonth.label(end))"
-        }
-        return "\(YearMonth.label(b.startMonth))〜"
     }
     
     // MARK: その月の取引一覧
@@ -207,7 +196,8 @@ private struct BudgetDetailSummaryCard: View {
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(isOver ? type.overTitle : type.remainingTitle).font(.caption).opacity(0.85)
-                    Text(budgetYen(abs(remaining))).font(.title3.weight(.semibold))
+                    // 変更後(超過のとき「+¥5,000」、残りがあるときは「¥5,000」)
+                    Text(budgetYen(remaining)).font(.title3.weight(.semibold))
                 }
             }
         }

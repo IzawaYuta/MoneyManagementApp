@@ -70,15 +70,7 @@ struct BudgetSetupSheet: View {
     // MARK: 総予算
     /// 総予算 = その月のカテゴリー予算の合計(削除済みカテゴリーの予算も含む。予算管理画面と同じ)
     private var totalAmount: Int {
-        let ids = Set(budgets.map(\.categoryID))
-        return ids.compactMap { id in
-            BudgetService.applied(
-                in: budgets.filter { $0.categoryID == id },
-                type: type,
-                month: month
-            )?.amount
-        }
-        .reduce(0, +)
+        BudgetService.totalAmount(of: budgets, type: type, month: month)
     }
     
     private var totalCard: some View {

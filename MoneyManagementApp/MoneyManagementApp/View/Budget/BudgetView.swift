@@ -40,37 +40,6 @@ struct BudgetView: View {
     }
 }
 
-// MARK: - 月の選択
-private struct BudgetMonthHeader: View {
-    let month: Int
-    let onPrevious: () -> Void
-    let onNext: () -> Void
-    
-    var body: some View {
-        HStack {
-            Button(action: onPrevious) {
-                Image(systemName: "chevron.left")
-                    .font(.headline)
-                    .frame(width: 44, height: 44)
-            }
-            .accessibilityLabel("前月")
-            
-            Spacer()
-            Text("\(month / 100)年\(month % 100)月")
-                .font(.headline)
-            Spacer()
-            
-            Button(action: onNext) {
-                Image(systemName: "chevron.right")
-                    .font(.headline)
-                    .frame(width: 44, height: 44)
-            }
-            .accessibilityLabel("翌月")
-        }
-        .padding(.horizontal, 12)
-    }
-}
-
 // MARK: - 月ごとの内容
 private struct BudgetMonthContent: View {
     let month: Int
@@ -85,7 +54,7 @@ private struct BudgetMonthContent: View {
         self.type = type
         
         // 取引はその月の範囲のみ取得(種別は列挙型のためメモリ上で絞り込む)
-        let range = Self.dateRange(of: month)
+        let range = YearMonth.dateRange(month)
         let start = range.lowerBound
         let end = range.upperBound
         _transactions = Query(filter: #Predicate<Transaction> { $0.date >= start && $0.date < end })
@@ -97,6 +66,7 @@ private struct BudgetMonthContent: View {
     
     var body: some View {
         let rows = makeRows()
+        let totals = BudgetService.totals(of: rows)
         // 総予算 = カテゴリー予算の合計。使用済みは予算のあるカテゴリー分のみ集計
         let totalBudget = rows.reduce(0) { $0 + $1.budget }
         let totalSpent = rows.reduce(0) { $0 + $1.spent }
@@ -131,72 +101,11 @@ private struct BudgetMonthContent: View {
     
     // MARK: 行データの作成
     private func makeRows() -> [BudgetRow] {
-        // 対象月に適用される予算(カテゴリーごとに1件。期間は重ならない想定だが、念のため新しい方を採用)
-        var applied: [UUID: Budget] = [:]
-        for b in budgets where b.type == type && b.contains(month: month) {
-            if let current = applied[b.categoryID] {
-                if (b.startMonth, b.updatedAt) > (current.startMonth, current.updatedAt) {
-                    applied[b.categoryID] = b
-                }
-            } else {
-                applied[b.categoryID] = b
-            }
-        }
-        
-        // カテゴリーごとの使用額
-        let monthTransactions = transactions.filter { $0.type == type }
-        let spentByCategory = Dictionary(grouping: monthTransactions, by: \.categoryID)
-            .mapValues { $0.map(\.amount).reduce(0, +) }
-        
-        let categoryByID = Dictionary(categories.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        
-        let rows: [BudgetRow] = applied.values.map { b in
-            let spent = spentByCategory[b.categoryID] ?? 0
-            if let c = categoryByID[b.categoryID] {
-                return BudgetRow(
-                    id: b.categoryID, name: c.name, imageName: c.imageName, colorHex: c.colorHex,
-                    budget: b.amount, spent: spent, sortIndex: c.sortIndex
-                )
-            }
-            // 削除済みカテゴリー(過去月の予算は残る): 取引にコピー保存された情報を使う
-            if let t = monthTransactions.first(where: { $0.categoryID == b.categoryID }) {
-                return BudgetRow(
-                    id: b.categoryID, name: t.categoryName ?? "-", imageName: t.categoryImageName ?? "-", colorHex: t.categoryColorHex ?? "-",
-                    budget: b.amount, spent: spent, sortIndex: Int.max
-                )
-            }
-            return BudgetRow(
-                id: b.categoryID, name: "削除済みのカテゴリー", imageName: "questionmark.circle", colorHex: "#9E9E9E",
-                budget: b.amount, spent: spent, sortIndex: Int.max
-            )
-        }
-        
-        return rows.sorted {
-            $0.sortIndex != $1.sortIndex ? $0.sortIndex < $1.sortIndex : $0.name < $1.name
-        }
+        BudgetService.rows(
+            budgets: budgets, categories: categories, transactions: transactions,
+            month: month, type: type
+        )
     }
-    
-    private static func dateRange(of yyyymm: Int) -> Range<Date> {
-        let calendar = Calendar.current
-        let start = calendar.date(from: DateComponents(year: yyyymm / 100, month: yyyymm % 100, day: 1)) ?? Date()
-        let end = calendar.date(byAdding: .month, value: 1, to: start) ?? start
-        return start..<end
-    }
-}
-
-// MARK: - 表示用の行データ
-private struct BudgetRow: Identifiable {
-    let id: UUID          // categoryID
-    let name: String
-    let imageName: String
-    let colorHex: String
-    let budget: Int
-    let spent: Int
-    let sortIndex: Int
-    
-    var remaining: Int { budget - spent }
-    var isOver: Bool { remaining < 0 }
-    var remainingRatio: Double { budgetRemainingRatio(budget: budget, spent: spent) }
 }
 
 // MARK: - 総予算カード(上部)
