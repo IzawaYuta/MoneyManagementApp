@@ -68,7 +68,7 @@ enum TransactionService {
         category: Category?,
         paymentMethod: PaymentMethod?
     ) -> Bool {
-        guard let amount = parseAmount(amountText), amount > 0 else { return false }
+        let amount = parseAmount(amountText) ?? 0
         
         transaction.type = type
         transaction.date = date

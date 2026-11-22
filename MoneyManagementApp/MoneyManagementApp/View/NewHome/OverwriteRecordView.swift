@@ -28,6 +28,7 @@ struct OverwriteRecordView: View {
     @State private var showDatePicker: Bool = false
     @State private var showCategorySelectionView: Bool = false
     @State private var showPaymentMethodSelectionView: Bool = false
+    @State private var showZeroAmountAlert: Bool = false
     
     init(transaction: Transaction) {
         self.transaction = transaction
@@ -52,15 +53,6 @@ struct OverwriteRecordView: View {
     
     private var selectedPaymentMethod: PaymentMethod? {
         paymentMethods.first(where: { $0.id == selectedPaymentMethodID })
-    }
-    
-    /// 入力された金額(数字以外は無視)
-    private var amount: Int? {
-        TransactionService.parseAmount(priceTextField)
-    }
-    
-    private var canSave: Bool {
-        (amount ?? 0) > 0
     }
     
     var body: some View {
@@ -166,7 +158,7 @@ struct OverwriteRecordView: View {
                 
                 VStack(alignment: .center, spacing: 18) {
                     Button(action: {
-                        save()
+                        requestSave()
                     }) {
                         Text("上書きする")
                             .foregroundColor(.black)
@@ -176,6 +168,14 @@ struct OverwriteRecordView: View {
                     .background(Color.white)
                     .clipShape(RoundedRectangle(cornerRadius: 40))
                     .padding(.horizontal, 20)
+                    .alert("金額が0円です", isPresented: $showZeroAmountAlert) {
+                        Button("キャンセル", role: .cancel) {}
+                        Button("0円で上書き") {
+                            save()
+                        }
+                    } message: {
+                        Text("0円のまま上書きしますか？")
+                    }
                     
                     Button(action: {
                         showDeleteAlert.toggle()
@@ -217,8 +217,18 @@ struct OverwriteRecordView: View {
     }
     
     // MARK: - 上書き保存
+    
+    /// 金額が0円(空を含む)ならアラートを出して保留し、それ以外は上書きする
+    private func requestSave() {
+        if TransactionService.isZeroAmount(priceTextField) {
+            showZeroAmountAlert = true
+        } else {
+            save()
+        }
+    }
+    
     private func save() {
-        let updated = TransactionService.update(
+        TransactionService.update(
             transaction,
             type: type,
             date: date,
@@ -227,7 +237,7 @@ struct OverwriteRecordView: View {
             category: selectedCategory,
             paymentMethod: selectedPaymentMethod
         )
-        if updated { dismiss() }
+        dismiss()
     }
 }
 
