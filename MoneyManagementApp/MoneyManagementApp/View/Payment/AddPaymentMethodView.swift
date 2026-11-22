@@ -67,13 +67,17 @@ struct AddPaymentMethodView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("追加") {
-                        try? PaymentMethodService.add(
-                            name: name,
-                            type: paymentType,
-                            memo: memo,
-                            in: modelContext
-                        )
-                        dismiss()
+                        do {
+                            try PaymentMethodService.add(
+                                name: name,
+                                type: paymentType,
+                                memo: memo,
+                                in: modelContext
+                            )
+                            dismiss()
+                        } catch {
+                            print("支払方法の追加に失敗しました: \(error)")
+                        }
                     }
                     .disabled(!PaymentMethodService.isValid(name: name))
                 }

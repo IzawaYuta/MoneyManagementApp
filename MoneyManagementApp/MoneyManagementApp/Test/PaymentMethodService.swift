@@ -3,14 +3,26 @@ import Foundation
 import SwiftData
 
 @MainActor
+
+enum PaymentMethodError: Error {
+    case emptyName
+}
+
 enum PaymentMethodService {
 
-    /// 追加ボタンを押せる条件(AddPaymentMethodView と同じ)
-    static func isValid(name: String) -> Bool {
-        !name.isEmpty
+    /// 名前の前後の空白・改行(全角スペース、タブを含む)を取り除く。途中の空白は残す
+    static func trimmedName(_ name: String) -> String {
+        name.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-
-    /// 末尾(最大sortIndex + 1)に支払方法を追加する。メモが空文字ならnilで保存する
+    
+    /// 追加ボタンを押せる条件(名前が空・空白だけではないこと)
+    static func isValid(name: String) -> Bool {
+        !trimmedName(name).isEmpty
+    }
+    
+    /// 末尾(最大sortIndex + 1)に支払方法を追加する
+    /// - 名前の前後の空白は削除して保存する。メモが空文字ならnilで保存する
+    /// - 名前が空・空白だけのときは、何も保存せずエラーを投げる
     @discardableResult
     static func add(
         name: String,
@@ -18,9 +30,12 @@ enum PaymentMethodService {
         memo: String,
         in context: ModelContext
     ) throws -> PaymentMethod {
+        let name = trimmedName(name)
+        guard !name.isEmpty else { throw PaymentMethodError.emptyName }
+        
         let all = try context.fetch(FetchDescriptor<PaymentMethod>())
         let nextSortIndex = (all.map(\.sortIndex).max() ?? -1) + 1
-
+        
         let paymentMethod = PaymentMethod(
             name: name,
             type: type,
@@ -30,7 +45,7 @@ enum PaymentMethodService {
         context.insert(paymentMethod)
         return paymentMethod
     }
-
+    
     /// 指定IDの支払方法を削除し、残りのsortIndexを0から詰め直す
     static func delete(ids: Set<UUID>, in context: ModelContext) throws {
         let all = try context.fetch(
