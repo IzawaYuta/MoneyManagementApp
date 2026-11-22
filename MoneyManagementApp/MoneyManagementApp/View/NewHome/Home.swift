@@ -10,7 +10,6 @@ struct Home: View {
     @Query(sort: \Category.sortIndex)
     private var categories: [Category]
     @Query private var paymentMethod: [PaymentMethod]
-    @Query private var transactions: [Transaction]
     
     /// 選択中のカテゴリー
     private var selectedCategory: Category? {
@@ -27,6 +26,7 @@ struct Home: View {
     @State private var selectedDate = Date()
     @State private var isShowingDatePicker = false
     @State private var priceTextField = ""
+    @State private var showZeroAmountAlert = false
     @State private var memoTextField = ""
     
     @State private var showCategorySelectionView: Bool = false
@@ -51,6 +51,14 @@ struct Home: View {
                     transactionTypePicker
                 }
             }
+        }
+        .alert("金額が0円です", isPresented: $showZeroAmountAlert) {
+            Button("キャンセル", role: .cancel) {}
+            Button("0円で記録") {
+                saveTransaction()
+            }
+        } message: {
+            Text("0円のまま記録しますか？")
         }
         .onAppear { selectDefaultsIfNeeded() }
         .onChange(of: categories.map(\.id)) { selectDefaultsIfNeeded() }
@@ -134,7 +142,7 @@ struct Home: View {
                 InputActionButtons(
                     accentColor: accentColor,
                     onConfirm: {
-                        saveTransaction()
+                        requestSave()
                     },
                     onClear: {
                         clearButton()
@@ -162,7 +170,18 @@ struct Home: View {
     }
     
     // MARK: 収支確定
-    private func saveTransaction() {
+    /// 金額が0円(空を含む)ならアラートを出して保留し、それ以外は保存する
+    /// - Returns: 保存したら true、アラートを出して保留したら false
+    private func requestSave() -> Bool {
+        if TransactionService.isZeroAmount(priceTextField) {
+            showZeroAmountAlert = true
+            return false
+        }
+        return saveTransaction()
+    }
+    
+    @discardableResult
+    private func saveTransaction() -> Bool {
         do {
             try TransactionService.save(
                 date: selectedDate,
@@ -175,8 +194,10 @@ struct Home: View {
             )
             priceTextField = ""
             memoTextField = ""
+            return true
         } catch {
             print("保存に失敗しました: \(error)")
+            return false
         }
     }
     

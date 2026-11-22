@@ -250,7 +250,7 @@ struct MemoCard: View {
 struct InputActionButtons: View {
     
     let accentColor: Color
-    let onConfirm: () -> Void
+    let onConfirm: () -> Bool
     let onClear: () -> Void
     
     @State private var isShowingCheck = false
@@ -259,8 +259,7 @@ struct InputActionButtons: View {
         HStack(spacing: 12) {
             Button {
                 guard !isShowingCheck else { return }
-                
-                onConfirm()
+                guard onConfirm() else { return }
                 
                 withAnimation(.easeInOut(duration: 0.3)) {
                     isShowingCheck = true
