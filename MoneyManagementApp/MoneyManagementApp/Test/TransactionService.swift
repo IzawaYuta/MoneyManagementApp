@@ -96,4 +96,9 @@ enum TransactionService {
     static func delete(_ transaction: SchemaV2.Transaction, in context: ModelContext) {
         context.delete(transaction)
     }
+    
+    /// 金額が0円(空・数字なしを含む)か。保存・上書きの前に確認アラートを出すかの判定に使う
+    static func isZeroAmount(_ text: String) -> Bool {
+        (parseAmount(text) ?? 0) == 0
+    }
 }

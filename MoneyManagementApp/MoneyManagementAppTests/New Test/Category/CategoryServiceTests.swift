@@ -42,6 +42,57 @@ struct CategoryServiceTests {
         #expect(!CategoryService.isValid(name: "   ", imageName: "fork.knife", colorHex: "#FF6B6B"))
     }
     
+    // MARK: - 名前の前後の空白
+    
+    @Test("名前の前後の空白(半角・全角)は削除して保存される")
+    func addTrimsSpaces() throws {
+        let context = try makeContext()
+        
+        let a = try CategoryService.add(name: "  食費  ", imageName: "fork.knife", colorHex: "#FF6B6B", in: context)
+        let b = try CategoryService.add(name: "　交通費　", imageName: "car", colorHex: "#FFD43B", in: context)
+        
+        #expect(a.name == "食費")
+        #expect(b.name == "交通費")
+    }
+    
+    @Test("名前の前後のタブ・改行も削除して保存される")
+    func addTrimsTabsAndNewlines() throws {
+        let context = try makeContext()
+        
+        let a = try CategoryService.add(name: "\t日用品\n", imageName: "basket", colorHex: "#69DB7C", in: context)
+        
+        #expect(a.name == "日用品")
+    }
+    
+    @Test("名前の途中の空白は、そのまま残る")
+    func addKeepsInnerSpaces() throws {
+        let context = try makeContext()
+        
+        let a = try CategoryService.add(name: " 外 食 ", imageName: "mug", colorHex: "#4DABF7", in: context)
+        let b = try CategoryService.add(name: "日用　品", imageName: "basket", colorHex: "#69DB7C", in: context)
+        
+        #expect(a.name == "外 食")
+        #expect(b.name == "日用　品")
+    }
+    
+    @Test("編集した名前の前後の空白も、削除して保存される")
+    func updateTrimsSpaces() throws {
+        let context = try makeContext()
+        let category = try CategoryService.add(name: "食費", imageName: "fork.knife", colorHex: "#FF6B6B", in: context)
+        
+        CategoryService.update(category, name: "  外食　", imageName: "mug", colorHex: "#4DABF7")
+        
+        #expect(category.name == "外食")
+    }
+    
+    @Test("空白だけの名前(全角・タブ・改行を含む)は、保存条件を満たさない")
+    func invalidWhenNameIsOnlyWhitespaceVariants() {
+        for name in ["   ", "　", "\t", "\n", " \u{3000}\t\n"] {
+            #expect(!CategoryService.isValid(name: name, imageName: "tray", colorHex: "#4DABF7"), "名前: [\(name)]")
+        }
+        #expect(CategoryService.isValid(name: " 食費 ", imageName: "tray", colorHex: "#4DABF7"))
+    }
+    
     @Test("アイコン未選択だと保存できない")
     func invalidWhenNoIcon() {
         #expect(!CategoryService.isValid(name: "食費", imageName: nil, colorHex: "#FF6B6B"))

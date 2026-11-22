@@ -121,7 +121,7 @@ struct Home: View {
                     SelectionCard(title: "支払方法", value: selectedPaymentMethod?.name ?? "未選択", corners: .paymentCard) {
                         showPaymentMethodView.toggle()
                     }
-                    .accessibilityIdentifier("home.paymentCard")        
+                    .accessibilityIdentifier("home.paymentCard")
                     .sheet(isPresented: $showPaymentMethodView) {
                         PaymentMethodView(selectedPaymentMethodID: $selectedPaymentMethodID)
                     }

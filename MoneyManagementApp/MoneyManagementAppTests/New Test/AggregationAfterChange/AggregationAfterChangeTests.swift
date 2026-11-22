@@ -164,17 +164,17 @@ struct AggregationAfterChangeTests {
         #expect(try daily(context, date(2026, 11, 15)).expense == 900)
     }
 
-    @Test("カレンダー: 金額0で上書きを拒否された場合、合計は変わらない")
-    func calendarRejectedEditKeepsTotals() throws {
+    @Test("カレンダー: 金額0で上書きすると、その日の合計は0になり、記録は残る")
+    func calendarZeroEdit() throws {
         let context = try makeContext()
         let t = try save(context, date(2026, 11, 15), 1000)
-
-        let ok = edit(t, type: .income, amountText: "0")
-
-        #expect(!ok)
-        #expect(try daily(context, date(2026, 11, 15)) == .init(income: 0, expense: 1000))
+        
+        edit(t, amountText: "0")
+        
+        #expect(try daily(context, date(2026, 11, 15)) == .init(income: 0, expense: 0))
+        #expect(try dayItems(context, date(2026, 11, 15)).count == 1)
     }
-
+    
     // MARK: - カレンダー: 削除後
 
     @Test("カレンダー: 記録を削除すると、その日の合計と一覧から消える")
@@ -329,19 +329,20 @@ struct AggregationAfterChangeTests {
         #expect(row.amount == 2000)
     }
 
-    @Test("グラフ: 金額0で上書きを拒否された場合、集計は変わらない")
-    func chartRejectedEditKeepsSummaries() throws {
+    @Test("グラフ: 金額0で上書きすると、カテゴリーの行は残り、合計は0になる")
+    func chartZeroEdit() throws {
         let context = try makeContext()
         let food = makeCategory("食費", "fork.knife", "#FF6B6B", in: context)
         let t = try save(context, date(2026, 11, 1), 1000, category: food)
-
-        let ok = edit(t, type: .income, amountText: "")
-
-        #expect(!ok)
-        #expect(try chart(context).map(\.amount) == [1000])
-        #expect(try chart(context, type: .income).isEmpty)
+        
+        edit(t, amountText: "0")
+        
+        let result = try chart(context)
+        #expect(result.map(\.name) == ["食費"])
+        #expect(result.map(\.amount) == [0])
+        #expect(MonthlyChartService.total(of: result) == 0)
     }
-
+    
     // MARK: - グラフ: 削除後
 
     @Test("グラフ: 記録を削除すると、カテゴリーの合計が減る")

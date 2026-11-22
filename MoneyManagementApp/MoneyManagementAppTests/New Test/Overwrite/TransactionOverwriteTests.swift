@@ -182,32 +182,43 @@ struct TransactionOverwriteTests {
         #expect(a.memo == "元のメモ")
     }
 
-    // MARK: - 金額の入力チェック
-
-    @Test("金額が0のときは上書きされず、falseが返る")
-    func zeroAmountIsRejected() throws {
+    // MARK: - 金額0の上書き
+    
+    @Test("金額が0でも上書きできる(他の項目も更新される)")
+    func zeroAmountIsAccepted() throws {
         let context = try makeContext()
         let t = try makeSaved(in: context)
-
+        
         let ok = overwrite(t, type: .income, amountText: "¥0", memo: "変更")
-
-        #expect(!ok)
-        #expect(t.amount == 1000)
-        #expect(t.type == .expense)
-        #expect(t.memo == "元のメモ")
+        
+        #expect(ok)
+        #expect(t.amount == 0)
+        #expect(t.type == .income)
+        #expect(t.memo == "変更")
     }
-
-    @Test("金額が空のときは上書きされず、falseが返る")
-    func emptyAmountIsRejected() throws {
+    
+    @Test("金額が空でも、0円として上書きできる")
+    func emptyAmountBecomesZero() throws {
         let context = try makeContext()
         let t = try makeSaved(in: context)
-
+        
         let ok = overwrite(t, amountText: "")
-
-        #expect(!ok)
-        #expect(t.amount == 1000)
+        
+        #expect(ok)
+        #expect(t.amount == 0)
     }
-
+    
+    @Test("0円にしたあと、金額を入れて上書きし直せる")
+    func overwriteAgainAfterZero() throws {
+        let context = try makeContext()
+        let t = try makeSaved(in: context)
+        overwrite(t, amountText: "0")
+        
+        overwrite(t, amountText: "2500")
+        
+        #expect(t.amount == 2500)
+    }
+    
     // MARK: - カテゴリー
 
     @Test("別のカテゴリーに変更すると、新しい内容がコピーされる")

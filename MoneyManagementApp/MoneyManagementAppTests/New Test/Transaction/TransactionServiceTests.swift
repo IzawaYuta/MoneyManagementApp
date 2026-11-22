@@ -104,6 +104,16 @@ struct TransactionServiceTests {
         #expect(t.amount == 0)
         #expect(try fetchAll(context).count == 1)
     }
+    
+    @Test("金額が0でも保存される(0円の記録になる)")
+    func zeroAmountIsSaved() throws {
+        let context = try makeContext()
+        
+        let t = try save(in: context, amountText: "0")
+        
+        #expect(t.amount == 0)
+        #expect(try fetchAll(context).count == 1)
+    }
 
     @Test("【現状の仕様】数字として読めない金額は、0円で保存される")
     func invalidAmountBecomesZero() throws {

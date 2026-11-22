@@ -51,6 +51,54 @@ struct PaymentMethodServiceTests {
     func invalidWhenNameEmpty() {
         #expect(!PaymentMethodService.isValid(name: ""))
     }
+    
+    // MARK: - 名前の必須入力・空白
+    
+    @Test("空白だけの名前(全角・タブを含む)は、追加できない")
+    func invalidWhenNameIsOnlyWhitespace() {
+        for name in ["", "   ", "　", "\t", " \u{3000}\t"] {
+            #expect(!PaymentMethodService.isValid(name: name), "名前: [\(name)]")
+        }
+    }
+    
+    @Test("前後に空白があっても、名前があれば追加できる")
+    func validWhenNameHasSurroundingSpaces() {
+        #expect(PaymentMethodService.isValid(name: " 現金 "))
+    }
+    
+    @Test("名前の前後の空白(半角・全角・タブ)は、削除して保存される")
+    func addTrimsSpaces() throws {
+        let context = try makeContext()
+        
+        let a = try PaymentMethodService.add(name: "  現金  ", type: .cash, memo: "", in: context)
+        let b = try PaymentMethodService.add(name: "　PayPay　", type: .qrCode, memo: "", in: context)
+        let c = try PaymentMethodService.add(name: "\tメインカード\t", type: .creditCard, memo: "", in: context)
+        
+        #expect(a.name == "現金")
+        #expect(b.name == "PayPay")
+        #expect(c.name == "メインカード")
+    }
+    
+    @Test("名前の途中の空白は、そのまま残る")
+    func addKeepsInnerSpaces() throws {
+        let context = try makeContext()
+        
+        let a = try PaymentMethodService.add(name: " 三井住友 カード ", type: .creditCard, memo: "", in: context)
+        
+        #expect(a.name == "三井住友 カード")
+    }
+    
+    @Test("名前が空・空白のみだと、追加は失敗し、何も保存されない")
+    func addRejectsBlankName() throws {
+        let context = try makeContext()
+        
+        for name in ["", "   ", "　", "\t"] {
+            #expect(throws: (any Error).self) {
+                try PaymentMethodService.add(name: name, type: .cash, memo: "", in: context)
+            }
+        }
+        #expect(try fetchAll(context).isEmpty)
+    }
 
     // MARK: - 追加
 
