@@ -74,7 +74,7 @@ struct BudgetDetailView: View {
             .padding(.top, 8)
             .padding(.bottom, 24)
         }
-        .background(Color(uiColor: .systemGray5))
+        .background(Color(uiColor: .systemGray6))
         .navigationTitle("\(name)の予算")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showingEdit) {

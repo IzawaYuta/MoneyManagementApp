@@ -6,11 +6,11 @@ import SwiftUI
 struct RaisedButtonStyle: ButtonStyle {
     
     var cornerRadius: CGFloat = 14
-    var normalShadowRadius: CGFloat = 2
-    var pressedShadowRadius: CGFloat = 1
+    var normalShadowRadius: CGFloat = 1
+    var pressedShadowRadius: CGFloat = 0.5
     var x: CGFloat = 3
-    var normalY: CGFloat = 7
-    var pressedY: CGFloat = 3
+    var normalY: CGFloat = 5
+    var pressedY: CGFloat = 1
     
     func makeBody(configuration: Configuration) -> some View {
         let isPressed = configuration.isPressed
@@ -52,7 +52,7 @@ struct CustomButtonStyle: ButtonStyle {
                     Capsule()
                         .fill(accentColor)
                         .stroke(.black, lineWidth: isPressed ? 0.5 : 1.0)
-                        .offset(y: isPressed ? 0 : 8)
+                        .offset(y: isPressed ? 0 : 5)
                     Capsule()
                         .fill(.white)
                         .stroke(.black, lineWidth: isPressed ? 0.5 : 1.5)

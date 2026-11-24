@@ -66,6 +66,7 @@ struct OverwriteRecordView: View {
                         }
                         .tint(.black)
                         .pickerStyle(.menu)
+                        .accessibilityIdentifier("overwrite.typePicker")
                     }
                     .padding(.horizontal, 7)
                     
@@ -79,6 +80,7 @@ struct OverwriteRecordView: View {
                                 Text(date.formattedDateJP)
                                     .tint(.black)
                             }
+                            .accessibilityIdentifier("overwrite.dateButton")
                             .sheet(isPresented: $showDatePicker) {
                                 DatePicker(
                                     "日付",
@@ -106,6 +108,7 @@ struct OverwriteRecordView: View {
                             TextField("¥0", text: $priceTextField)
                                 .multilineTextAlignment(.trailing)
                                 .keyboardType(.numberPad)
+                                .accessibilityIdentifier("overwrite.amountField")   
                                 .onChange(of: priceTextField) { _, newValue in
                                     let formatted = Self.formatPrice(newValue)
                                     if formatted != newValue {
@@ -126,6 +129,7 @@ struct OverwriteRecordView: View {
                                 Text(selectedCategory?.name ?? transaction.categoryName ?? "未選択")
                                     .tint((transaction.categoryName == nil) ? .gray : .black)
                             }
+                            .accessibilityIdentifier("overwrite.categoryButton")
                             .sheet(isPresented: $showCategorySelectionView) {
                                 CategorySelectionView(
                                     selectedCategoryID: $selectedCategoryID
@@ -141,6 +145,7 @@ struct OverwriteRecordView: View {
                                 Text(selectedPaymentMethod?.name ?? transaction.paymentMethodName ?? "未選択")
                                     .tint((transaction.paymentMethodName == nil) ? .gray : .black)
                             }
+                            .accessibilityIdentifier("overwrite.paymentButton") 
                             .sheet(isPresented: $showPaymentMethodSelectionView) {
                                 PaymentMethodView(selectedPaymentMethodID: $selectedPaymentMethodID)
                             }
@@ -205,6 +210,7 @@ struct OverwriteRecordView: View {
                     }) {
                         Image(systemName: "xmark")
                     }
+                    .accessibilityIdentifier("overwrite.closeButton")  
                 }
             }
             .alert("変更を破棄", isPresented: $showCancelAlert) {

@@ -140,6 +140,7 @@ struct PaymentMethodView: View {
                         .font(.subheadline)
                 }
             }
+            .contentShape(Rectangle())      
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 3)

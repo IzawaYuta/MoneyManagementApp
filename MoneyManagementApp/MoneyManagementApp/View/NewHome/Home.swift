@@ -24,7 +24,7 @@ struct Home: View {
     
     @State private var selectedTransactionType: TransactionType = .expense
     @State private var selectedDate = Date()
-    @State private var isShowingDatePicker = false
+    @State private var onTapDate: Bool = false
     @State private var priceTextField = ""
     @State private var showZeroAmountAlert = false
     @State private var memoTextField = ""
@@ -89,13 +89,6 @@ struct Home: View {
     // MARK: 上部(日付・金額・クイック金額ボタン)
     private var topSection: some View {
         VStack(spacing: 20) {
-            DateNavigator(date: $selectedDate) {
-                isShowingDatePicker = true
-            }
-            .sheet(isPresented: $isShowingDatePicker) {
-                DatePickerSheet(date: $selectedDate, isPresented: $isShowingDatePicker)
-            }
-            
             AmountDisplay(text: $priceTextField, focus: $focusedField)
             
             QuickAmountButtons(priceText: $priceTextField)
@@ -115,6 +108,7 @@ struct Home: View {
             .ignoresSafeArea(edges: .bottom)
             
             VStack(spacing: 12) {
+                SelectionDate(selectedDate: $selectedDate, onTapDatePicker: $onTapDate)
                 HStack(spacing: 12) {
                     SelectionCard(title: "カテゴリー", value: selectedCategory?.name ?? "未選択", corners: .categoryCard) {
                         showCategorySelectionView.toggle()

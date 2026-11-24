@@ -34,12 +34,14 @@ struct TransactionCalendarView: View {
                             .background(Color(uiColor: .systemGray6))
                             .clipShape(Circle())
                     }
+                    .accessibilityIdentifier("calendar.prevMonth")
                     
                     Spacer()
                     
                     Text(monthTitle)
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(.black)
+                        .accessibilityIdentifier("calendar.monthTitle")
                     
                     Spacer()
                     
@@ -53,6 +55,7 @@ struct TransactionCalendarView: View {
                             .background(Color(uiColor: .systemGray6))
                             .clipShape(Circle())
                     }
+                    .accessibilityIdentifier("calendar.nextMonth")
                 }
                 .padding(.horizontal, 30)
                 
@@ -109,7 +112,7 @@ struct TransactionCalendarView: View {
             Spacer(minLength: 0)
         }
         .padding(.top, 16)
-        .background(Color(uiColor: .systemGray5))
+        .background(Color(uiColor: .systemGray6))
         .animation(.easeInOut(duration: 0.2), value: currentMonth)
         .sheet(item: $editingTransaction) { transaction in
             OverwriteRecordView(transaction: transaction)
@@ -172,6 +175,7 @@ struct TransactionCalendarView: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("calendar.day.\(dayNumber)")
     }
     
     // MARK: - 選択日の詳細カード(実データ)

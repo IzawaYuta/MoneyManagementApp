@@ -186,6 +186,41 @@ struct QuickAmountButtons: View {
     }
 }
 
+// MARK: - 日付選択カード
+
+struct SelectionDate: View {
+    
+    @Binding var selectedDate: Date
+    @Binding var onTapDatePicker: Bool
+    
+    var body: some View {
+        Button(action: {
+            onTapDatePicker.toggle()
+        }) {
+            HStack {
+                Text("日付")
+                Spacer()
+                Text(selectedDate, format: .dateTime.year().month().day())
+                    .environment(\.locale, Locale(identifier: "ja_JP"))
+            }
+            .padding(.vertical, 5)
+            .padding(.horizontal, 15)
+            .frame(height: 50)
+            .customBackground(cornerRadius: 30)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("home.dateButton")
+        .sheet(isPresented: $onTapDatePicker) {
+            DatePicker("日付", selection: $selectedDate, displayedComponents: .date)
+                .datePickerStyle(.graphical)
+                .environment(\.locale, Locale(identifier: "ja_JP"))
+                .onChange(of: selectedDate) {
+                    onTapDatePicker = false
+                }
+        }
+    }
+}
+
 // MARK: - 選択カード(カテゴリー・支払方法)
 /// 上に小さなタイトル、右寄せで選択中の値を表示するカード。角の丸みは `corners` で指定する。
 struct SelectionCard: View {

@@ -54,7 +54,7 @@ struct MonthlyChartView: View {
                 recordList(items: items)
             }
             .padding(.horizontal, 20)
-            .background(Color(uiColor: .systemGray5))
+            .background(Color(uiColor: .systemGray6))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
