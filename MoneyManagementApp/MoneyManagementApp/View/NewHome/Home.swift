@@ -35,7 +35,7 @@ struct Home: View {
     @State private var selectedPaymentMethodID: UUID?
     
     /// 下の白いシートが画面の高さに占める割合
-    private let sheetHeightRatio: CGFloat = 0.65
+    private let sheetHeightRatio: CGFloat = 0.75
     
     var body: some View {
         NavigationStack {
@@ -67,16 +67,39 @@ struct Home: View {
     
     // MARK: 背景
     private var backgroundGradient: some View {
-        LinearGradient(
-            colors: selectedTransactionType == .expense
-            ? [Color(red: 255.0 / 255.0, green: 137.0 / 255.0, blue: 114.0 / 255.0),
-               Color(red: 241.0 / 255.0, green: 237.0 / 255.0, blue: 235.0 / 255.0)]
-            : [Color(red: 139.0 / 255.0, green: 192.0 / 255.0, blue: 255.0 / 255.0),
-               Color(red: 233.0 / 255.0, green: 241.0 / 255.0, blue: 255.0 / 255.0)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .opacity(0.8)
+//        LinearGradient(
+//            colors: selectedTransactionType == .expense
+//            ? [Color(red: 255.0 / 255.0, green: 137.0 / 255.0, blue: 114.0 / 255.0),
+//               Color(red: 241.0 / 255.0, green: 237.0 / 255.0, blue: 235.0 / 255.0)]
+//            : [Color(red: 139.0 / 255.0, green: 192.0 / 255.0, blue: 255.0 / 255.0),
+//               Color(red: 233.0 / 255.0, green: 241.0 / 255.0, blue: 255.0 / 255.0)],
+//            startPoint: .topLeading,
+//            endPoint: .center
+//        )
+//        .opacity(0.8)
+        ZStack {
+            Color.black
+//            RadialGradient(
+//                colors: [
+//                    .red.opacity(0.6),
+//                    .red.opacity(0.15),
+//                    .clear
+//                ],
+//                center: .topLeading,
+//                startRadius: 0,
+//                endRadius: 500
+//            )
+            LinearGradient(
+                colors: selectedTransactionType == .expense
+                ? [Color(red: 255.0 / 255.0, green: 137.0 / 255.0, blue: 114.0 / 255.0),
+                   Color(red: 241.0 / 255.0, green: 237.0 / 255.0, blue: 235.0 / 255.0)]
+                : [Color(red: 139.0 / 255.0, green: 192.0 / 255.0, blue: 255.0 / 255.0),
+                   Color(red: 233.0 / 255.0, green: 241.0 / 255.0, blue: 255.0 / 255.0)],
+                startPoint: .topLeading,
+                endPoint: .center
+            )
+            .opacity(0.8)
+        }
         .ignoresSafeArea()
     }
     
@@ -114,7 +137,7 @@ struct Home: View {
                         showCategorySelectionView.toggle()
                     }
                     .accessibilityIdentifier("home.categoryCard")
-                    .sheet(isPresented: $showCategorySelectionView) {
+                    .fullScreenCover(isPresented: $showCategorySelectionView) {
                         CategorySelectionView(
                             selectedCategoryID: $selectedCategoryID
                         )
@@ -124,7 +147,7 @@ struct Home: View {
                         showPaymentMethodView.toggle()
                     }
                     .accessibilityIdentifier("home.paymentCard")
-                    .sheet(isPresented: $showPaymentMethodView) {
+                    .fullScreenCover(isPresented: $showPaymentMethodView) {
                         PaymentMethodView(selectedPaymentMethodID: $selectedPaymentMethodID)
                     }
                 }

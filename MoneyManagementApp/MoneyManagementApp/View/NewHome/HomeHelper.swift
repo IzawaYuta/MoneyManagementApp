@@ -211,12 +211,11 @@ struct SelectionDate: View {
         .buttonStyle(.plain)
         .accessibilityIdentifier("home.dateButton")
         .sheet(isPresented: $onTapDatePicker) {
-            DatePicker("日付", selection: $selectedDate, displayedComponents: .date)
-                .datePickerStyle(.graphical)
-                .environment(\.locale, Locale(identifier: "ja_JP"))
-                .onChange(of: selectedDate) {
-                    onTapDatePicker = false
-                }
+            DatePickerSheet(
+                date: $selectedDate,
+                isPresented: $onTapDatePicker
+            )
+            .presentationBackground(.white)
         }
     }
 }
