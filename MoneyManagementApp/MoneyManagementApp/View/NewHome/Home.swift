@@ -10,6 +10,8 @@ struct Home: View {
     @Query(sort: \Category.sortIndex)
     private var categories: [Category]
     @Query private var paymentMethod: [PaymentMethod]
+    @Query(sort: \UsualRecord.createdAt, order: .reverse)
+    private var usualRecords: [UsualRecord]
     
     /// 選択中のカテゴリー
     private var selectedCategory: Category? {
@@ -33,6 +35,7 @@ struct Home: View {
     @State var selectedCategoryID: UUID?
     @State private var showPaymentMethodView = false
     @State private var selectedPaymentMethodID: UUID?
+    @State private var showUsualRecordSheet: Bool = false
     
     /// 下の白いシートが画面の高さに占める割合
     private let sheetHeightRatio: CGFloat = 0.75
@@ -154,6 +157,17 @@ struct Home: View {
                 
                 MemoCard(text: $memoTextField)
                 
+                UsualRecordCard(
+                    onOpenList: { showUsualRecordSheet = true },
+                )
+                .fullScreenCover(isPresented: $showUsualRecordSheet) {
+                    UsualRecordCardSheet(
+                        records: usualRecords,
+                        onApply: { applyUsualRecord($0) },
+                        onDelete: { modelContext.delete($0) }
+                    )
+                }
+                
                 Spacer()
                 
                 InputActionButtons(
@@ -233,6 +247,38 @@ struct Home: View {
         }
         if selectedPaymentMethod == nil {
             selectedPaymentMethodID = paymentMethod.sorted { $0.sortIndex < $1.sortIndex }.first?.id
+        }
+    }
+    
+    // MARK: いつもの収支
+    private func registerUsualRecord() {
+        let record = UsualRecord(
+            title: memoTextField.isEmpty ? (selectedCategory?.name ?? "いつもの") : memoTextField,
+            amount: Int(priceTextField) ?? 0,
+            typeRaw: selectedTransactionType.rawValue,
+            memo: memoTextField
+        )
+        record.categoryID = selectedCategory?.id
+        record.categoryName = selectedCategory?.name
+        record.categoryImageName = selectedCategory?.imageName
+        record.categoryColorHex = selectedCategory?.colorHex
+        record.paymentMethodID = selectedPaymentMethod?.id
+        record.paymentMethodName = selectedPaymentMethod?.name
+        modelContext.insert(record)
+    }
+    
+    private func applyUsualRecord(_ record: UsualRecord) {
+        priceTextField = String(record.amount)
+        memoTextField = record.memo
+        if let type = TransactionType(rawValue: record.typeRaw) {
+            selectedTransactionType = type
+        }
+        // 削除済みのカテゴリー・支払方法は反映しない(現在の選択のまま)
+        if let id = record.categoryID, categories.contains(where: { $0.id == id }) {
+            selectedCategoryID = id
+        }
+        if let id = record.paymentMethodID, paymentMethod.contains(where: { $0.id == id }) {
+            selectedPaymentMethodID = id
         }
     }
 }

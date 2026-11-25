@@ -1,5 +1,6 @@
 
 import SwiftUI
+import SwiftData
 
 // MARK: - 日付ナビゲーター
 /// 「‹ 2026年11月15日 ›」。矢印で前日・翌日、日付部分のタップで `onTapDate` を呼ぶ。
@@ -280,6 +281,146 @@ struct MemoCard: View {
     }
 }
 
+// MARK: - いつもの収支カード
+/// 左側をタップで一覧シートを開き、右側の「登録」で今の入力を保存する。
+struct UsualRecordCard: View {
+    let onOpenList: () -> Void
+    
+    var body: some View {
+        HStack {
+            Button(action: onOpenList) {
+                HStack {
+                    Image(systemName: "star")
+                        .foregroundColor(.primary)
+                    Text("いつもの収支")
+                        .font(.callout)
+                    Spacer()
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("home.usualListButton")
+        }
+        .padding(.vertical, 5)
+        .padding(.horizontal, 15)
+        .frame(height: 50)
+        .customBackground(cornerRadius: 30)
+    }
+}
+
+// MARK: - いつもの収支一覧シート
+/// 行をタップすると入力欄に反映して閉じる。左スワイプで削除。
+struct UsualRecordCardSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    
+    @State private var showUsualRecordEditView: Bool = false
+    
+    let records: [UsualRecord]
+    let onApply: (UsualRecord) -> Void
+    let onDelete: (UsualRecord) -> Void
+    
+    var body: some View {
+        NavigationStack {
+            List {
+                if records.isEmpty {
+                    ContentUnavailableView {
+                        Label("", systemImage: "")
+                    } description: {
+                        Text("いつもの収支がありません")
+                    } actions: {
+                        Button(action: {
+                            showUsualRecordEditView.toggle()
+                        }) {
+                            HStack(spacing: 3) {
+                                Image(systemName: "plus")
+                                Text("登録する")
+                            }
+                            .padding(10)
+                            .tint(.blue)
+                        }
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Color.blue.opacity(0.2))
+                        )
+                    }
+                    .listRowBackground(Color.clear)
+                } else {
+                    ForEach(records) { item in
+                        Section {
+                            Button {
+                                onApply(item)
+                                dismiss()
+                            } label: {
+                                UsualRecordRow(record: item)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .onDelete { offsets in
+                        offsets.map { records[$0] }.forEach(onDelete)
+                    }
+                }
+            }
+            .navigationTitle("いつもの収支")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("閉じる") { dismiss() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: {
+                        showUsualRecordEditView.toggle()
+                    }) {
+                        Text("登録")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(.black)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("home.usualRegisterButton")
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+        .sheet(isPresented: $showUsualRecordEditView) {
+            UsualRecordEditView()
+        }
+    }
+}
+
+// MARK: - いつもの収支の行
+struct UsualRecordRow: View {
+    let record: UsualRecord
+    
+    /// 名前の下に出す補足(カテゴリー・支払方法・メモ)。メモが空のときは行ごと出さない。
+    private var details: [String] {
+        [
+            record.categoryName ?? "カテゴリー未設定",
+            record.paymentMethodName ?? "支払方法未設定",
+            record.memo
+        ]
+            .filter { !$0.isEmpty }
+    }
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(record.title)
+                    .foregroundStyle(.primary)
+                ForEach(details, id: \.self) { detail in
+                    Text(detail)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Spacer()
+            Text(record.amount, format: .currency(code: "JPY"))
+                .foregroundStyle(.primary)
+        }
+        .contentShape(Rectangle())
+    }
+}
+
 // MARK: - 確定・クリアボタン
 struct InputActionButtons: View {
     
@@ -378,4 +519,9 @@ extension View {
             CustomBackground(cornerRadius: cornerRadius)
         )
     }
+}
+
+#Preview {
+    let record = [UsualRecord(title: "バス", amount: 1290, typeRaw: TransactionType.expense.rawValue, memo: "メモめも", categoryName: "交通費", paymentMethodName: "Suica") ]
+    UsualRecordCardSheet(records: record, onApply: { _ in }, onDelete: { _ in })
 }

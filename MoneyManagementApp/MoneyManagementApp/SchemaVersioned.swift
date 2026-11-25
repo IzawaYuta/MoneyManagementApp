@@ -10,6 +10,7 @@ typealias Category = SchemaV1.Category          // V2で未変更なのでV1を�
 typealias PaymentMethod = SchemaV1.PaymentMethod
 typealias Transaction = SchemaV2.Transaction
 typealias Budget = SchemaV2.Budget
+typealias UsualRecord = SchemaV2.UsualRecord
 
 enum MigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] { [SchemaV1.self, SchemaV2.self] }

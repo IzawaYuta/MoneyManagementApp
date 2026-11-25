@@ -8,7 +8,7 @@ enum SchemaV2: VersionedSchema {
     
     static var models: [any PersistentModel.Type] {
         [SchemaV1.Category.self, SchemaV1.PaymentMethod.self,
-         Transaction.self, Budget.self]
+         Transaction.self, Budget.self, UsualRecord.self]
     }
     
     @Model final class Transaction {
@@ -97,6 +97,39 @@ enum SchemaV2: VersionedSchema {
             guard startMonth <= month else { return false }
             if let endMonth { return month <= endMonth }
             return true
+        }
+    }
+    
+    //いつもの収支
+    @Model
+    final class UsualRecord {
+        var id: UUID = UUID()
+        var title: String = ""
+        var amount: Int = 0
+        var typeRaw: String = ""
+        var memo: String = ""
+        var categoryID: UUID?
+        var categoryName: String?
+        var categoryImageName: String?
+        var categoryColorHex: String?
+        var paymentMethodID: UUID?
+        var paymentMethodName: String?
+        var createdAt: Date = Date()
+        
+        init(
+            title: String,
+            amount: Int,
+            typeRaw: String,
+            memo: String,
+            categoryName: String? = nil,
+            paymentMethodName: String? = nil
+        ) {
+            self.title = title
+            self.amount = amount
+            self.typeRaw = typeRaw
+            self.memo = memo
+            self.categoryName = categoryName
+            self.paymentMethodName = paymentMethodName
         }
     }
 }
