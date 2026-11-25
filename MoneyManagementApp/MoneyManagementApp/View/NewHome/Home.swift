@@ -70,7 +70,10 @@ struct Home: View {
         } message: {
             Text("0円のまま記録しますか？")
         }
-        .onAppear { selectDefaultsIfNeeded() }
+        .onAppear {
+            selectDefaultsIfNeeded()
+            syncRecordCopiesOnce()
+        }
         .onChange(of: categories.map(\.id)) { selectDefaultsIfNeeded() }
         .onChange(of: paymentMethod.map(\.id)) { selectDefaultsIfNeeded() }
     }
@@ -260,21 +263,17 @@ struct Home: View {
         }
     }
     
-    // MARK: いつもの収支
-    private func registerUsualRecord() {
-        let record = UsualRecord(
-            title: memoTextField.isEmpty ? (selectedCategory?.name ?? "いつもの") : memoTextField,
-            amount: Int(priceTextField) ?? 0,
-            typeRaw: selectedTransactionType.rawValue,
-            memo: memoTextField
-        )
-        record.categoryID = selectedCategory?.id
-        record.categoryName = selectedCategory?.name
-        record.categoryImageName = selectedCategory?.imageName
-        record.categoryColorHex = selectedCategory?.colorHex
-        record.paymentMethodID = selectedPaymentMethod?.id
-        record.paymentMethodName = selectedPaymentMethod?.name
-        modelContext.insert(record)
+    /// 過去に変更したカテゴリー・支払方法を、記録済みのコピーへ反映する(アップデート後の初回だけ)
+    private func syncRecordCopiesOnce() {
+        let key = "didSyncRecordCopies"
+        guard !UserDefaults.standard.bool(forKey: key) else { return }
+        do {
+            try RecordSyncService.syncAll(in: modelContext)
+            try modelContext.save()
+            UserDefaults.standard.set(true, forKey: key)   // 成功したときだけ記録する
+        } catch {
+            print("記録の同期に失敗しました: \(error)")
+        }
     }
     
     private func applyUsualRecord(_ record: UsualRecord) {

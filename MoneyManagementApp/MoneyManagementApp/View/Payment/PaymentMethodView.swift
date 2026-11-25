@@ -14,6 +14,7 @@ struct PaymentMethodView: View {
     private var transactions: [Transaction]
     
     @State private var showAddPaymentMethodView: Bool = false
+    @State private var editingPaymentMethod: PaymentMethod?
     @State private var isEditing: Bool = false
     
     @Binding var selectedPaymentMethodID: UUID?
@@ -114,6 +115,9 @@ struct PaymentMethodView: View {
             .sheet(isPresented: $showAddPaymentMethodView) {
                 AddPaymentMethodView()
             }
+            .sheet(item: $editingPaymentMethod) { paymentMethod in
+                AddPaymentMethodView(editingPaymentMethod: paymentMethod)
+            }
         }
     }
     
@@ -140,10 +144,31 @@ struct PaymentMethodView: View {
                         .font(.subheadline)
                 }
             }
-            .contentShape(Rectangle())      
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 3)
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                delete(paymentMethod)
+            } label: {
+                Label("削除", systemImage: "trash")
+            }
+            Button {
+                editingPaymentMethod = paymentMethod
+            } label: {
+                Label("編集", systemImage: "pencil")
+            }
+            .tint(.blue)
+        }
+    }
+    
+    /// 1件を削除する(選択中なら、参照が消える前にリセットする)
+    private func delete(_ paymentMethod: PaymentMethod) {
+        if selectedPaymentMethodID == paymentMethod.id {
+            selectedPaymentMethodID = nil
+        }
+        try? PaymentMethodService.delete(ids: [paymentMethod.id], in: modelContext)
     }
     
     private func deletePaymentMethods(at offsets: IndexSet) {

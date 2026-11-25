@@ -38,15 +38,19 @@ enum CategoryService {
     }
     
     /// 名前・アイコン・色を更新する(名前の前後の空白は削除して保存。sortIndexは変えない)
+    /// - 記録済みの収支・いつもの収支のコピーも、同じ内容に更新する
     static func update(
         _ category: Category,
         name: String,
         imageName: String,
-        colorHex: String
-    ) {
+        colorHex: String,
+        in context: ModelContext
+    ) throws {
         category.name = trimmedName(name)
         category.imageName = imageName
         category.colorHex = colorHex
+        
+        try RecordSyncService.sync(category, in: context)
     }
     
     /// 指定IDのカテゴリーを削除し、残りのsortIndexを0から詰め直す

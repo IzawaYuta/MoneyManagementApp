@@ -323,11 +323,12 @@ struct AddCategoryView: View {
     
     private func updateCategory(_ category: Category) {
         guard let colorHex = selectedColor else { return }
-        CategoryService.update(
+        try? CategoryService.update(
             category,
             name: categoryName,
             imageName: selectedIcon ?? "ellipsis.circle",
-            colorHex: colorHex
+            colorHex: colorHex,
+            in: modelContext
         )
         dismiss()
     }

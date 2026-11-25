@@ -2,12 +2,12 @@
 import Foundation
 import SwiftData
 
-@MainActor
 
 enum PaymentMethodError: Error {
     case emptyName
 }
 
+@MainActor
 enum PaymentMethodService {
 
     /// 名前の前後の空白・改行(全角スペース、タブを含む)を取り除く。途中の空白は残す
@@ -44,6 +44,27 @@ enum PaymentMethodService {
         )
         context.insert(paymentMethod)
         return paymentMethod
+    }
+    
+    /// 名前・種類・メモを更新する(sortIndexは変えない)
+    /// - 名前の前後の空白は削除して保存する。メモが空文字ならnilで保存する
+    /// - 名前が空・空白だけのときは、何も変えずエラーを投げる
+    /// - 記録済みの収支・いつもの収支のコピーも、同じ内容に更新する
+    static func update(
+        _ paymentMethod: PaymentMethod,
+        name: String,
+        type: PaymentType,
+        memo: String,
+        in context: ModelContext
+    ) throws {
+        let name = trimmedName(name)
+        guard !name.isEmpty else { throw PaymentMethodError.emptyName }
+        
+        paymentMethod.name = name
+        paymentMethod.type = type
+        paymentMethod.memo = memo.isEmpty ? nil : memo
+        
+        try RecordSyncService.sync(paymentMethod, in: context)
     }
     
     /// 指定IDの支払方法を削除し、残りのsortIndexを0から詰め直す
