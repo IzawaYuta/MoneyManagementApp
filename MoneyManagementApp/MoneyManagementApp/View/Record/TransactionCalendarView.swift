@@ -326,8 +326,6 @@ struct TransactionCalendarView: View {
     
     // MARK: - 実データの集計
     
-    // MARK: - 実データの集計
-    
     /// 指定した日付に該当するTransactionを、時刻の新しい順に返す
     private func transactions(for date: Date) -> [Transaction] {
         CalendarService.transactions(for: date, in: transactions, calendar: calendar)

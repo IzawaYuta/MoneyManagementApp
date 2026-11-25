@@ -160,7 +160,7 @@ private struct BudgetCategoryCard: View {
     let type: TransactionType
     
     private var color: Color { Color(budgetHex: row.colorHex) }
-    private var panelColor: Color { color.opacity(0.8) }
+    private var panelColor: Color { color.opacity(0.7) }
     private var remainingTitle: String { row.isOver ? type.overTitle : type.remainingTitle }
     
     var body: some View {
@@ -235,7 +235,7 @@ private struct BudgetCategoryCard: View {
     context.insert(Budget(categoryID: transport.id, type: .expense, amount: 10000, startMonth: ym))
     context.insert(Budget(categoryID: fun.id, type: .expense, amount: 8000, startMonth: ym))
     
-    for (category, amount) in [(food, 50000), (transport, 3500), (fun, 3000)] {
+    for (category, amount) in [(food, 10000000), (transport, 3500), (fun, 3000)] {
         context.insert(Transaction(
             date: Date(), amount: amount, type: .expense,
             categoryID: category.id, categoryName: category.name,

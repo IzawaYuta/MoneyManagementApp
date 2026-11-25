@@ -108,7 +108,6 @@ struct DatePickerSheet: View {
 /// 画面には通貨表示のTextを出し、数字キーボードを出すための入力欄(TextField)は透明にして重ねている。
 struct AmountDisplay: View {
     @Binding var text: String
-//    @State private var isTextFieldFocused: Bool = false
     var focus: FocusState<Field?>.Binding
     
     var body: some View {

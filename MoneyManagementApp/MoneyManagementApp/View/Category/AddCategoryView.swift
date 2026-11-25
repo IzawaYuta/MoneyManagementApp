@@ -7,6 +7,8 @@ struct AddCategoryView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
+    @FocusState private var categoryNameFocus: Bool
+    
     @Query(sort: \Category.sortIndex)
     private var categories: [Category]
     
@@ -195,6 +197,7 @@ struct AddCategoryView: View {
             Form {
                 Section("カテゴリー名") {
                     TextField("食費、日用品、教育費...", text: $categoryName)
+                        .focused($categoryNameFocus)
                 }
                 
                 Section("アイコン") {
@@ -276,6 +279,7 @@ struct AddCategoryView: View {
             }
             .navigationTitle(isEditing ? "カテゴリーを編集" : "カテゴリーを追加")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear { categoryNameFocus = true }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(action: {

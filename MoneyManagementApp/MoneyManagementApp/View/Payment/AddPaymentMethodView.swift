@@ -7,6 +7,8 @@ struct AddPaymentMethodView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     
+    @FocusState private var amountFocus: Bool
+    
     @Query(sort: \PaymentMethod.sortIndex)
     private var paymentMethods: [PaymentMethod]
     
@@ -48,6 +50,7 @@ struct AddPaymentMethodView: View {
             Form {
                 Section {
                     TextField("登録名", text: $name)
+                        .focused($amountFocus)
                     
                     TextField("メモ", text: $memo)
                 }
@@ -76,6 +79,7 @@ struct AddPaymentMethodView: View {
             }
             .navigationTitle(isEditing ? "支払方法を編集" : "支払方法を追加")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear { amountFocus = true }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("キャンセル") {
