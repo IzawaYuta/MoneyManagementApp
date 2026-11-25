@@ -40,6 +40,13 @@ struct Home: View {
     /// 下の白いシートが画面の高さに占める割合
     private let sheetHeightRatio: CGFloat = 0.75
     
+    // 追加するプロパティ
+    @State private var selectedUsualRecordID: UUID?
+    
+    private var selectedUsualRecord: UsualRecord? {
+        usualRecords.first { $0.id == selectedUsualRecordID }
+    }
+    
     var body: some View {
         NavigationStack {
             GeometryReader { geometry in
@@ -136,7 +143,7 @@ struct Home: View {
             VStack(spacing: 12) {
                 SelectionDate(selectedDate: $selectedDate, onTapDatePicker: $onTapDate)
                 HStack(spacing: 12) {
-                    SelectionCard(title: "カテゴリー", value: selectedCategory?.name ?? "未選択", corners: .categoryCard) {
+                    SelectionCard(title: "カテゴリー", value: selectedCategory?.name ?? "あいうえお", corners: .categoryCard) {
                         showCategorySelectionView.toggle()
                     }
                     .accessibilityIdentifier("home.categoryCard")
@@ -146,7 +153,7 @@ struct Home: View {
                         )
                         .interactiveDismissDisabled(true)
                     }
-                    SelectionCard(title: "支払方法", value: selectedPaymentMethod?.name ?? "未選択", corners: .paymentCard) {
+                    SelectionCard(title: "支払方法", value: selectedPaymentMethod?.name ?? "あいうえおかきくけこさしすせそたちつてと", corners: .paymentCard) {
                         showPaymentMethodView.toggle()
                     }
                     .accessibilityIdentifier("home.paymentCard")
@@ -155,9 +162,10 @@ struct Home: View {
                     }
                 }
                 
-                MemoCard(text: $memoTextField)
+                MemoCard(text: $memoTextField, focus: $focusedField)
                 
                 UsualRecordCard(
+                    selectedTitle: selectedUsualRecord?.title,
                     onOpenList: { showUsualRecordSheet = true },
                 )
                 .fullScreenCover(isPresented: $showUsualRecordSheet) {
@@ -204,6 +212,7 @@ struct Home: View {
     /// 金額が0円(空を含む)ならアラートを出して保留し、それ以外は保存する
     /// - Returns: 保存したら true、アラートを出して保留したら false
     private func requestSave() -> Bool {
+        focusedField = nil
         if TransactionService.isZeroAmount(priceTextField) {
             showZeroAmountAlert = true
             return false
@@ -213,6 +222,7 @@ struct Home: View {
     
     @discardableResult
     private func saveTransaction() -> Bool {
+        focusedField = nil
         do {
             try TransactionService.save(
                 date: selectedDate,

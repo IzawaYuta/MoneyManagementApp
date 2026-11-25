@@ -82,20 +82,12 @@ struct OverwriteRecordView: View {
                             }
                             .accessibilityIdentifier("overwrite.dateButton")
                             .sheet(isPresented: $showDatePicker) {
-                                DatePicker(
-                                    "日付",
-                                    selection: $date,
-                                    displayedComponents: .date
-                                )
-                                .environment(\.locale, Locale(identifier: "ja_JP"))
-                                .datePickerStyle(.graphical)
-                                .labelsHidden()
-                                .padding(10)
-                                .presentationDetents([.medium])
-                                .presentationBackground(.white)
-                                .onChange(of: date) { _, _ in
-                                    showDatePicker = false
-                                }
+                                DatePickerSheet(date: $date, isPresented: $showDatePicker)
+                                    .presentationDetents([.medium])
+                                    .presentationBackground(.white)
+                                    .onChange(of: date) { _, _ in
+                                        showDatePicker = false
+                                    }
                             }
                         }
                     }

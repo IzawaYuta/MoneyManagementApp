@@ -235,14 +235,12 @@ struct SelectionCard: View {
                 Text(title)
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                HStack {
-                    Spacer()
-                    
-                    Text(value)
-                        .font(.system(size: 25, weight: .semibold))
-                        .foregroundStyle(.black.opacity(0.7))
-                        .lineLimit(1)
-                }
+                Text(value)
+                    .font(.system(size: 25, weight: .semibold))
+                    .foregroundStyle(.black.opacity(0.7))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.45)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 10)
@@ -257,6 +255,7 @@ struct SelectionCard: View {
 // MARK: - メモ
 struct MemoCard: View {
     @Binding var text: String
+    var focus: FocusState<Field?>.Binding
     
     var body: some View {
         HStack {
@@ -270,6 +269,7 @@ struct MemoCard: View {
             ) {
                 EmptyView()
             }
+            .focused(focus, equals: .memo) 
             .lineLimit(1)
             .accessibilityIdentifier("home.memoField")
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
@@ -284,6 +284,7 @@ struct MemoCard: View {
 // MARK: - いつもの収支カード
 /// 左側をタップで一覧シートを開き、右側の「登録」で今の入力を保存する。
 struct UsualRecordCard: View {
+    let selectedTitle: String?
     let onOpenList: () -> Void
     
     var body: some View {
@@ -295,6 +296,26 @@ struct UsualRecordCard: View {
                     Text("いつもの収支")
                         .font(.callout)
                     Spacer()
+                    
+                    if let selectedTitle {
+                        HStack(spacing: 4) {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 10, weight: .bold))
+                            Text(selectedTitle)
+                                .font(.system(size: 14, weight: .medium))
+                                .lineLimit(1)
+                        }
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 5)
+                        .background(Color(uiColor: .systemGray6))
+                        .clipShape(Capsule())
+                        .frame(maxWidth: 160, alignment: .trailing)
+                    } else {
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
                 }
                 .contentShape(Rectangle())
             }

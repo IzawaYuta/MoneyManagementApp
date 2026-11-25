@@ -41,6 +41,10 @@ struct CalendarServiceTests {
 
     private func items(_ day: Date, _ items: [SchemaV2.Transaction]) -> [SchemaV2.Transaction] {
         CalendarService.transactions(for: day, in: items, calendar: calendar)
+            .sorted {
+                if $0.date != $1.date { return $0.date > $1.date }
+                return $0.createdAt > $1.createdAt
+            }
     }
 
     // MARK: - 日ごとの合計(dailySummary)

@@ -18,6 +18,7 @@ enum SchemaV2: VersionedSchema {
         var type: TransactionType
         var memo: String?
         var sortIndex: Int = 0
+        var createdAt: Date = Date()
         // ↓ Optional化
         var categoryID: UUID?
         var categoryName: String?

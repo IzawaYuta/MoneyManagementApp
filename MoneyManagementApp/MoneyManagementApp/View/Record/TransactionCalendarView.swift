@@ -4,7 +4,8 @@ import SwiftData
 
 struct TransactionCalendarView: View {
     
-    @Query(sort: \Transaction.date) private var transactions: [Transaction]
+    @Query(sort: [SortDescriptor(\Transaction.date), SortDescriptor(\Transaction.createdAt)])
+    private var transactions: [Transaction]
     
     @State private var currentMonth: Date = Date()
     @State private var selectedDate: Date = Date()
@@ -95,12 +96,6 @@ struct TransactionCalendarView: View {
             .padding(.vertical, 16)
             .padding(.horizontal, 5)
             .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .strokeBorder(Color.black.opacity(0.08), lineWidth: 0.5)
-            )
-            .padding(.horizontal, 5)
             
             // 選択日の詳細
             ScrollView {
