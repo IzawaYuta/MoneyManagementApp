@@ -239,10 +239,11 @@ struct SelectionCard: View {
                     .foregroundStyle(.black.opacity(0.7))
                     .lineLimit(1)
                     .minimumScaleFactor(0.45)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .frame(maxWidth: .infinity, minHeight: 30, maxHeight: 30, alignment: .trailing)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, 10)
+            .padding(.vertical, 10)
             .frame(height: 64)
 //            .cardBackground(UnevenRoundedRectangle(cornerRadii: corners))
         }

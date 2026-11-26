@@ -8,6 +8,8 @@ struct UsualRecordEditView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     
+    @FocusState private var titleFocus: Bool
+    
     @Query(sort: \Category.sortIndex)
     private var categories: [Category]
     @Query(sort: \PaymentMethod.sortIndex)
@@ -60,7 +62,8 @@ struct UsualRecordEditView: View {
                 }
                 
                 Section("内容") {
-                    TextField("名前(未入力ならメモかカテゴリー名)", text: $title)
+                    TextField("タイトル", text: $title)
+                        .focused($titleFocus)
                         .accessibilityIdentifier("usualEdit.titleField")
                     
                     HStack {
@@ -90,6 +93,7 @@ struct UsualRecordEditView: View {
             }
             .navigationTitle(record == nil ? "いつもの収支を登録" : "いつもの収支を編集")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear { titleFocus = true }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("キャンセル") { dismiss() }

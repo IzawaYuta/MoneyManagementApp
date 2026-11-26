@@ -43,11 +43,13 @@ struct MonthlyChartView: View {
     var body: some View {
         let items = summaries
         let total = items.reduce(0) { $0 + $1.amount }
+        let totals = MonthlyChartService.monthTotals(from: allTransactions, month: month)
         
         NavigationStack {
             VStack(spacing: 0) {
                 monthHeader
-                totalsSummary(total: total)
+                MonthlyTotalsCard(income: totals.income, expense: totals.expense)
+                    .padding(.top, 12)
                 pieChart(items: items, total: total)
                     .frame(height: 240)
                     .padding(.vertical, 12)
@@ -132,31 +134,6 @@ struct MonthlyChartView: View {
             month = next
             selectedID = nil
         }
-    }
-    
-    // MARK: Totals
-    
-    private func totalsSummary(total: Int) -> some View {
-        let isIncome = transactionType == .income
-        return totalColumn(title: "\(transactionType.rawValue)合計", amount: total,
-                           prefix: isIncome ? "+" : "-",
-                           color: Color.primary)
-        .padding(.vertical, 12)
-        .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemBackground)))
-        .padding(.top, 12)
-    }
-    
-    private func totalColumn(title: String, amount: Int, prefix: String, color: Color) -> some View {
-        VStack(spacing: 2) {
-            Text(title)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Text("\(prefix)¥\(amount.formatted())")
-                .font(.headline.monospacedDigit())
-                .foregroundStyle(color)
-        }
-        .frame(maxWidth: .infinity)
-        .accessibilityElement(children: .combine)
     }
     
     // MARK: Pie chart

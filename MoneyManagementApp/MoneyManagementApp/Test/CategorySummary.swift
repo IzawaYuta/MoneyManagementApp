@@ -65,7 +65,24 @@ enum MonthlyChartService {
     static func total(of items: [CategorySummary]) -> Int {
         items.reduce(0) { $0 + $1.amount }
     }
-
+    
+    /// 指定した月の収入合計・支出合計(種別の選択に関係なく、両方を集計する)
+    static func monthTotals(
+        from transactions: [SchemaV2.Transaction],
+        month: Date,
+        calendar: Calendar = .current
+    ) -> (income: Int, expense: Int) {
+        var income = 0
+        var expense = 0
+        for t in transactions where calendar.isDate(t.date, equalTo: month, toGranularity: .month) {
+            switch t.type {
+            case .income: income += t.amount
+            case .expense: expense += t.amount
+            }
+        }
+        return (income, expense)
+    }
+    
     /// 角度に対応する累計金額から、カテゴリーを求める
     static func categoryID(at value: Double, items: [CategorySummary]) -> UUID? {
         var cumulative = 0.0
