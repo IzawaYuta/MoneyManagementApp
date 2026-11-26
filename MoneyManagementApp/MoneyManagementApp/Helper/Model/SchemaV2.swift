@@ -8,7 +8,7 @@ enum SchemaV2: VersionedSchema {
     
     static var models: [any PersistentModel.Type] {
         [SchemaV1.Category.self, SchemaV1.PaymentMethod.self,
-         Transaction.self, Budget.self, UsualRecord.self]
+         Transaction.self, Budget.self, UsualRecord.self, FixedCost.self]
     }
     
     @Model final class Transaction {
@@ -132,5 +132,40 @@ enum SchemaV2: VersionedSchema {
             self.categoryName = categoryName
             self.paymentMethodName = paymentMethodName
         }
+    }
+    
+    /// 固定費。指定した日になると、この内容で収支(Transaction)が自動で記録される。
+    /// CloudKit(将来)に備えて、すべてのプロパティに初期値かOptionalを付け、unique制約は使わない。
+    @Model
+    final class FixedCost {
+        var id: UUID = UUID()
+        var title: String = ""
+        var type: TransactionType = TransactionType.expense
+        var amount: Int = 0
+        
+        // カテゴリー・支払方法は Transaction と同じく、情報をコピーして持つ
+        // (カテゴリーを削除しても、固定費は残る)
+        var categoryID: UUID?
+        var categoryName: String?
+        var categoryImageName: String?
+        var categoryColorHex: String?
+        var paymentMethodID: UUID?
+        var paymentMethodName: String?
+        
+        var memo: String = ""
+        
+        // スケジュール
+        var frequency: FixedCostFrequency = FixedCostFrequency.monthly
+        var startDate: Date = Date()
+        var endDate: Date?
+        var holidayRule: HolidayRule = HolidayRule.asIs
+        
+        var isEnabled: Bool = true
+        
+        /// 最後に自動記録した「調整前の予定日」。同じ回を二重に記録しないために使う。
+        var lastRecordedDate: Date?
+        var createdAt: Date = Date()
+        
+        init() {}
     }
 }

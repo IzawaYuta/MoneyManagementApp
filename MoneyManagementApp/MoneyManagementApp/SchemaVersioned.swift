@@ -11,6 +11,7 @@ typealias PaymentMethod = SchemaV1.PaymentMethod
 typealias Transaction = SchemaV2.Transaction
 typealias Budget = SchemaV2.Budget
 typealias UsualRecord = SchemaV2.UsualRecord
+typealias FixedCost = SchemaV2.FixedCost
 
 enum MigrationPlan: SchemaMigrationPlan {
     static var schemas: [any VersionedSchema.Type] { [SchemaV1.self, SchemaV2.self] }
