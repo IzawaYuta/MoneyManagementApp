@@ -7,8 +7,42 @@ import SwiftData
 // MARK: - 頻度・土日祝の扱い
 
 enum FixedCostFrequency: String, CaseIterable, Identifiable, Codable {
-    case weekly, monthly, yearly
+    case once       // 1度のみ
+    case daily      // 毎日
+    case weekly     // 毎週
+    case monthly    // 毎月
+    case yearly     // 毎年
+    case biweekly   // 隔週
+    case custom     // カスタム
+    
     var id: String { rawValue }
+}
+
+/// カスタムの単位(日・週・月・年)
+enum FixedCostCustomUnit: String, CaseIterable, Identifiable, Codable {
+    case day, week, month, year
+    
+    var id: String { rawValue }
+    
+    /// Pickerの表示
+    var title: String {
+        switch self {
+        case .day:   return "日"
+        case .week:  return "週"
+        case .month: return "月"
+        case .year:  return "年"
+        }
+    }
+    
+    /// 「3日ごと」「2週間ごと」「3か月ごと」「1年ごと」の語尾
+    var suffix: String {
+        switch self {
+        case .day:   return "日ごと"
+        case .week:  return "週間ごと"
+        case .month: return "か月ごと"
+        case .year:  return "年ごと"
+        }
+    }
 }
 
 enum HolidayRule: String, CaseIterable, Identifiable, Codable {
@@ -49,6 +83,8 @@ struct FixedCostDraft: Equatable {
     var paymentMethod: PaymentMethod?
     var memo = ""
     var frequency: FixedCostFrequency = .monthly
+    var customInterval = 3
+    var customUnit: FixedCostCustomUnit = .month
     var startDate = Calendar.current.startOfDay(for: .now)
     var endDate: Date?
     var holidayRule: HolidayRule = .asIs
@@ -62,13 +98,18 @@ struct FixedCostDraft: Equatable {
 extension FixedCostDraft {
     /// n回目の記録日(土日祝の調整前)。29〜31日指定の月は、その月の末日に記録する。
     func occurrence(_ n: Int, calendar: Calendar) -> Date? {
-        switch frequency {
-        case .weekly:  return calendar.date(byAdding: .day, value: 7 * n, to: startDate)
-        case .monthly: return shifted(byMonths: n, calendar: calendar)
-        case .yearly:  return shifted(byMonths: 12 * n, calendar: calendar)
+        guard let step = frequency.interval(customInterval: customInterval, customUnit: customUnit) else {
+            return n == 0 ? startDate : nil   // 1度のみ: 開始日の1回だけ
+        }
+        let count = step.value * n
+        switch step.unit {
+        case .day:   return calendar.date(byAdding: .day, value: count, to: startDate)
+        case .week:  return calendar.date(byAdding: .day, value: 7 * count, to: startDate)
+        case .month: return shifted(byMonths: count, calendar: calendar)
+        case .year:  return shifted(byMonths: 12 * count, calendar: calendar)
         }
     }
-
+    
     private func shifted(byMonths months: Int, calendar: Calendar) -> Date? {
         let comps = calendar.dateComponents([.year, .month, .day], from: startDate)
         guard let firstOfMonth = calendar.date(from: DateComponents(year: comps.year, month: comps.month, day: 1)),
@@ -79,7 +120,7 @@ extension FixedCostDraft {
         result.day = min(comps.day ?? 1, days)
         return calendar.date(from: result)
     }
-
+    
     /// 土日祝の設定に合わせて記録日をずらす
     func adjusted(_ date: Date, calendar: Calendar, businessDays: BusinessDayChecking) -> Date {
         let step: Int
@@ -97,13 +138,27 @@ extension FixedCostDraft {
         }
         return current
     }
-
-    /// 今日以降で最初の記録予定日(base: 調整前, actual: 調整後)
+    
+    /// 開始日がずっと前でも、探し始める回を絞る(毎日などで上限に達しないように)
+    private func startIndex(for today: Date, calendar: Calendar) -> Int {
+        guard let step = frequency.interval(customInterval: customInterval, customUnit: customUnit) else {
+            return 0
+        }
+        let days = calendar.dateComponents([.day], from: startDate, to: today).day ?? 0
+        guard days > 0 else { return 0 }
+        switch step.unit {
+        case .day:   return max(0, days / step.value - 1)
+        case .week:  return max(0, days / (7 * step.value) - 1)
+        case .month, .year: return 0
+        }
+    }
+    
     func nextRecord(from today: Date,
                     calendar: Calendar,
                     businessDays: BusinessDayChecking) -> (base: Date, actual: Date)? {
         let start = calendar.startOfDay(for: today)
-        for n in 0..<1200 {
+        let first = startIndex(for: today, calendar: calendar)
+        for n in first..<(first + 1200) {
             guard let base = occurrence(n, calendar: calendar) else { return nil }
             if let end = endDate, base > end { return nil }
             if base < start { continue }
@@ -241,13 +296,23 @@ struct FixedCostEditView: View {
 
     private var scheduleSection: some View {
         Section("スケジュール") {
-            Picker("頻度", selection: $draft.frequency) {
-                ForEach(FixedCostFrequency.allCases) { frequency in
-                    Text(frequencyLabel(frequency)).tag(frequency)
+            NavigationLink {
+                FrequencySelectionView(
+                    frequency: $draft.frequency,
+                    customInterval: $draft.customInterval,
+                    customUnit: $draft.customUnit,
+                    startDate: draft.startDate
+                )
+            } label: {
+                LabeledContent("頻度") {
+                    Text(draft.frequency.label(
+                        startDate: draft.startDate,
+                        customInterval: draft.customInterval,
+                        customUnit: draft.customUnit
+                    ))
                 }
             }
-            .pickerStyle(.navigationLink)
-
+            
             DatePicker("開始日", selection: $draft.startDate, displayedComponents: .date)
                 .environment(\.locale, Locale(identifier: "ja_JP"))
 
@@ -363,21 +428,7 @@ struct FixedCostEditView: View {
             }
         )
     }
-
-    /// 頻度の表示。日付・曜日は開始日から決まる
-    private func frequencyLabel(_ frequency: FixedCostFrequency) -> String {
-        let comps = calendar.dateComponents([.month, .day, .weekday], from: draft.startDate)
-        switch frequency {
-        case .weekly:
-            let weekday = calendar.weekdaySymbols[(comps.weekday ?? 1) - 1]
-            return "毎週 \(weekday)"
-        case .monthly:
-            return "毎月 \(comps.day ?? 1)日"
-        case .yearly:
-            return "毎年 \(comps.month ?? 1)月\(comps.day ?? 1)日"
-        }
-    }
-
+    
     private var nextRecordFooter: String {
         guard let next = draft.nextRecord(from: .now, calendar: calendar, businessDays: businessDays) else {
             return "今後の記録予定はありません。"

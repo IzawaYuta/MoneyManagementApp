@@ -5,18 +5,37 @@ import SwiftData
 // MARK: - 頻度の表示(編集画面と共通で使える)
 
 extension FixedCostFrequency {
-    /// 「毎月 25日」「毎週 土曜日」「毎年 4月1日」。日付・曜日は開始日から決まる。
-    func label(startDate: Date) -> String {
+    /// 頻度を「値 + 単位」で表す(日付の計算に使う)
+    func interval(customInterval: Int,
+                  customUnit: FixedCostCustomUnit) -> (value: Int, unit: FixedCostCustomUnit)? {
+        switch self {
+        case .once:     return nil
+        case .daily:    return (1, .day)
+        case .weekly:   return (1, .week)
+        case .biweekly: return (2, .week)
+        case .monthly:  return (1, .month)
+        case .yearly:   return (1, .year)
+        case .custom:   return (max(customInterval, 1), customUnit)
+        }
+    }
+    
+    /// 「毎日」「毎週 土曜日」「隔週 土曜日」「毎月 25日」「毎年 4月1日」「3か月ごと」
+    func label(startDate: Date,
+               customInterval: Int = 1,
+               customUnit: FixedCostCustomUnit = FixedCostCustomUnit.month) -> String {
         var calendar = Calendar(identifier: .gregorian)
         calendar.locale = Locale(identifier: "ja_JP")
         let comps = calendar.dateComponents([.month, .day, .weekday], from: startDate)
+        let weekday = calendar.weekdaySymbols[(comps.weekday ?? 1) - 1]
+        
         switch self {
-        case .weekly:
-            return "毎週 \(calendar.weekdaySymbols[(comps.weekday ?? 1) - 1])"
-        case .monthly:
-            return "毎月 \(comps.day ?? 1)日"
-        case .yearly:
-            return "毎年 \(comps.month ?? 1)月\(comps.day ?? 1)日"
+        case .once:     return "1度のみ"
+        case .daily:    return "毎日"
+        case .weekly:   return "毎週 \(weekday)"
+        case .biweekly: return "隔週 \(weekday)"
+        case .monthly:  return "毎月 \(comps.day ?? 1)日"
+        case .yearly:   return "毎年 \(comps.month ?? 1)月\(comps.day ?? 1)日"
+        case .custom:   return "\(max(customInterval, 1))\(customUnit.suffix)"
         }
     }
 }
@@ -78,8 +97,10 @@ private struct FixedCostRow: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(cost.title)
-                Text(cost.frequency.label(startDate: cost.startDate))
-                    .font(.footnote)
+                Text(cost.frequency.label(startDate: cost.startDate,
+                                          customInterval: cost.customInterval,
+                                          customUnit: cost.customUnit))
+                .font(.footnote)
                     .foregroundStyle(.secondary)
             }
             Spacer()

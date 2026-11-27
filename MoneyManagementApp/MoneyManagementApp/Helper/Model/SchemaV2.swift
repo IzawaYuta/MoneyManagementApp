@@ -156,6 +156,8 @@ enum SchemaV2: VersionedSchema {
         
         // スケジュール
         var frequency: FixedCostFrequency = FixedCostFrequency.monthly
+        var customInterval: Int = 3
+        var customUnit: FixedCostCustomUnit = FixedCostCustomUnit.month
         var startDate: Date = Date()
         var endDate: Date?
         var holidayRule: HolidayRule = HolidayRule.asIs
